@@ -1,7 +1,7 @@
-<title>Battlepack Workbench</title>
+<title>FFXII Editor Suite</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=Source+Code+Pro:wght@400;600&display=swap">
 <style>
-/* Layout: three-pane workbench (sections | rows | record form) under a compact tool bar; the record form is the work surface. */
+/* Layout: three-pane workbench (tables | rows | record) under a compact tool bar; the record form is the work surface. */
 :root {
   --bg: #f2f4f7; --panel: #ffffff; --fg: #1b2330; --muted: #5d6b7c; --line: #d6dce4;
   --accent: #1f7a8c; --accent-fg: #ffffff; --changed: #b8730f; --changed-bg: #fff3dd; --danger: #a63d40;
@@ -27,6 +27,11 @@ main.wb { display: grid; grid-template-columns: 230px 260px minmax(0, 1fr); gap:
 .pane { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; display: flex; flex-direction: column; min-height: 0; min-width: 0; }
 .pane h2 { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 0; padding: 8px 10px; border-bottom: 1px solid var(--line); display: flex; gap: 8px; align-items: center; }
 .pane h2 input { margin-left: auto; width: 46%; font-size: 12px; }
+.recmeta { margin-left: auto; font-family: var(--font-mono); text-transform: none; letter-spacing: 0; }
+.exports { display: flex; flex-wrap: wrap; gap: 6px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+#rowsPane[hidden] { display: none; }
+main.wb:has(#rowsPane[hidden]) { grid-template-columns: 230px minmax(0, 1fr); }
 .list { overflow: auto; flex: 1; margin: 0; padding: 4px; list-style: none; }
 .list li { padding: 4px 8px; border-radius: 4px; cursor: pointer; display: flex; gap: 8px; align-items: baseline; }
 .list li:hover { background: color-mix(in srgb, var(--accent) 10%, transparent); }
@@ -79,34 +84,53 @@ fieldset.grp .fields { margin-top: 2px; }
   .field { grid-template-columns: 1fr; }
 }
 @media (prefers-reduced-motion: reduce) { .toast { transition: none; } }
+
+.list li.child .idx { padding-left: 10px; }
+.list li .lbl { min-width: 0; overflow-wrap: anywhere; }
+.note { color: var(--muted); font-size: 12px; margin: 0 0 8px; font-family: var(--font-mono); }
+.extra { margin-top: 12px; }
+.mono { font-family: var(--font-mono); }
+.tablewrap { overflow-x: auto; }
+table.formats { border-collapse: collapse; font-size: 13px; margin: 8px 0; }
+table.formats th, table.formats td { text-align: left; padding: 3px 12px 3px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+table.formats code { font-size: 12px; }
+.copybox { position: fixed; inset: 20% 10%; width: 80%; height: 50%; z-index: 9; font-family: var(--font-mono); font-size: 12px; background: var(--panel); color: var(--fg); border: 2px solid var(--accent); }
+.canvasbox { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-start; }
+.canvasbox canvas { max-width: 100%; image-rendering: pixelated; background-color: #888; background-image: linear-gradient(45deg,#aaa 25%,transparent 25%),linear-gradient(-45deg,#aaa 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#aaa 75%),linear-gradient(-45deg,transparent 75%,#aaa 75%); background-size: 16px 16px; background-position: 0 0,0 8px,8px -8px,-8px 0; border: 1px solid var(--line); }
+.toolrow { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 8px 0; }
+.grid-board { display: grid; gap: 1px; background: var(--line); border: 1px solid var(--line); width: max-content; max-width: 100%; overflow: auto; }
+.grid-board .cell { width: 28px; height: 28px; background: var(--panel); font-size: 9px; font-family: var(--font-mono); display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; }
+.grid-board .cell.on { background: color-mix(in srgb, var(--accent) 30%, var(--panel)); }
+.grid-board .cell.sel { outline: 2px solid var(--changed); outline-offset: -2px; }
 </style>
 
 <div class="app">
   <header class="bar">
-    <h1>Battlepack Workbench</h1>
+    <h1>FFXII Editor Suite</h1>
     <span class="file" id="fileName">no file loaded</span>
     <div class="tools">
-      <input type="file" id="openBin" accept=".bin,application/octet-stream" hidden>
+      <input type="file" id="openFile" hidden>
       <input type="file" id="openJson" accept=".json,application/json" hidden>
-      <button id="btnOpen" class="primary" title="Open battle_pack.bin extracted with VBF Browser">Open battle_pack.bin</button>
-      <button id="btnOpenSection" title="Open a single section exported by the Insurgent's Toolkit">Open section</button>
-      <select id="sectionPick" title="Section id of the opened blob" hidden></select>
-      <button id="btnLoadChanges" title="Re-apply a changes.json saved earlier">Load changes</button>
-      <button id="btnSample" title="Loads a small synthetic file so you can try the editor">Sample data</button>
+      <label class="sr" for="editorPick">Format</label>
+      <select id="editorPick" title="Detect the format from the file, or force one editor"></select>
+      <button id="btnOpen" class="primary" title="Open a file extracted with VBF Browser">Open file</button>
+      <button id="btnBack" hidden title="Return to the VBF archive">Back to archive</button>
+      <button id="btnLoadChanges" hidden title="Re-apply a changes.json saved earlier">Load changes</button>
+      <button id="btnSample" title="Loads small synthetic data so you can try the selected editor">Sample</button>
     </div>
   </header>
 
   <main class="wb">
     <aside class="pane">
-      <h2>Sections <input type="search" id="secFilter" placeholder="filter" aria-label="filter sections"></h2>
+      <h2>Tables <input type="search" id="secFilter" placeholder="filter" aria-label="filter tables"></h2>
       <ul class="list" id="secList"></ul>
     </aside>
-    <section class="pane">
+    <section class="pane" id="rowsPane">
       <h2>Rows <input type="search" id="rowFilter" placeholder="name or #index" aria-label="filter rows"></h2>
       <ul class="list" id="rowList"></ul>
     </section>
     <section class="pane detailPane">
-      <h2>Record <span id="recordMeta" style="margin-left:auto;font-family:var(--font-mono);text-transform:none;letter-spacing:0"></span></h2>
+      <h2>Record <span id="recordMeta" class="recmeta"></span></h2>
       <div class="detail" id="detail"></div>
     </section>
   </main>
@@ -116,304 +140,10 @@ fieldset.grp .fields { margin-top: 2px; }
     <button id="btnToggleChanges">Show list</button>
     <button id="btnRevertRow">Revert this row</button>
     <span style="flex:1"></span>
-    <button id="btnCopyLua" title="Copies a Lua Loader script that patches the live battlepack">Copy Lua patch</button>
-    <button id="btnSaveJson">Save changes.json</button>
-    <button id="btnSaveLua">Save Lua patch</button>
-    <button id="btnSaveBin" class="primary">Save battle_pack.bin</button>
-    <button id="btnSaveZip">Save all (.zip)</button>
+    <span id="exports" class="exports"></span>
     <ul id="changeList"></ul>
   </footer>
 </div>
 <div class="toast" id="toast" role="status"></div>
 
-<script>/*__CORE__*/</script>
-<script>
-const SCHEMA = /*__SCHEMA__*/{};
-const LISTS = /*__LISTS__*/{};
-</script>
-<script>
-/* ---------------------------------------------------------------- UI */
-const { Battlepack, luaPatch, zipStore } = window.BPCore;
-const SECTION_NAMES = LISTS.BpSectionList || {};
-const ROW_LABEL = { 0: 'BpWeaponStanceList', 5: 'BpEquipmentCategoryList', 7: 'BpGambitList', 11: 'BpMagickCategoryList', 12: 'BpLicenseList', 13: 'BpEquipmentList', 14: 'BpActionList', 15: 'BpStatusEffectList', 16: 'PartyMemberList', 18: 'BpItemList', 26: 'BpMistList', 28: 'BpPriceList', 29: 'BpMagickList', 30: 'BpTechnickList', 31: 'BpConcurrenceList', 32: 'BpLootList', 33: 'BpMapList', 34: 'BpTeleportLocationList', 35: 'BpKeyItemList', 37: 'BpPackageList', 38: 'BpRewardList', 39: 'BpShopList', 41: 'BpElementList', 57: 'BpBazaarGoodList', 58: 'BpAugmentList', 60: 'BpStoryPointAdditionList' };
-const LIST_RULES = [
-  [/^name$/, { 13: 'BpEquipmentList', 14: 'BpActionList', 16: 'CharacterNameList', 12: 'BpLicenseList', 15: 'BpStatusEffectList' }],
-  [/battleMenuDescription/, 'MenuBattleActionList'],
-  [/inventoryMenuDescription/, 'MenuInventoryActionList'],
-  [/^formula$/, 'BpeFormulaList'],
-  [/castAnimation|mistCastAnimation/, 'BpeCastAnimationList'],
-  [/^characterAnimation$/, 'BpeCharacterAnimationList'],
-  [/chargeAuraAnimation/, 'BpeChargeAuraAnimationList'],
-  [/summonedPartyMember|^partyMember|\.member$/, 'PartyMemberList'],
-  [/^category$/, { 14: 'BpCategoryList', 13: 'BpEquipmentCategoryList' }],
-  [/requiredContent|\.content$/, 'ContAllList'],
-  [/enableBattleMemoryFlag/, 'BpeBattleMemoryFlagList'],
-  [/^model$/, 'ModelList'],
-  [/^equipment\.(weapon|offhand|helm|armor|accessory)$/, 'BpEquipmentList'],
-  [/^icon$/, 'BpeIconList'],
-  [/^augment$/i, 'BpAugmentList'],
-  [/^license$/i, 'BpLicenseList'],
-  [/gambitSetIdentifier|^gambit$/i, 'BpGambitList'],
-  [/^item$/i, 'BpItemList'], [/^loot$/i, 'BpLootList'], [/keyItem$/i, 'BpKeyItemList'], [/^package$/i, 'BpPackageList'], [/^reward$/i, 'BpRewardList'],
-  [/^price$/i, 'BpPriceList'], [/^mist$|mistAction/i, 'BpMistList'], [/^map$/i, 'BpMapList'], [/teleportLocation/i, 'BpTeleportLocationList'],
-  [/^stance$|weaponStance/i, 'BpWeaponStanceList'], [/concurrence/i, 'BpConcurrenceList'], [/storyPoint/i, 'BpStoryPointAdditionList'],
-  [/bazaar/i, 'BpBazaarGoodList'], [/^technick$/i, 'BpTechnickList'], [/^magick$/i, 'BpMagickList'], [/magicksCategory/i, 'BpMagickCategoryList'],
-  [/^element$/i, 'BpElementList'], [/^statusEffect$|^status$/i, 'BpStatusEffectList'], [/^job$/i, 'JobList'], [/^genus$/i, 'GenusList'], [/classification$/i, 'ClassificationList'],
-  [/particleEffect/i, 'BpeWeaponParticleEffectList'], [/distanceBehavior/i, 'BpeWeaponDistanceBehaviorList'], [/^shop$/i, 'BpShopList'], [/^action$|^action\d$/i, 'BpActionList'],
-  [/quickening\d/i, 'BpMistList'],
-];
-const INT_TYPES = new Set(['u8', 's8', 'u16', 's16', 'u32', 's32']);
-
-const $ = id => document.getElementById(id);
-const state = { bp: null, sec: null, row: 0, fileName: '', pendingBlob: null };
-
-function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('show'), 2400); }
-const hex = (n, w) => '0x' + n.toString(16).toUpperCase().padStart(w || 2, '0');
-function sectionName(id) { return SECTION_NAMES[id] ? SECTION_NAMES[id] : 'Section ' + id; }
-function listFor(sec, f) {
-  if (!INT_TYPES.has(f.type) && !(f.bitLength && f.bitLength > 1)) return null;
-  const path = f.parent ? f.parent + '.' + f.name : f.name;
-  for (const [re, target] of LIST_RULES) {
-    if (re.test(path) || re.test(f.name)) {
-      const name = typeof target === 'string' ? target : target[sec.id];
-      if (name && LISTS[name]) return LISTS[name];
-    }
-  }
-  return null;
-}
-function rowLabel(sec, row) {
-  const ln = ROW_LABEL[sec.id];
-  if (ln && LISTS[ln] && LISTS[ln][row] != null) return LISTS[ln][row];
-  const nf = sec.fields.find(f => f.name === 'name' && !f.parent);
-  if (nf) { const l = listFor(sec, nf); const v = state.bp.get(sec, row, nf); if (l && l[v] != null) return l[v]; return 'name ' + v; }
-  return '';
-}
-
-/* ------------------------------------------------ sections */
-function renderSections() {
-  const ul = $('secList'); ul.innerHTML = '';
-  if (!state.bp) return;
-  const q = $('secFilter').value.trim().toLowerCase();
-  for (const s of state.bp.sections) {
-    const label = sectionName(s.id);
-    if (q && !(label.toLowerCase().includes(q) || String(s.id) === q)) continue;
-    const li = document.createElement('li');
-    li.className = (s.missing ? 'missing ' : '') + (state.sec && state.sec.id === s.id ? 'sel' : '');
-    li.innerHTML = `<span class="idx">${s.id}</span><span>${label}</span><span class="meta">${s.missing ? '—' : s.count + '×' + hex(s.entrySize) + (s.raw ? ' raw' : '')}</span>`;
-    if (!s.missing) li.onclick = () => selectSection(s.id);
-    ul.appendChild(li);
-  }
-}
-function selectSection(id) {
-  state.sec = state.bp.sections.find(s => s.id === id); state.row = 0;
-  try { localStorage.setItem('bpw.sec', String(id)); } catch (e) { }
-  renderSections(); renderRows(); renderDetail();
-}
-
-/* ------------------------------------------------ rows */
-function renderRows() {
-  const ul = $('rowList'); ul.innerHTML = '';
-  const sec = state.sec; if (!sec) return;
-  const q = $('rowFilter').value.trim().toLowerCase();
-  const frag = document.createDocumentFragment();
-  for (let r = 0; r < sec.count; r++) {
-    const label = rowLabel(sec, r);
-    if (q) { const byIdx = q.startsWith('#') ? String(r) === q.slice(1) : String(r) === q; if (!byIdx && !label.toLowerCase().includes(q)) continue; }
-    const li = document.createElement('li');
-    li.className = (r === state.row ? 'sel ' : '') + (state.bp.touched.has(sec.id + ':' + r) ? 'touched' : '');
-    li.innerHTML = `<span class="idx">${r}</span><span>${label || '&nbsp;'}</span>`;
-    li.onclick = () => { state.row = r; renderRows(); renderDetail(); };
-    frag.appendChild(li);
-  }
-  ul.appendChild(frag);
-}
-
-/* ------------------------------------------------ record form */
-function renderDetail() {
-  const d = $('detail'); d.innerHTML = '';
-  const sec = state.sec;
-  if (!state.bp) { d.innerHTML = emptyHtml(); $('recordMeta').textContent = ''; return; }
-  if (!sec || sec.count === 0) { d.innerHTML = '<div class="empty">Pick a section.</div>'; return; }
-  const row = state.row;
-  $('recordMeta').textContent = `sec ${sec.id} · row ${row} · ${hex(state.bp.rowAddr(sec, row), 6)}`;
-  const head = document.createElement('div'); head.className = 'head';
-  head.innerHTML = `<strong>${rowLabel(sec, row) || sectionName(sec.id) + ' #' + row}</strong><span class="mono">${sectionName(sec.id)} · entry ${hex(sec.entrySize)} bytes${sec.warning ? ' · ' + sec.warning : ''}</span>`;
-  d.appendChild(head);
-  if (SCHEMA[sec.id] && SCHEMA[sec.id].notes) { const n = document.createElement('p'); n.className = 'mono'; n.style.cssText = 'color:var(--muted);font-size:12px;margin:0 0 8px'; n.textContent = SCHEMA[sec.id].notes; d.appendChild(n); }
-
-  if (!sec.raw) {
-    const grid = document.createElement('div'); grid.className = 'fields';
-    let container = grid;
-    for (const f of sec.fields) {
-      if (f.group || f.bitfield) {
-        const fs = document.createElement('fieldset'); fs.className = 'grp';
-        fs.innerHTML = `<legend>${f.name} · ${f.type}${f.bitfield ? ' @ ' + hex(f.offset) : ''}${f.notes ? ' · ' + f.notes : ''}</legend><div class="fields"></div>`;
-        grid.appendChild(fs); container = fs.querySelector('.fields');
-        continue;
-      }
-      if (!f.parent) container = grid;
-      container.appendChild(fieldControl(sec, row, f));
-    }
-    d.appendChild(grid);
-  }
-  d.appendChild(hexEditor(sec, row));
-}
-
-function fieldControl(sec, row, f) {
-  const wrap = document.createElement('div'); wrap.className = 'field';
-  const bits = f.bitStart != null ? ` bits ${f.bitStart}${f.bitLength > 1 ? '–' + (f.bitStart + f.bitLength - 1) : ''}` : '';
-  wrap.innerHTML = `<label><span class="n">${f.name}</span><span class="t">${f.type} @ ${hex(f.offset)}${bits}${f.notes ? ' · ' + f.notes : ''}</span></label><div class="ctl"></div>`;
-  const ctl = wrap.querySelector('.ctl');
-  const value = state.bp.get(sec, row, f);
-  const changedNow = () => { wrap.classList.toggle('changed', state.bp.rowDiff(sec, row).some(b => b.off >= f.offset && b.off < f.offset + (window.BPCore.TYPE_SIZE[f.type] || 1))); };
-  const commit = v => { try { state.bp.set(sec, row, f, v); } catch (e) { toast('Bad value: ' + e.message); return; } afterEdit(); changedNow(); syncHex(sec, row); };
-
-  if (f.bitLength === 1) {
-    const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = value === 1; cb.id = `f_${sec.id}_${f.offset}_${f.bitStart}`;
-    cb.onchange = () => commit(cb.checked ? 1 : 0); ctl.appendChild(cb);
-  } else {
-    const list = listFor(sec, f);
-    if (list) {
-      const sel = document.createElement('select'); sel.id = `f_${sec.id}_${f.offset}_${f.name}`;
-      const keys = Object.keys(list).map(Number).sort((a, b) => a - b);
-      let present = false;
-      for (const k of keys) { const o = document.createElement('option'); o.value = k; o.textContent = `${k} · ${list[k]}`; if (k === Number(value)) { o.selected = true; present = true; } sel.appendChild(o); }
-      if (!present) { const o = document.createElement('option'); o.value = value; o.textContent = `${value} · (not in list)`; o.selected = true; sel.appendChild(o); }
-      const num = document.createElement('input'); num.type = 'number'; num.className = 'short'; num.value = value; num.title = 'raw value';
-      sel.onchange = () => { num.value = sel.value; commit(Number(sel.value)); };
-      num.onchange = () => { commit(Number(num.value)); const opt = [...sel.options].find(o => Number(o.value) === Number(num.value)); if (opt) opt.selected = true; };
-      ctl.append(sel, num);
-    } else if (f.type === 'u64' || f.type === 's64') {
-      const inp = document.createElement('input'); inp.type = 'text'; inp.value = hex(value, 16); inp.id = `f_${sec.id}_${f.offset}_${f.name}`;
-      inp.onchange = () => { try { commit(BigInt(inp.value)); } catch (e) { toast('Enter a decimal or 0x hex integer'); } };
-      ctl.appendChild(inp);
-    } else {
-      const inp = document.createElement('input'); inp.type = 'number'; inp.value = value; inp.id = `f_${sec.id}_${f.offset}_${f.name}`;
-      if (f.type === 'f32' || f.type === 'f64') inp.step = 'any';
-      else { inp.step = 1; const lim = { u8: [0, 255], s8: [-128, 127], u16: [0, 65535], s16: [-32768, 32767], u32: [0, 4294967295], s32: [-2147483648, 2147483647] }[f.type]; if (lim) { inp.min = lim[0]; inp.max = lim[1]; } if (f.bitLength) { inp.min = 0; inp.max = (1 << f.bitLength) - 1; } }
-      inp.onchange = () => commit(inp.value);
-      ctl.appendChild(inp);
-    }
-  }
-  changedNow();
-  return wrap;
-}
-
-function hexEditor(sec, row) {
-  const det = document.createElement('details'); det.className = 'hex'; det.open = sec.raw;
-  det.innerHTML = `<summary>Raw bytes (${sec.entrySize})</summary><div class="hexgrid" id="hexgrid"></div>`;
-  const g = det.querySelector('.hexgrid');
-  const diff = new Set(state.bp.rowDiff(sec, row).map(b => b.off));
-  const n = Math.min(sec.entrySize, 4096);
-  for (let i = 0; i < n; i++) {
-    if (i % 16 === 0) { const o = document.createElement('div'); o.className = 'o'; o.textContent = hex(i, 4); g.appendChild(o); }
-    const inp = document.createElement('input'); inp.type = 'text'; inp.maxLength = 2; inp.id = `hx_${sec.id}_${row}_${i}`;
-    inp.value = state.bp.getByte(sec, row, i).toString(16).toUpperCase().padStart(2, '0'); inp.dataset.off = i;
-    if (diff.has(i)) inp.classList.add('changed');
-    inp.onchange = () => { const v = parseInt(inp.value, 16); if (Number.isNaN(v)) { inp.value = state.bp.getByte(sec, row, i).toString(16).toUpperCase().padStart(2, '0'); return; } state.bp.setByte(sec, row, i, v); afterEdit(); renderDetail(); };
-    g.appendChild(inp);
-  }
-  if (sec.entrySize > n) { const o = document.createElement('div'); o.className = 'o'; o.textContent = `… ${sec.entrySize - n} more bytes not shown`; g.appendChild(o); }
-  return det;
-}
-function syncHex(sec, row) {
-  const g = $('hexgrid'); if (!g) return;
-  const diff = new Set(state.bp.rowDiff(sec, row).map(b => b.off));
-  for (const inp of g.querySelectorAll('input')) { const i = Number(inp.dataset.off); inp.value = state.bp.getByte(sec, row, i).toString(16).toUpperCase().padStart(2, '0'); inp.classList.toggle('changed', diff.has(i)); }
-}
-
-/* ------------------------------------------------ changes */
-function afterEdit() {
-  const ch = state.bp.changes();
-  const rows = new Set(ch.map(c => c.sec + ':' + c.row));
-  $('changeCount').innerHTML = `<b>${rows.size}</b> changed row${rows.size === 1 ? '' : 's'} · ${ch.length} byte run${ch.length === 1 ? '' : 's'}`;
-  const ul = $('changeList'); ul.innerHTML = '';
-  for (const c of ch) {
-    const li = document.createElement('li');
-    li.textContent = `sec ${c.sec} ${sectionName(c.sec)} · row ${c.row} · +${hex(c.off)} · ${c.orig.map(b => b.toString(16).padStart(2, '0')).join(' ')} → ${c.bytes.map(b => b.toString(16).padStart(2, '0')).join(' ')}`;
-    li.onclick = () => { selectSection(c.sec); state.row = c.row; renderRows(); renderDetail(); };
-    ul.appendChild(li);
-  }
-  renderRows();
-  renderSections();
-}
-
-/* ------------------------------------------------ files */
-function emptyHtml() {
-  return `<div class="empty"><h3>Open a battlepack</h3>
-  <ol>
-    <li>Extract <code>battle_pack.bin</code> from the game archive with VBF Browser (FFXII: The Zodiac Age, Steam 1.0.4.0).</li>
-    <li>Open it here. Every documented section (Actions, Equipment, Party Members, Licenses, Gambits, Bazaar, Story Points …) gets a form with named fields and drop-down names; everything else is editable as raw bytes.</li>
-    <li>Save <code>battle_pack.bin</code> for the External File Loader, or <strong>Copy Lua patch</strong> to apply the same edits at runtime with the FF12 Lua Loader without touching the archive.</li>
-  </ol>
-  <p>Field maps come from the FF12 Lua Loader docs (bpack sections); names come from The Insurgent's Toolkit drop-down lists. Drag a file anywhere on this page to open it.</p></div>`;
-}
-async function openBuffer(buf, name, singleSection) {
-  try {
-    state.bp = new Battlepack(buf, SCHEMA, singleSection != null ? { singleSection } : {});
-  } catch (e) { toast('Cannot open: ' + e.message); return; }
-  state.fileName = name; $('fileName').textContent = `${name} · ${(buf.byteLength / 1024).toFixed(0)} KB · ${state.bp.sections.filter(s => !s.missing).length} sections`;
-  $('sectionPick').hidden = state.bp.mode !== 'section';
-  let sel = null; try { sel = Number(localStorage.getItem('bpw.sec')); } catch (e) { }
-  const first = state.bp.sections.find(s => !s.missing && (sel == null || s.id === sel)) || state.bp.sections.find(s => !s.missing);
-  state.sec = null; renderSections(); if (first) selectSection(first.id); afterEdit();
-}
-function readFile(file, cb) { const r = new FileReader(); r.onload = () => cb(r.result); r.readAsArrayBuffer(file); }
-$('btnOpen').onclick = () => { $('openBin').dataset.mode = 'file'; $('openBin').click(); };
-$('btnOpenSection').onclick = () => { $('openBin').dataset.mode = 'section'; $('openBin').click(); };
-$('openBin').onchange = e => { const f = e.target.files[0]; if (!f) return; const mode = e.target.dataset.mode; readFile(f, buf => { if (mode === 'section') { const id = Number($('sectionPick').value || guessSection(buf)); $('sectionPick').hidden = false; $('sectionPick').value = id; openBuffer(buf, f.name, id); } else openBuffer(buf, f.name); }); e.target.value = ''; };
-function guessSection(buf) { const dv = new DataView(buf); const size = dv.getUint16(8, true); const m = { 0x3C: 14, 0x80: 16, 0x30: 13 }; return m[size] || 14; }
-(function fillSectionPick() { const s = $('sectionPick'); for (let i = 0; i < 70; i++) { const o = document.createElement('option'); o.value = i; o.textContent = `${i} · ${sectionName(i)}`; s.appendChild(o); } s.onchange = () => { if (state.bp && state.bp.mode === 'section') openBuffer(state.bp.buf, state.fileName, Number(s.value)); }; })();
-$('btnLoadChanges').onclick = () => { if (!state.bp) { toast('Open a battlepack first'); return; } $('openJson').click(); };
-$('openJson').onchange = e => { const f = e.target.files[0]; if (!f) return; f.text().then(t => { try { const n = state.bp.applyChanges(JSON.parse(t)); afterEdit(); renderDetail(); toast(`Applied ${n} change runs`); } catch (err) { toast('Bad changes file'); } }); e.target.value = ''; };
-$('secFilter').oninput = renderSections; $('rowFilter').oninput = renderRows;
-$('btnToggleChanges').onclick = () => { const l = $('changeList'); l.classList.toggle('open'); $('btnToggleChanges').textContent = l.classList.contains('open') ? 'Hide list' : 'Show list'; };
-$('btnRevertRow').onclick = () => { if (!state.sec) return; state.bp.revertRow(state.sec, state.row); afterEdit(); renderDetail(); toast('Row reverted'); };
-document.addEventListener('dragover', e => { e.preventDefault(); document.body.classList.add('drop'); });
-document.addEventListener('dragleave', () => document.body.classList.remove('drop'));
-document.addEventListener('drop', e => { e.preventDefault(); document.body.classList.remove('drop'); const f = e.dataTransfer.files[0]; if (!f) return; if (f.name.endsWith('.json')) { f.text().then(t => { if (state.bp) { state.bp.applyChanges(JSON.parse(t)); afterEdit(); renderDetail(); } }); } else readFile(f, buf => openBuffer(buf, f.name)); });
-
-/* ------------------------------------------------ saving */
-let dlCap; async function downloadsCap() { if (dlCap !== undefined) return dlCap; try { dlCap = window.claude && window.claude.use ? await window.claude.use('downloads') : null; } catch (e) { dlCap = null; } return dlCap; }
-const ZIP_ONLY = /\.(bin|lua)$/i;
-async function saveFile(name, data) {
-  const cap = await downloadsCap();
-  if (cap) {
-    let fname = name, payload = data;
-    if (ZIP_ONLY.test(name)) { fname = name.replace(ZIP_ONLY, '.zip'); payload = zipStore([{ name, data: data instanceof Uint8Array ? data : new TextEncoder().encode(data) }]); }
-    try { await cap.save({ filename: fname, data: payload instanceof Uint8Array ? new Blob([payload]) : payload }); toast('Saved ' + fname); }
-    catch (e) { if (e && e.code === 'declined') toast('Save cancelled'); else toast('Save failed: ' + (e && e.code || e)); }
-    return;
-  }
-  const blob = data instanceof Blob ? data : new Blob([data]);
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
-  toast('Saved ' + name);
-}
-function need() { if (!state.bp) { toast('Open a battlepack first'); return false; } return true; }
-$('btnSaveBin').onclick = () => { if (!need()) return; saveFile(state.bp.mode === 'section' ? (state.fileName || 'section.bin') : 'battle_pack.bin', state.bp.u8.slice(0)); };
-$('btnSaveJson').onclick = () => { if (!need()) return; saveFile('changes.json', JSON.stringify(state.bp.changes(), null, 1)); };
-$('btnSaveLua').onclick = () => { if (!need()) return; saveFile('BattlepackPatch.lua', luaPatch(state.bp.changes(), { file: state.fileName })); };
-$('btnSaveZip').onclick = () => { if (!need()) return; const ch = state.bp.changes(); saveFile('battlepack_workbench.zip', zipStore([{ name: 'battle_pack.bin', data: state.bp.u8.slice(0) }, { name: 'BattlepackPatch.lua', data: luaPatch(ch, { file: state.fileName }) }, { name: 'changes.json', data: JSON.stringify(ch, null, 1) }])); };
-$('btnCopyLua').onclick = async () => { if (!need()) return; const txt = luaPatch(state.bp.changes(), { file: state.fileName }); try { await navigator.clipboard.writeText(txt); toast('Lua patch copied'); } catch (e) { const ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta); ta.select(); toast('Select and copy the text'); setTimeout(() => ta.remove(), 15000); } };
-
-/* ------------------------------------------------ sample */
-$('btnSample').onclick = () => {
-  const N = 70, secs = {};
-  const st2e = (count, size, fill) => { const b = new Uint8Array(0x20 + count * size); b.set([0x73, 0x74, 0x32, 0x65]); const dv = new DataView(b.buffer); dv.setUint32(4, count, true); dv.setUint16(8, size, true); dv.setUint32(0xC, 0x20, true); for (let i = 0; i < count * size; i++) b[0x20 + i] = fill(i, Math.floor(i / size), i % size); return b; };
-  secs[13] = st2e(557, 0x30, (i, r, o) => o === 2 ? r & 0xFF : o === 3 ? r >> 8 : (r * 7 + o) & 0x3F);
-  secs[14] = st2e(544, 0x3C, (i, r, o) => o === 0x34 ? r & 0xFF : o === 0x35 ? r >> 8 : o === 0x08 ? (r % 20) : o === 0x0A ? (r % 40) : o === 0x1E ? (r % 4) : 0);
-  secs[16] = st2e(40, 0x80, (i, r, o) => o === 0x2E ? 5 + r : o === 0x16 ? 100 : o === 0x1E ? 20 + r : 0);
-  secs[15] = st2e(32, 0x10, (i, r, o) => (r * 3 + o) & 0xFF);
-  secs[57] = st2e(128, 0x24, () => 0);
-  let total = 4 + N * 4; const offs = new Array(N).fill(0);
-  for (const id of Object.keys(secs).map(Number).sort((a, b) => a - b)) { offs[id] = total; total += secs[id].length; }
-  const file = new Uint8Array(total); const dv = new DataView(file.buffer); dv.setUint32(0, N, true);
-  for (let i = 0; i < N; i++) dv.setUint32(4 + i * 4, offs[i], true);
-  for (const id of Object.keys(secs)) file.set(secs[id], offs[id]);
-  openBuffer(file.buffer, 'sample battle_pack.bin (synthetic, not game data)');
-  toast('Sample loaded: values are synthetic');
-};
-
-renderDetail();
-</script>
+<script>/*__SCRIPTS__*/</script>

@@ -1,13 +1,28 @@
 #!/usr/bin/env python3
-"""Assembles editor/index.html from src/page.html, src/core.js and the data JSON files."""
+"""Assembles editor/index.html: src/page.html + all scripts + data (bpack schema, name lists, docs/formats specs)."""
 import json, pathlib
 here = pathlib.Path(__file__).parent
-page = (here / 'src' / 'page.html').read_text(encoding='utf-8')
-core = (here / 'src' / 'core.js').read_text(encoding='utf-8')
+repo = here.parent
 def js(obj):
     return json.dumps(obj, separators=(',', ':')).replace('</', '<\\/').replace('<!--', '<\\!--')
 schema = json.loads((here / 'data' / 'bpack_schema.json').read_text(encoding='utf-8'))
 lists = json.loads((here / 'data' / 'lists.json').read_text(encoding='utf-8'))
-out = page.replace('/*__CORE__*/', core).replace('/*__SCHEMA__*/{}', js(schema)).replace('/*__LISTS__*/{}', js(lists))
+specs = {}
+for p in sorted((repo / 'docs' / 'formats').glob('*.json')):
+    try:
+        spec = json.loads(p.read_text(encoding='utf-8'))
+        specs[spec.get('id', p.stem)] = spec
+    except Exception as e:
+        print('skip spec', p.name, e)
+src = here / 'src'
+order = ['core.js', 'registry.js', 'spec.js', 'vbf.js']
+editors = sorted((src / 'editors').glob('*.js'), key=lambda p: (p.name != 'battlepack.js', p.name))
+parts = [(src / n).read_text(encoding='utf-8') for n in order]
+parts.append('FX.bpackSchema = ' + js(schema) + ';\nFX.lists = ' + js(lists) + ';\nFX.specs = ' + js(specs) + ';')
+parts += [p.read_text(encoding='utf-8') for p in editors]
+parts.append((src / 'suite.js').read_text(encoding='utf-8'))
+parts.append('FX.boot();')
+page = (src / 'page.html').read_text(encoding='utf-8')
+out = page.replace('/*__SCRIPTS__*/', '\n'.join(parts).replace('</script', '<\\/script'))
 (here / 'index.html').write_text(out, encoding='utf-8')
-print('wrote', here / 'index.html', len(out), 'bytes')
+print('wrote', here / 'index.html', len(out), 'bytes;', len(specs), 'specs;', len(editors), 'editors:', ', '.join(p.stem for p in editors))

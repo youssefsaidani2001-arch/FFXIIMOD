@@ -36,16 +36,114 @@
     throw new Error('type ' + type);
   }
 
-  class Battlepack {
-    /** @param {ArrayBuffer} buf  @param {object} schema  */
-    constructor(buf, schema, opts) {
+  /** Any binary file whose editable content is a set of fixed-size record tables ("sections").
+   *  A section is { id, label?, list (absolute row-0 offset), entrySize, count, fields, raw? }. */
+  class BinDoc {
+    constructor(buf) {
       this.buf = buf;
       this.orig = new Uint8Array(buf.slice(0));
       this.u8 = new Uint8Array(buf);
       this.dv = new DataView(buf);
-      this.schema = schema || {};
       this.sections = [];
       this.touched = new Map(); // "sec:row" -> true
+    }
+    text(off, n) { let s = ''; for (let i = 0; i < n && off + i < this.u8.length; i++) s += String.fromCharCode(this.u8[off + i]); return s; }
+    /** whole-file byte diff as runs [{start, orig:[..], now:[..]}] (used by non-record editors) */
+    fileDiff() {
+      const out = []; let run = null;
+      for (let i = 0; i < this.u8.length; i++) {
+        if (this.u8[i] !== this.orig[i]) { if (run && run.start + run.now.length === i) { run.now.push(this.u8[i]); run.orig.push(this.orig[i]); } else { run = { start: i, orig: [this.orig[i]], now: [this.u8[i]] }; out.push(run); } }
+      }
+      return out;
+    }
+    markTouched(sec, row) { this.touched.set(sec.id + ':' + row, true); }
+
+    rowAddr(sec, row) { return sec.list + row * sec.entrySize; }
+
+    /** value of a schema field for a row (bitfield children resolved) */
+    get(sec, row, field) {
+      const addr = this.rowAddr(sec, row) + field.offset;
+      if (field.parent && field.bitStart != null) {
+        const parent = sec.fields.find(f => f.name === field.parent && f.bitfield);
+        const raw = readNum(this.dv, this.rowAddr(sec, row) + parent.offset, parent.type);
+        if (typeof raw === 'bigint') return Number((raw >> BigInt(field.bitStart)) & ((1n << BigInt(field.bitLength)) - 1n));
+        return (raw >>> field.bitStart) & ((1 << field.bitLength) - 1) >>> 0;
+      }
+      if (field.type === 'bytes') { let h = ''; for (let i = 0; i < (field.length || 1); i++) h += this.u8[addr + i].toString(16).padStart(2, '0'); return h; }
+      return readNum(this.dv, addr, field.type);
+    }
+
+    set(sec, row, field, value) {
+      const base = this.rowAddr(sec, row);
+      if (field.parent && field.bitStart != null) {
+        const parent = sec.fields.find(f => f.name === field.parent && f.bitfield);
+        const off = base + parent.offset;
+        if (parent.type === 'bf64') {
+          const mask = ((1n << BigInt(field.bitLength)) - 1n) << BigInt(field.bitStart);
+          let raw = readNum(this.dv, off, 'bf64');
+          raw = (raw & ~mask) | ((BigInt(value) << BigInt(field.bitStart)) & mask);
+          writeNum(this.dv, off, 'bf64', raw);
+        } else {
+          const mask = (((1 << field.bitLength) - 1) << field.bitStart) >>> 0;
+          let raw = readNum(this.dv, off, parent.type) >>> 0;
+          raw = ((raw & ~mask) | ((Number(value) << field.bitStart) & mask)) >>> 0;
+          writeNum(this.dv, off, parent.type, raw);
+        }
+      } else if (field.type === 'bytes') {
+        const h = String(value).replace(/[^0-9a-f]/gi, '');
+        for (let i = 0; i < (field.length || 1); i++) this.u8[base + field.offset + i] = parseInt(h.substr(i * 2, 2) || '00', 16);
+      } else {
+        writeNum(this.dv, base + field.offset, field.type, value);
+      }
+      this.touched.set(sec.id + ':' + row, true);
+    }
+
+    getByte(sec, row, off) { return this.u8[this.rowAddr(sec, row) + off]; }
+    setByte(sec, row, off, v) { this.u8[this.rowAddr(sec, row) + off] = v & 0xFF; this.touched.set(sec.id + ':' + row, true); }
+
+    /** byte-level diff of a row against the original file: [{off, orig, now}] */
+    rowDiff(sec, row) {
+      const a = this.rowAddr(sec, row), out = [];
+      for (let i = 0; i < sec.entrySize; i++) if (this.u8[a + i] !== this.orig[a + i]) out.push({ off: i, orig: this.orig[a + i], now: this.u8[a + i] });
+      return out;
+    }
+    revertRow(sec, row) { const a = this.rowAddr(sec, row); for (let i = 0; i < sec.entrySize; i++) this.u8[a + i] = this.orig[a + i]; this.touched.delete(sec.id + ':' + row); }
+
+    /** all changes as runs: [{sec,row,off,bytes:[...],orig:[...]}] */
+    changes() {
+      const out = [];
+      for (const key of this.touched.keys()) {
+        const cut = key.lastIndexOf(':'); const s = key.slice(0, cut), r = Number(key.slice(cut + 1));
+        const sec = this.sections.find(x => String(x.id) === s); if (!sec) continue;
+        const d = this.rowDiff(sec, r);
+        if (!d.length) { this.touched.delete(key); continue; }
+        let run = null;
+        const secId = sec.id;
+        for (const b of d) {
+          if (run && b.off === run.off + run.bytes.length) { run.bytes.push(b.now); run.orig.push(b.orig); }
+          else { run = { sec: secId, row: r, off: b.off, bytes: [b.now], orig: [b.orig] }; out.push(run); }
+        }
+      }
+      const k = v => typeof v === 'number' ? v : Number(String(v).split('.')[0]) + (Number(String(v).split('.')[1]) + 1) / 1000;
+      return out.sort((a, b) => k(a.sec) - k(b.sec) || a.row - b.row || a.off - b.off);
+    }
+
+    applyChanges(list) {
+      let n = 0;
+      for (const c of list) {
+        const sec = this.sections.find(x => String(x.id) === String(c.sec)); if (!sec || c.row >= sec.count) continue;
+        for (let i = 0; i < c.bytes.length; i++) this.setByte(sec, c.row, c.off + i, c.bytes[i]);
+        n++;
+      }
+      return n;
+    }
+  }
+
+  class Battlepack extends BinDoc {
+    /** @param {ArrayBuffer} buf  @param {object} schema  */
+    constructor(buf, schema, opts) {
+      super(buf);
+      this.schema = schema || {};
       this.mode = 'file';
       this.parse(opts || {});
     }
@@ -54,31 +152,64 @@
       const size = this.buf.byteLength;
       const magic0 = this.text(0, 4);
       if (magic0 === 'st2e' || opts.singleSection != null) {
-        // a single exported section blob
+        // a single exported section blob (Insurgent's Toolkit / Workshop section_XXX.bin)
         const id = opts.singleSection == null ? -1 : opts.singleSection;
         this.mode = 'section';
         this.sections = [this.parseSection(id, 0, size)];
         return;
       }
-      const count = this.dv.getUint32(0, LE);
-      if (count === 0 || count > 256 || 4 + count * 4 > size) throw new Error('Not a battlepack: bad section count ' + count);
-      const offs = [];
-      for (let i = 0; i < count; i++) offs.push(this.dv.getUint32(4 + i * 4, LE));
-      // offsets may be absolute in-memory pointers (dumped from RAM): rebase if the first one is out of range
-      let base = 0;
-      const firstValid = offs.find(o => o !== 0);
-      if (firstValid !== undefined && firstValid >= size) base = firstValid - (4 + count * 4);
-      const sorted = offs.map((o, i) => ({ o: o ? o - base : 0, i })).filter(x => x.o > 0).sort((a, b) => a.o - b.o);
-      const ends = new Map();
-      for (let k = 0; k < sorted.length; k++) ends.set(sorted[k].i, k + 1 < sorted.length ? sorted[k + 1].o : size);
-      for (let i = 0; i < count; i++) {
-        const start = offs[i] ? offs[i] - base : 0;
-        if (!start || start >= size) { this.sections.push({ id: i, missing: true, count: 0, entrySize: 0 }); continue; }
-        this.sections.push(this.parseSection(i, start, ends.get(i)));
-      }
+      this.sections = this.parsePack(0, size, '');
     }
 
-    text(off, n) { let s = ''; for (let i = 0; i < n && off + i < this.u8.length; i++) s += String.fromCharCode(this.u8[off + i]); return s; }
+    /** Battlepack container: u32 count, then count+1 u32 offsets (the last one is the end-of-data
+     *  offset), sections 16-byte aligned, a zero-length section is an empty slot. Offsets are
+     *  relative to the pack start; RAM dumps hold absolute pointers and are rebased. */
+    parsePack(packStart, packEnd, prefix) {
+      const size = packEnd - packStart;
+      const count = this.dv.getUint32(packStart, LE);
+      if (count === 0 || count > 256 || 4 + (count + 1) * 4 > size) throw new Error('Not a battlepack: bad section count ' + count);
+      const offs = [];
+      for (let i = 0; i <= count; i++) offs.push(this.dv.getUint32(packStart + 4 + i * 4, LE));
+      let base = 0;
+      const firstValid = offs.find(o => o !== 0);
+      if (firstValid !== undefined && firstValid >= size) base = firstValid - (4 + (count + 1) * 4);
+      const eod = offs[count] - base;
+      const hasEod = eod > 0 && eod <= size && eod >= offs[count - 1] - base;
+      const out = [];
+      for (let i = 0; i < count; i++) {
+        const id = prefix ? prefix + '.' + i : i;
+        const start = offs[i] ? offs[i] - base : 0;
+        let end;
+        if (i + 1 < count || hasEod) end = offs[i + 1] - base; else end = size;
+        if (start && end === start && start <= size) { out.push({ id, missing: true, empty: true, count: 0, entrySize: 0 }); continue; }
+        if (!start || start >= size || end < start) { out.push({ id, missing: true, count: 0, entrySize: 0 }); continue; }
+        const absStart = packStart + start, absEnd = packStart + end;
+        const nested = !prefix && this.looksLikePack(absStart, absEnd);
+        if (nested) {
+          out.push({ id, nested: true, start: absStart, end: absEnd, length: absEnd - absStart, count: 0, entrySize: 0, kind: 'pack', raw: true, fields: [] });
+          for (const sub of this.parsePack(absStart, absEnd, String(i))) { sub.parent = i; out.push(sub); }
+          continue;
+        }
+        out.push(this.parseSection(id, absStart, absEnd));
+      }
+      return out;
+    }
+
+    looksLikePack(start, end) {
+      const len = end - start;
+      if (len < 16 || this.text(start, 4) === 'st2e') return false;
+      const n = this.dv.getUint32(start, LE);
+      if (n < 2 || n > 64 || 4 + (n + 1) * 4 > len) return false;
+      let prev = 0;
+      for (let k = 0; k <= n; k++) {
+        const o = this.dv.getUint32(start + 4 + k * 4, LE);
+        if (o < prev || o > len) return false;
+        prev = o;
+      }
+      const first = this.dv.getUint32(start + 4, LE);
+      return first >= 4 + (n + 1) * 4 && first < 4 + (n + 1) * 4 + 16;
+    }
+
 
     parseSection(id, start, end) {
       const sec = { id, start, end, length: end - start, raw: RAW_ONLY.has(id), missing: false };
@@ -107,104 +238,43 @@
       if (!sec.fields.length) sec.raw = true;
       return sec;
     }
-
-    rowAddr(sec, row) { return sec.list + row * sec.entrySize; }
-
-    /** value of a schema field for a row (bitfield children resolved) */
-    get(sec, row, field) {
-      const addr = this.rowAddr(sec, row) + field.offset;
-      if (field.parent && field.bitStart != null) {
-        const parent = sec.fields.find(f => f.name === field.parent && f.bitfield);
-        const raw = readNum(this.dv, this.rowAddr(sec, row) + parent.offset, parent.type);
-        if (typeof raw === 'bigint') return Number((raw >> BigInt(field.bitStart)) & ((1n << BigInt(field.bitLength)) - 1n));
-        return (raw >>> field.bitStart) & ((1 << field.bitLength) - 1) >>> 0;
-      }
-      return readNum(this.dv, addr, field.type);
-    }
-
-    set(sec, row, field, value) {
-      const base = this.rowAddr(sec, row);
-      if (field.parent && field.bitStart != null) {
-        const parent = sec.fields.find(f => f.name === field.parent && f.bitfield);
-        const off = base + parent.offset;
-        if (parent.type === 'bf64') {
-          const mask = ((1n << BigInt(field.bitLength)) - 1n) << BigInt(field.bitStart);
-          let raw = readNum(this.dv, off, 'bf64');
-          raw = (raw & ~mask) | ((BigInt(value) << BigInt(field.bitStart)) & mask);
-          writeNum(this.dv, off, 'bf64', raw);
-        } else {
-          const mask = (((1 << field.bitLength) - 1) << field.bitStart) >>> 0;
-          let raw = readNum(this.dv, off, parent.type) >>> 0;
-          raw = ((raw & ~mask) | ((Number(value) << field.bitStart) & mask)) >>> 0;
-          writeNum(this.dv, off, parent.type, raw);
-        }
-      } else {
-        writeNum(this.dv, base + field.offset, field.type, value);
-      }
-      this.touched.set(sec.id + ':' + row, true);
-    }
-
-    getByte(sec, row, off) { return this.u8[this.rowAddr(sec, row) + off]; }
-    setByte(sec, row, off, v) { this.u8[this.rowAddr(sec, row) + off] = v & 0xFF; this.touched.set(sec.id + ':' + row, true); }
-
-    /** byte-level diff of a row against the original file: [{off, orig, now}] */
-    rowDiff(sec, row) {
-      const a = this.rowAddr(sec, row), out = [];
-      for (let i = 0; i < sec.entrySize; i++) if (this.u8[a + i] !== this.orig[a + i]) out.push({ off: i, orig: this.orig[a + i], now: this.u8[a + i] });
-      return out;
-    }
-    revertRow(sec, row) { const a = this.rowAddr(sec, row); for (let i = 0; i < sec.entrySize; i++) this.u8[a + i] = this.orig[a + i]; this.touched.delete(sec.id + ':' + row); }
-
-    /** all changes as runs: [{sec,row,off,bytes:[...],orig:[...]}] */
-    changes() {
-      const out = [];
-      for (const key of this.touched.keys()) {
-        const [s, r] = key.split(':').map(Number);
-        const sec = this.sections.find(x => x.id === s); if (!sec) continue;
-        const d = this.rowDiff(sec, r);
-        if (!d.length) { this.touched.delete(key); continue; }
-        let run = null;
-        for (const b of d) {
-          if (run && b.off === run.off + run.bytes.length) { run.bytes.push(b.now); run.orig.push(b.orig); }
-          else { run = { sec: s, row: r, off: b.off, bytes: [b.now], orig: [b.orig] }; out.push(run); }
-        }
-      }
-      return out.sort((a, b) => a.sec - b.sec || a.row - b.row || a.off - b.off);
-    }
-
-    applyChanges(list) {
-      let n = 0;
-      for (const c of list) {
-        const sec = this.sections.find(x => x.id === c.sec); if (!sec || c.row >= sec.count) continue;
-        for (let i = 0; i < c.bytes.length; i++) this.setByte(sec, c.row, c.off + i, c.bytes[i]);
-        n++;
-      }
-      return n;
-    }
   }
 
   /** Lua Loader patch: applies the byte runs to the live battlepack at startup. */
   function luaPatch(changes, meta) {
     const lines = [];
+    const fmtSec = c => { const p = String(c.sec).split('.'); return p.length > 1 ? `sec = ${p[0]}, sub = ${p[1]}` : `sec = ${p[0]}`; };
     lines.push('-- BattlepackPatch.lua  -  generated by Battlepack Workbench' + (meta && meta.file ? ' from ' + meta.file : ''));
     lines.push('-- Drop into x64/scripts/. Applies ' + changes.length + ' byte run(s) to the live battlepack (FF12 Lua Loader).');
     lines.push('local BATTLEPACK_PTR = 0x0208E680  -- qword -> battlepack file base (Steam 1.0.4.0)');
     lines.push('local patches = {');
-    for (const c of changes) lines.push(`  { sec = ${c.sec}, row = ${c.row}, off = 0x${c.off.toString(16).toUpperCase()}, bytes = { ${c.bytes.join(', ')} } },  -- was { ${c.orig.join(', ')} }`);
+    for (const c of changes) lines.push(`  { ${fmtSec(c)}, row = ${c.row}, off = 0x${c.off.toString(16).toUpperCase()}, bytes = { ${c.bytes.join(', ')} } },  -- was { ${c.orig.join(', ')} }`);
     lines.push('}');
     lines.push(`
+-- In memory the loader may have turned offsets into absolute pointers; accept both forms.
+local function resolve(base, v)
+  if not v or v == 0 then return nil end
+  if v < base then return base + v end
+  return v
+end
+
+local function sectionBase(pack, index)
+  return resolve(pack, memory.readU32(pack + 4 + index * 4))
+end
+
 local function apply()
   local file = memory.readU64(BATTLEPACK_PTR)
   if not file or file == 0 then return false end
   local n = 0
   for _, p in ipairs(patches) do
-    local base = memory.readU32(file + p.sec * 4 + 4)
-    if base and base ~= 0 then
+    local base = sectionBase(file, p.sec)
+    if base and p.sub then base = sectionBase(base, p.sub) end
+    if base then
       local list, size
-      if p.sec == 0 then
+      if p.sec == 0 and not p.sub then
         size = memory.readU16(base); list = base + 4
       else
-        size = memory.readU16(base + 8); list = memory.readU32(base + 0xC)
+        size = memory.readU16(base + 8); list = resolve(base, memory.readU32(base + 0xC))
       end
       if list and size and size > 0 then
         memory.writeArray(list + p.row * size + p.off, p.bytes)
@@ -262,5 +332,5 @@ event.registerEventAsync("onSaveLoad", function() event.executeAfterMs(500, appl
     return out;
   }
 
-  root.BPCore = { Battlepack, luaPatch, zipStore, crc32, TYPE_SIZE, RAW_ONLY, readNum, writeNum };
+  root.BPCore = { BinDoc, Battlepack, luaPatch, zipStore, crc32, TYPE_SIZE, RAW_ONLY, readNum, writeNum };
 })(typeof window !== 'undefined' ? window : globalThis);
