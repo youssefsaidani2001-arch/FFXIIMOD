@@ -7,7 +7,7 @@
   const FX = root.FX;
   const { zipStore } = root.BPCore;
   const $ = id => document.getElementById(id);
-  const state = { doc: null, editor: null, sec: null, row: 0, fileName: '' };
+  const state = { doc: null, editor: null, sec: null, row: 0, fileName: '', title: '', stack: [] };
   FX.state = state;
   const hex = (n, w) => '0x' + Number(n).toString(16).toUpperCase().padStart(w || 2, '0');
   FX.hex = hex;
@@ -181,6 +181,7 @@
   /* ------------------------------------------------ changes + exports */
   function afterEdit() {
     if (!doc()) return;
+    if (doc().changeSummary) { renderSummary(doc().changeSummary()); return; }
     const ch = doc().changes();
     const fd = doc().fileDiff();
     const rows = new Set(ch.map(c => c.sec + ':' + c.row));
@@ -199,11 +200,39 @@
     renderRows(); renderSections();
   }
   FX.afterEdit = afterEdit;
+  /** Container docs report their own edits: { count, bytes, items: [{ label, sec? }] }. */
+  function renderSummary(sm) {
+    const n = sm.count || 0;
+    $('changeCount').innerHTML = `<b></b> changed item${n === 1 ? '' : 's'}${sm.bytes != null ? ` · ${sm.bytes} byte${sm.bytes === 1 ? '' : 's'} differ` : ''}`;
+    $('changeCount').querySelector('b').textContent = n;
+    const ul = $('changeList'); ul.innerHTML = '';
+    for (const it of sm.items || []) {
+      const li = document.createElement('li'); li.textContent = it.label;
+      const sec = it.sec != null ? doc().sections.find(x => String(x.id) === String(it.sec)) : null;
+      if (sec) li.onclick = () => selectSection(sec);
+      ul.appendChild(li);
+    }
+    renderSections();
+  }
+  /** Bytes of the whole file as it would be saved now. Container docs rebuild through doc.build(). */
+  function docBytes(d) { d = d || doc(); return d.build ? d.build() : d.u8.slice(0); }
+  FX.docBytes = docBytes;
+  function isDirty(d) {
+    d = d || doc(); if (!d) return false;
+    if (d.changeSummary) return (d.changeSummary().count || 0) > 0;
+    try { return d.fileDiff().length > 0; } catch (e) { return false; }
+  }
+  FX.isDirty = isDirty;
 
   function renderExports() {
     const box = $('exports'); box.innerHTML = '';
     if (!doc()) return;
-    const list = doc().exports ? doc().exports() : [{ id: 'bin', label: 'Save file', filename: state.fileName || 'file.bin', build: () => doc().u8.slice(0), primary: true }];
+    const list = (doc().exports ? doc().exports() : [{ id: 'bin', label: 'Save file', filename: state.fileName || 'file.bin', build: () => docBytes(), primary: true }]).slice();
+    const parent = state.stack[state.stack.length - 1];
+    if (parent && parent.apply) {
+      for (const x of list) x.primary = false;
+      list.unshift({ id: 'apply', label: 'Apply to ' + (parent.childLabel || 'parent'), title: 'Write this file back into the file it came from, then return there', primary: true, run: applyToParent });
+    }
     for (const x of list) {
       const b = document.createElement('button'); b.textContent = x.label; if (x.primary) b.className = 'primary'; if (x.title) b.title = x.title;
       b.onclick = () => runExport(x);
@@ -211,6 +240,7 @@
     }
   }
   async function runExport(x) {
+    if (x.run) return x.run();
     if (x.copy) {
       const txt = x.copy();
       try { await navigator.clipboard.writeText(txt); toast('Copied'); } catch (e) { const ta = document.createElement('textarea'); ta.value = txt; ta.className = 'copybox'; document.body.appendChild(ta); ta.select(); toast('Select and copy the text'); setTimeout(() => ta.remove(), 20000); }
@@ -247,16 +277,28 @@
     <div class="tablewrap"><table class="formats"><thead><tr><th>Editor</th><th>Files</th></tr></thead><tbody>${rows}</tbody></table></div>
     <p>Edits are tracked byte by byte against the original; nothing is written until you save. <strong>Sample</strong> loads synthetic data for the chosen editor so you can try it.</p></div>`;
   }
+  function snapshot() { return { doc: state.doc, editor: state.editor, fileName: state.fileName, title: state.title, sec: state.sec, row: state.row }; }
+  function showTitle() {
+    $('fileName').textContent = state.title;
+    const top = state.stack[state.stack.length - 1];
+    const b = $('btnBack'); b.hidden = !top; delete b.dataset.confirm;
+    if (top) { b.textContent = 'Back to ' + (top.backLabel || top.fileName); b.title = 'Return to ' + top.fileName + (top.apply ? ' (unapplied edits here are discarded)' : ''); }
+    $('editorPick').value = state.editor ? state.editor.id : 'auto';
+    $('btnLoadChanges').hidden = !(state.doc && state.doc.canLoadChanges);
+  }
+  /** Open bytes in an editor. opts.child pushes the current doc on the stack (Back returns to it);
+   *  opts.apply(newBytes) lets the child write itself back (it may return a replacement parent doc). */
   function openWith(ed, buf, name, opts) {
+    opts = opts || {};
     let d;
-    try { d = ed.open(buf, name, opts || {}); } catch (e) { toast(`${ed.title}: cannot open (${e.message})`); console.error(e); return; }
-    if (opts && opts.vbfPath && state.editor && state.editor.id === 'vbf') FX.lastArchive = { doc: state.doc, editor: state.editor, fileName: state.fileName };
-    d.vbfPath = opts && opts.vbfPath;
+    try { d = ed.open(buf, name, opts); } catch (e) { toast(`${ed.title}: cannot open (${e.message})`); console.error(e); return null; }
+    if (opts.child && state.doc) state.stack.push(Object.assign(snapshot(), { apply: opts.apply || null, childLabel: opts.parentLabel || state.fileName, backLabel: opts.backLabel || null }));
+    else if (!opts.child) state.stack.length = 0;
+    d.vbfPath = opts.vbfPath || (opts.child && state.doc && state.doc.vbfPath) || null;
     state.doc = d; state.editor = ed; state.fileName = name;
-    $('fileName').textContent = `${ed.title} · ${opts && opts.vbfPath ? opts.vbfPath : name} · ${(buf.byteLength / 1024).toFixed(0)} KB`;
-    $('btnBack').hidden = !FX.lastArchive;
-    $('editorPick').value = ed.id;
-    $('btnLoadChanges').hidden = !d.canLoadChanges;
+    const where = opts.vbfPath ? opts.vbfPath : (opts.child && opts.parentLabel ? `${opts.parentLabel} › ${name}` : name);
+    state.title = `${ed.title} · ${where} · ${(buf.byteLength / 1024).toFixed(0)} KB`;
+    showTitle();
     $('rowFilter').value = ''; $('secFilter').value = '';
     let sel = null; try { sel = localStorage.getItem('fxs.sec.' + ed.id); } catch (e) { }
     const usable = d.sections.filter(s => !s.missing && !s.nested);
@@ -264,7 +306,40 @@
     state.sec = null; renderSections(); renderExports();
     if (first) selectSection(first); else { renderRows(); renderDetail(); }
     afterEdit();
+    return d;
   }
+  /** Open embedded bytes (a section, an image in a pack, a file in an archive) as a child document. */
+  FX.openChild = function (ed, bytes, name, opts) {
+    const u8 = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+    const buf = u8.buffer.slice(u8.byteOffset, u8.byteOffset + u8.byteLength);
+    return openWith(ed, buf, name, Object.assign({}, opts, { child: true }));
+  };
+  function restore(fr) {
+    state.doc = fr.doc; state.editor = fr.editor; state.fileName = fr.fileName; state.title = fr.title;
+    showTitle(); renderSections(); renderExports();
+    const sec = fr.sec && state.doc.sections.find(x => String(x.id) === String(fr.sec.id));
+    if (sec) { state.sec = sec; state.row = Math.min(fr.row || 0, Math.max(0, (sec.count || 1) - 1)); renderSections(); renderRows(); renderDetail(); }
+    else { const first = state.doc.sections.find(s => !s.missing && !s.nested); state.sec = null; if (first) selectSection(first); else { renderRows(); renderDetail(); } }
+    afterEdit();
+  }
+  function goBack(force) {
+    const top = state.stack[state.stack.length - 1]; if (!top) return;
+    const b = $('btnBack');
+    if (!force && top.apply && isDirty() && !b.dataset.confirm) { b.dataset.confirm = '1'; b.textContent = 'Discard edits and go back?'; toast('Edits here are not applied yet. Click again to discard them, or use Apply.'); return; }
+    state.stack.pop(); restore(top);
+  }
+  FX.goBack = goBack;
+  async function applyToParent() {
+    const top = state.stack[state.stack.length - 1]; if (!top || !top.apply) return;
+    let bytes;
+    try { bytes = await docBytes(); } catch (e) { toast('Cannot rebuild: ' + e.message); return; }
+    let res;
+    try { res = await top.apply(bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes)); } catch (e) { toast('Apply failed: ' + e.message); console.error(e); return; }
+    if (res && res.sections) top.doc = res;
+    state.stack.pop(); restore(top);
+    toast('Applied to ' + top.fileName + '. Save it to keep the change.');
+  }
+  FX.applyToParent = applyToParent;
   FX.openWith = openWith;
   async function openFileObject(f) {
     const forced = $('editorPick').value;
@@ -272,9 +347,10 @@
     if (big) {
       toast('Reading ' + f.name + ' …');
       let d; try { d = await big.openFile(f); } catch (e) { toast(`${big.title}: cannot open (${e.message})`); console.error(e); return; }
+      state.stack.length = 0;
       state.doc = d; state.editor = big; state.fileName = f.name;
-      $('fileName').textContent = `${big.title} · ${f.name} · ${(f.size / 1073741824).toFixed(2)} GB`;
-      $('editorPick').value = big.id; $('btnLoadChanges').hidden = true;
+      state.title = `${big.title} · ${f.name} · ${(f.size / 1073741824).toFixed(2)} GB`;
+      showTitle();
       state.sec = null; renderSections(); renderExports(); selectSection(d.sections[0]); afterEdit();
       return;
     }
@@ -302,7 +378,7 @@
       const s = ed.sample(); openWith(ed, s.buf, s.name); toast('Sample loaded: values are synthetic');
     };
     $('btnLoadChanges').onclick = () => $('openJson').click();
-    $('btnBack').onclick = () => { const a = FX.lastArchive; if (!a) return; state.doc = a.doc; state.editor = a.editor; state.fileName = a.fileName; $('fileName').textContent = `${a.editor.title} · ${a.fileName}`; $('editorPick').value = a.editor.id; $('btnBack').hidden = true; state.sec = null; renderSections(); renderExports(); selectSection(a.doc.sections[0]); afterEdit(); };
+    $('btnBack').onclick = () => goBack(false);
     $('openJson').onchange = e => { const f = e.target.files[0]; if (!f) return; f.text().then(t => { try { const n = doc().applyChanges(JSON.parse(t)); afterEdit(); renderDetail(); toast(`Applied ${n} change runs`); } catch (err) { toast('Bad changes file'); } }); e.target.value = ''; };
     $('secFilter').oninput = renderSections; $('rowFilter').oninput = renderRows;
     $('btnToggleChanges').onclick = () => { const l = $('changeList'); l.classList.toggle('open'); $('btnToggleChanges').textContent = l.classList.contains('open') ? 'Hide list' : 'Show list'; };

@@ -1,0 +1,240 @@
+{
+ "id": "treasure-chests",
+ "title": "EBP field-script data - treasure chests (setuptreasure records) and traps",
+ "files": [
+  "**/*.ebp",
+  "**/*.src.data"
+ ],
+ "container": {
+  "kind": "ebp",
+  "notes": "Records live in the data block of the compiled field script (EBP section 0) of each map, e.g. ald_a01.ebp. The ff12-script decompiler writes that script as <map>.c (code) plus <map>.src.data (data arrays); the chest table and the trap table are arrays in the data file, used by the script functions setuptreasure / trap setup. No magic or header: chest records are a contiguous run of 24-byte records ordered by chestIndex. Locate them with the per-record offsets of the Vanilla Chests sheet or by scanning for runs of records whose first byte counts 0,1,2... with three zero bytes after it. Little-endian."
+ },
+ "records": [
+  {
+   "name": "treasureChest",
+   "size": 24,
+   "count": "one per chest of the map (1-11 per map in the samples; 1966 records in the whole game per the sheet)",
+   "where": "Data block of the map's compiled field script (EBP section 0; `<map>.src.data` after decompiling with ff12-script). Records are contiguous with a 24-byte stride, ordered by chestIndex; record k = table start + 24*k. The Vanilla Chests sheet gives every record's hex offset (column F), e.g. ald_a01 0x40, 0x58, 0x70 ...; bds_a01 from 0x240.",
+   "fields": [
+    {
+     "name": "chestIndex",
+     "offset": 0,
+     "type": "u8",
+     "notes": "Per-map chest index (0..n-1); bit number of the map's opened-chest flag. Do not renumber."
+    },
+    {
+     "name": "unused01",
+     "offset": 1,
+     "type": "bytes",
+     "length": 3,
+     "notes": "Always 00 00 00 in the sampled rows; keep as read."
+    },
+    {
+     "name": "posX",
+     "offset": 4,
+     "type": "s16",
+     "notes": "Signed 16-bit position, first axis (sheet \"X\")."
+    },
+    {
+     "name": "posY",
+     "offset": 6,
+     "type": "s16",
+     "notes": "Signed 16-bit position, second axis (sheet \"Y\"; probably world Z)."
+    },
+    {
+     "name": "flags",
+     "offset": 8,
+     "type": "bf8",
+     "bits": [
+      {
+       "name": "unknownBits0to5",
+       "bitStart": 0,
+       "bitLength": 6,
+       "notes": "Unknown; multiples of 5 rising with the chest index in the samples. Keep."
+      },
+      {
+       "name": "randomizeGil",
+       "bitStart": 6,
+       "bitLength": 1,
+       "notes": "Gil amount is randomized."
+      },
+      {
+       "name": "unknownBit7",
+       "bitStart": 7,
+       "bitLength": 1,
+       "notes": "Unknown; 0 in the samples."
+      }
+     ],
+     "notes": "Bit 6 = randomize gil. Bits 0-5 and 7 unknown (keep)."
+    },
+    {
+     "name": "uniqueSpawnId",
+     "offset": 9,
+     "type": "u8",
+     "enum": "ChestUniqueSpawnId",
+     "notes": "255 = normal (respawning) chest; other values = id of a once-only chest shared by all records with the same id."
+    },
+    {
+     "name": "spawnChance",
+     "offset": 10,
+     "type": "u8",
+     "notes": "Spawn chance in percent."
+    },
+    {
+     "name": "gilChance",
+     "offset": 11,
+     "type": "u8",
+     "notes": "Percent chance that the chest holds gil instead of an item."
+    },
+    {
+     "name": "itemLow",
+     "offset": 12,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id; 50% pick without Diamond Armlet (\"Low Item\")."
+    },
+    {
+     "name": "itemHigh",
+     "offset": 14,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id; 50% pick without Diamond Armlet (\"High Item\")."
+    },
+    {
+     "name": "itemDiamondCommon",
+     "offset": 16,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id; 95% pick with Diamond Armlet."
+    },
+    {
+     "name": "itemDiamondRare",
+     "offset": 18,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id; 5% pick with Diamond Armlet."
+    },
+    {
+     "name": "gil",
+     "offset": 20,
+     "type": "u16",
+     "notes": "Gil amount (plain number)."
+    },
+    {
+     "name": "gilDiamond",
+     "offset": 22,
+     "type": "u16",
+     "notes": "Gil amount with Diamond Armlet (equal to gil in the samples)."
+    }
+   ]
+  },
+  {
+   "name": "trapTableHeader",
+   "size": 4,
+   "count": 1,
+   "where": "Trap table in the same script data block, e.g. srb_b04.src.data offset 0x390 (count 5).",
+   "fields": [
+    {
+     "name": "trapCount",
+     "offset": 0,
+     "type": "u32",
+     "notes": "Number of traps; trapCount u32 offsets follow, relative to this field."
+    }
+   ]
+  },
+  {
+   "name": "trapOffset",
+   "size": 4,
+   "count": "trapTableHeader.trapCount",
+   "where": "Directly after trapCount: entry i at trapCount address + 4 + 4*i.",
+   "fields": [
+    {
+     "name": "offset",
+     "offset": 0,
+     "type": "u32",
+     "notes": "Offset of trap i relative to the trapCount field."
+    }
+   ]
+  },
+  {
+   "name": "trap",
+   "size": 12,
+   "count": "trapTableHeader.trapCount",
+   "where": "At trapCount address + trapOffset[i].offset (first trap of srb_b04 at 0x3AC).",
+   "fields": [
+    {
+     "name": "posX",
+     "offset": 0,
+     "type": "s16",
+     "notes": "Trap position X (s16 assumed; described as ushort)."
+    },
+    {
+     "name": "posZ",
+     "offset": 2,
+     "type": "s16",
+     "notes": "Trap position Z."
+    },
+    {
+     "name": "uniqueFlagIndex",
+     "offset": 4,
+     "type": "u8",
+     "notes": "0xFF = always respawns; other values index the non-respawn flag array (once-only)."
+    },
+    {
+     "name": "unknown05",
+     "offset": 5,
+     "type": "u8",
+     "notes": "0x64 or 0 observed; meaning unknown (spawn chance?)."
+    },
+    {
+     "name": "action1",
+     "offset": 6,
+     "type": "u16",
+     "enum": "BpActionList",
+     "notes": "Trap action A (one of the two is picked at random)."
+    },
+    {
+     "name": "action2",
+     "offset": 8,
+     "type": "u16",
+     "enum": "BpActionList",
+     "notes": "Trap action B."
+    },
+    {
+     "name": "unknown0A",
+     "offset": 10,
+     "type": "u16",
+     "notes": "Always 0x0A observed; unknown."
+    }
+   ]
+  }
+ ],
+ "enums": {
+  "ChestUniqueSpawnId": {
+   "255": "None (ordinary, respawning chest)"
+  }
+ },
+ "roundTrip": [
+  "Edit fields in place only: the record size (24 bytes, 12 for traps) and the number of records are fixed by the compiled script; never insert, delete or reorder records in a .src.data block.",
+  "Keep chestIndex unchanged: it is the per-map bit number of the opened-chest flag, so renumbering would swap the saved opened state between chests and can collide with other chests of the map.",
+  "Copy unused01 (+0x01..+0x03) and flags bits 0-5 and 7 back exactly as read.",
+  "uniqueSpawnId: keep 255 for respawning chests. A value other than 255 links the chest to every other chest with the same id (only one of them can ever be looted); reuse an id only on purpose.",
+  "Item fields (+0x0C..+0x12) are content ids (category << 12 | index, see enums-content-ids); gil fields (+0x14, +0x16) are plain unsigned amounts, not content ids.",
+  "Positions are signed 16-bit values; write them back with the same sign convention.",
+  "spawnChance and gilChance are percentages; keep them in 0-100.",
+  "Trap offsets are relative to the trapCount field; editing trap fields does not move anything. Do not change trapCount.",
+  "After editing a decompiled .src.data, rebuild the script with the same tool; when only field values change the script size does not change, so the EBP section table stays valid (see container-ebp)."
+ ],
+ "gaps": [
+  "Only the first 26 of the sheet's 1966 chest rows were readable through the Drive connector (summary view; the export endpoint is not available). The unused01 = 0, flags bit 7 = 0 and gilDiamond = gil observations rest on those rows.",
+  "Meaning of flags bits 0-5 (multiples of 5 that rise with the chest index, with exceptions) and bit 7.",
+  "Base of the sheet's Offset column (0x00 for the first chest of alc_a01 and ald_a02, 0x40 for ald_a01, 0x240 for bds_a01); presumably the offset in <map>.src.data, not confirmed.",
+  "How setuptreasure is given the table (argument encoding in the script bytecode) and whether a count precedes it; an editor currently needs the sheet offsets or a pattern scan to find the table.",
+  "Coordinate units and axes (whether sheet \"Y\" is the world Z axis).",
+  "Whether uniqueSpawnId N equals \"Chest Number\" N of the Non-Repeatable Chests sheet or N-1, the highest number used (161 seen; the sheet runs to row 280) and the size of the unique-chest flag array.",
+  "Exact randomize-gil formula and whether gilDiamond is ever different from gil in vanilla.",
+  "Whether 65535 (none) is accepted in the item fields.",
+  "VBF folder of the field EBP files (not recorded in our sources; search the archive for the <map>.ebp names in the sheet).",
+  "Traps: why the first trap of srb_b04 starts at 0x3AC instead of 0x3A8 (an extra word after the offset table?), the meaning of +0x05 and +0x0A, the signedness of the positions, and whether uniqueFlagIndex uses the same flag array as chests (said to be likely, not tested, msg 171)."
+ ]
+}

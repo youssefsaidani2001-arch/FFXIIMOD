@@ -1,0 +1,137 @@
+{
+ "id": "battlepack-s29-magicks",
+ "title": "Battlepack section 29 — Magicks",
+ "files": [
+  "ps2data/image/ff12/test_battle/*/binaryfile/battle_pack.bin",
+  "battle_pack.bin.dir/section_029.bin"
+ ],
+ "container": {
+  "kind": "battlepack",
+  "notes": "Section 29 of battle_pack.bin (71-section battlepack: u32 count, count+1 u32 file offsets incl. an unpadded end offset, sections 16-byte aligned with zero fill; see container-battlepack). The section is an st2e table: 32-byte header (magic, u32 entryCount @4, u16 entrySize @8 = 8, u32 entryListOffset @12 = 32, u32 textSectionOffset @20 = 0) followed by entryCount packed 8-byte entries and zero padding to a multiple of 16 bytes (see container-st2e)."
+ },
+ "records": [
+  {
+   "name": "header",
+   "where": "Offset 0 of battlepack section 29.",
+   "size": 32,
+   "count": "1",
+   "fields": [
+    {
+     "name": "magic",
+     "offset": 0,
+     "type": "bytes",
+     "length": 4,
+     "notes": "ASCII 'st2e' (73 74 32 65); reject the section if different."
+    },
+    {
+     "name": "entryCount",
+     "offset": 4,
+     "type": "u32",
+     "notes": "Number of rows (81 in the vanilla game, TK L824)."
+    },
+    {
+     "name": "entrySize",
+     "offset": 8,
+     "type": "u16",
+     "notes": "Bytes per entry; 8 (0x8) for this section."
+    },
+    {
+     "name": "unknown0A",
+     "offset": 10,
+     "type": "bytes",
+     "length": 2,
+     "notes": "Not interpreted; keep."
+    },
+    {
+     "name": "entryListOffset",
+     "offset": 12,
+     "type": "u32",
+     "notes": "Offset of entry 0 from the section start: 32 when entryCount > 0, else 0."
+    },
+    {
+     "name": "offset10",
+     "offset": 16,
+     "type": "u32",
+     "notes": "Unknown offset slot (0 in Workshop output)."
+    },
+    {
+     "name": "textSectionOffset",
+     "offset": 20,
+     "type": "u32",
+     "notes": "Inline text offset; 0 on disk for this section (filled at run time). No strings are stored here."
+    },
+    {
+     "name": "offset18",
+     "offset": 24,
+     "type": "u32",
+     "notes": "Unknown offset slot (0 in Workshop output for this section)."
+    },
+    {
+     "name": "offset1C",
+     "offset": 28,
+     "type": "u32",
+     "notes": "Unknown offset slot (0 in Workshop output)."
+    }
+   ]
+  },
+  {
+   "name": "magick",
+   "where": "st2e entries of section 29: header.entryListOffset + i*8; row i = content id 0x3000 | i (row labels: list BpMagickList)",
+   "size": 8,
+   "count": "header.entryCount (vanilla 81)",
+   "fields": [
+    {
+     "name": "gilCost",
+     "offset": 0,
+     "type": "u16",
+     "notes": "Shop price in gil (unsigned)."
+    },
+    {
+     "name": "actionDescriptionLink",
+     "offset": 2,
+     "type": "u8",
+     "notes": "One-byte description link (Workshop: \"Action Description Link\"); exact target not documented."
+    },
+    {
+     "name": "icon",
+     "offset": 3,
+     "type": "u8",
+     "enum": "BpeIconList",
+     "notes": "Menu icon (for magicks this is what makes the icon look white/black/time/green/arcane)."
+    },
+    {
+     "name": "actionNameLink",
+     "offset": 4,
+     "type": "u16",
+     "enum": "BpActionList",
+     "notes": "Action (section 14 row) this entry stands for; also supplies the name."
+    },
+    {
+     "name": "sort",
+     "offset": 6,
+     "type": "u8",
+     "notes": "Sort position in the menu list."
+    },
+    {
+     "name": "unknown07",
+     "offset": 7,
+     "type": "bytes",
+     "length": 1,
+     "notes": "Not read; the Workshop writes 0."
+    }
+   ]
+  }
+ ],
+ "enums": {},
+ "roundTrip": [
+  "Edit fields in place; the record size is fixed and nothing in this section points at entries, so value edits never move data.",
+  "Copy every byte that no field interprets (unknown*/padding, unnamed bits) from the original; the Workshop writer zero-fills them (it seeks over them), so do not use its output as the byte-identical reference.",
+  "Keep the st2e header bytes verbatim except entryCount (and entryListOffset when the count goes to/from 0).",
+  "Keep the trailing zero padding that rounds the section to a multiple of 16 bytes.",
+  "If the section length changes (added/removed entries), rewrite the battlepack offset table: every later section offset and the end offset shift by the padded size delta."
+ ],
+ "gaps": [
+  "What actionDescriptionLink indexes (perhaps the inventory help block 10000+).",
+  "Byte 7 is never read."
+ ]
+}

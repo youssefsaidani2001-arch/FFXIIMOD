@@ -1,0 +1,1509 @@
+{
+ "id": "battlepack-s16-party-members",
+ "title": "Battlepack section 16 — Party Members",
+ "files": [
+  "ps2data/image/ff12/test_battle/*/binaryfile/battle_pack.bin",
+  "battle_pack.bin.dir/section_016.bin"
+ ],
+ "container": {
+  "kind": "battlepack",
+  "notes": "Section 16 of battle_pack.bin (71-section battlepack: u32 count, count+1 u32 offsets incl. an unpadded end offset, sections 16-byte aligned with zero fill). The section itself is an st2e table: 32-byte header (magic, u32 entryCount @4, u16 entrySize @8, u32 entryListOffset @12 = 32, u32 textSectionOffset @20 = 0) followed by packed entries and zero padding to 16 bytes."
+ },
+ "records": [
+  {
+   "name": "header",
+   "where": "Offset 0 of battlepack section 16.",
+   "size": 32,
+   "count": "1",
+   "fields": [
+    {
+     "name": "magic",
+     "offset": 0,
+     "type": "bytes",
+     "length": 4,
+     "notes": "ASCII 'st2e' (73 74 32 65); reject the section if different."
+    },
+    {
+     "name": "entryCount",
+     "offset": 4,
+     "type": "u32",
+     "notes": "Number of party-member templates (40 in the vanilla game: playable characters, guests and the 13 espers)."
+    },
+    {
+     "name": "entrySize",
+     "offset": 8,
+     "type": "u16",
+     "notes": "Bytes per entry; 128 (0x80) for this section."
+    },
+    {
+     "name": "unknown0A",
+     "offset": 10,
+     "type": "bytes",
+     "length": 2,
+     "notes": "Not interpreted; keep."
+    },
+    {
+     "name": "entryListOffset",
+     "offset": 12,
+     "type": "u32",
+     "notes": "Offset of entry 0 from the section start: 32 when entryCount > 0, else 0."
+    },
+    {
+     "name": "offset10",
+     "offset": 16,
+     "type": "u32",
+     "notes": "Unknown offset slot (0 in Workshop output)."
+    },
+    {
+     "name": "textSectionOffset",
+     "offset": 20,
+     "type": "u32",
+     "notes": "Inline text offset; 0 on disk for this section (filled at run time). No strings are stored here."
+    },
+    {
+     "name": "offset18",
+     "offset": 24,
+     "type": "u32",
+     "notes": "Unknown offset slot (0 in Workshop output for this section)."
+    },
+    {
+     "name": "offset1C",
+     "offset": 28,
+     "type": "u32",
+     "notes": "Unknown offset slot (0 in Workshop output)."
+    }
+   ]
+  },
+  {
+   "name": "partyMember",
+   "where": "st2e entries of section 16: header.entryListOffset + i*128",
+   "size": 128,
+   "count": "header.entryCount (vanilla 40)",
+   "fields": [
+    {
+     "name": "restrictedEquipmentCategories",
+     "offset": 0,
+     "type": "bf32",
+     "bits": [
+      {
+       "name": "unarmed",
+       "bitStart": 0,
+       "bitLength": 1
+      },
+      {
+       "name": "sword",
+       "bitStart": 1,
+       "bitLength": 1
+      },
+      {
+       "name": "greatsword",
+       "bitStart": 2,
+       "bitLength": 1
+      },
+      {
+       "name": "katana",
+       "bitStart": 3,
+       "bitLength": 1
+      },
+      {
+       "name": "ninjaSword",
+       "bitStart": 4,
+       "bitLength": 1
+      },
+      {
+       "name": "spear",
+       "bitStart": 5,
+       "bitLength": 1
+      },
+      {
+       "name": "pole",
+       "bitStart": 6,
+       "bitLength": 1
+      },
+      {
+       "name": "bow",
+       "bitStart": 7,
+       "bitLength": 1
+      },
+      {
+       "name": "crossbow",
+       "bitStart": 8,
+       "bitLength": 1
+      },
+      {
+       "name": "gun",
+       "bitStart": 9,
+       "bitLength": 1
+      },
+      {
+       "name": "axe",
+       "bitStart": 10,
+       "bitLength": 1
+      },
+      {
+       "name": "hammer",
+       "bitStart": 11,
+       "bitLength": 1
+      },
+      {
+       "name": "dagger",
+       "bitStart": 12,
+       "bitLength": 1
+      },
+      {
+       "name": "rod",
+       "bitStart": 13,
+       "bitLength": 1
+      },
+      {
+       "name": "staff",
+       "bitStart": 14,
+       "bitLength": 1
+      },
+      {
+       "name": "mace",
+       "bitStart": 15,
+       "bitLength": 1
+      },
+      {
+       "name": "measure",
+       "bitStart": 16,
+       "bitLength": 1
+      },
+      {
+       "name": "handBomb",
+       "bitStart": 17,
+       "bitLength": 1
+      },
+      {
+       "name": "shield",
+       "bitStart": 18,
+       "bitLength": 1
+      },
+      {
+       "name": "helm",
+       "bitStart": 19,
+       "bitLength": 1
+      },
+      {
+       "name": "armor",
+       "bitStart": 20,
+       "bitLength": 1
+      },
+      {
+       "name": "accessory",
+       "bitStart": 21,
+       "bitLength": 1
+      },
+      {
+       "name": "crown",
+       "bitStart": 22,
+       "bitLength": 1
+      },
+      {
+       "name": "arrow",
+       "bitStart": 23,
+       "bitLength": 1
+      },
+      {
+       "name": "bolt",
+       "bitStart": 24,
+       "bitLength": 1
+      },
+      {
+       "name": "shot",
+       "bitStart": 25,
+       "bitLength": 1
+      },
+      {
+       "name": "bomb",
+       "bitStart": 26,
+       "bitLength": 1
+      }
+     ],
+     "enum": "EquipmentCategoryFlags",
+     "notes": "Equipment categories this member may NOT use (a set bit forbids the category, TK L914). Bits 27-31 unused."
+    },
+    {
+     "name": "quickening1",
+     "offset": 4,
+     "type": "u8",
+     "enum": "BpMistList",
+     "notes": "Quickening (Mist) slot 1."
+    },
+    {
+     "name": "quickening2",
+     "offset": 5,
+     "type": "u8",
+     "enum": "BpMistList",
+     "notes": "Quickening slot 2."
+    },
+    {
+     "name": "quickening3",
+     "offset": 6,
+     "type": "u8",
+     "enum": "BpMistList",
+     "notes": "Quickening slot 3."
+    },
+    {
+     "name": "cameraPositionLink",
+     "offset": 7,
+     "type": "u8",
+     "notes": "Behind-camera preset id (255 = none, 0-15)."
+    },
+    {
+     "name": "unknown08",
+     "offset": 8,
+     "type": "bytes",
+     "length": 2,
+     "notes": "Not interpreted."
+    },
+    {
+     "name": "weapon",
+     "offset": 10,
+     "type": "u16",
+     "enum": "BpEquipmentList",
+     "notes": "Default weapon (re-equipped by the Toolkit's Reset Equipment, TK L542)."
+    },
+    {
+     "name": "offhand",
+     "offset": 12,
+     "type": "u16",
+     "enum": "BpEquipmentList",
+     "notes": "Default off-hand (shield/ammo)."
+    },
+    {
+     "name": "helm",
+     "offset": 14,
+     "type": "u16",
+     "enum": "BpEquipmentList",
+     "notes": "Default helm."
+    },
+    {
+     "name": "armor",
+     "offset": 16,
+     "type": "u16",
+     "enum": "BpEquipmentList",
+     "notes": "Default armor."
+    },
+    {
+     "name": "accessory",
+     "offset": 18,
+     "type": "u16",
+     "enum": "BpEquipmentList",
+     "notes": "Default accessory."
+    },
+    {
+     "name": "defaultGambitSet",
+     "offset": 20,
+     "type": "u16",
+     "notes": "Section 8 gambit-set row PLUS 0x5000 (stored in content-id form; subtract 20480 to get the row)."
+    },
+    {
+     "name": "maxHp",
+     "offset": 22,
+     "type": "u16",
+     "notes": "Base max HP."
+    },
+    {
+     "name": "maxHpExtendedModifier",
+     "offset": 24,
+     "type": "u8",
+     "notes": "Max HP growth modifier (secondary)."
+    },
+    {
+     "name": "maxHpBaseModifier",
+     "offset": 25,
+     "type": "u8",
+     "notes": "Max HP growth modifier (primary)."
+    },
+    {
+     "name": "maxMp",
+     "offset": 26,
+     "type": "u16",
+     "notes": "Base max MP."
+    },
+    {
+     "name": "unknown1C",
+     "offset": 28,
+     "type": "u8",
+     "notes": "Not interpreted."
+    },
+    {
+     "name": "maxMpModifier",
+     "offset": 29,
+     "type": "u8",
+     "notes": "Max MP growth modifier."
+    },
+    {
+     "name": "strength",
+     "offset": 30,
+     "type": "u8",
+     "notes": "Base Strength."
+    },
+    {
+     "name": "strengthModifier",
+     "offset": 31,
+     "type": "u8",
+     "notes": "Strength growth modifier."
+    },
+    {
+     "name": "unknown20",
+     "offset": 32,
+     "type": "u8",
+     "notes": "Not interpreted."
+    },
+    {
+     "name": "magickPower",
+     "offset": 33,
+     "type": "u8",
+     "notes": "Base Magick Power."
+    },
+    {
+     "name": "magickPowerModifier",
+     "offset": 34,
+     "type": "u8",
+     "notes": "Magick Power growth modifier."
+    },
+    {
+     "name": "unknown23",
+     "offset": 35,
+     "type": "u8",
+     "notes": "Not interpreted."
+    },
+    {
+     "name": "vitality",
+     "offset": 36,
+     "type": "u8",
+     "notes": "Base Vitality."
+    },
+    {
+     "name": "vitalityModifier",
+     "offset": 37,
+     "type": "u8",
+     "notes": "Vitality growth modifier."
+    },
+    {
+     "name": "unknown26",
+     "offset": 38,
+     "type": "u8",
+     "notes": "Not interpreted."
+    },
+    {
+     "name": "speed",
+     "offset": 39,
+     "type": "u8",
+     "notes": "Base Speed."
+    },
+    {
+     "name": "speedModifier",
+     "offset": 40,
+     "type": "u8",
+     "notes": "Speed growth modifier."
+    },
+    {
+     "name": "unknown29",
+     "offset": 41,
+     "type": "u8",
+     "notes": "Not interpreted."
+    },
+    {
+     "name": "evade",
+     "offset": 42,
+     "type": "u8",
+     "notes": "Base Evade."
+    },
+    {
+     "name": "detectionRange",
+     "offset": 43,
+     "type": "u8",
+     "notes": "Detection range."
+    },
+    {
+     "name": "flags",
+     "offset": 44,
+     "type": "bf8",
+     "bits": [
+      {
+       "name": "partyJoinLevelSync",
+       "bitStart": 3,
+       "bitLength": 2,
+       "enum": "BpePartyJoinLevelSyncTypeList"
+      },
+      {
+       "name": "gambitsEnabled",
+       "bitStart": 6,
+       "bitLength": 1
+      }
+     ],
+     "notes": "Only bits 3-4 and 6 are known; the Workshop rebuilds the byte from them (others become 0)."
+    },
+    {
+     "name": "unknown2D",
+     "offset": 45,
+     "type": "u8",
+     "notes": "Not interpreted."
+    },
+    {
+     "name": "level",
+     "offset": 46,
+     "type": "u8",
+     "notes": "Starting level."
+    },
+    {
+     "name": "unknown2F",
+     "offset": 47,
+     "type": "u8",
+     "notes": "Not interpreted."
+    },
+    {
+     "name": "name",
+     "offset": 48,
+     "type": "u16",
+     "enum": "DescNameList",
+     "notes": "Name text id (character-name block, 16384+)."
+    },
+    {
+     "name": "summonTime",
+     "offset": 50,
+     "type": "u8",
+     "notes": "Summon duration for espers; 0 for normal characters (non-zero marks the vanilla esper rows, docs/DESIGN.md)."
+    },
+    {
+     "name": "unknown33",
+     "offset": 51,
+     "type": "u8",
+     "notes": "Not interpreted."
+    },
+    {
+     "name": "inventory1Quantity",
+     "offset": 52,
+     "type": "u8",
+     "notes": "Quantity for inventory slot 1; pairs with inventory1Content at 0x58."
+    },
+    {
+     "name": "inventory2Quantity",
+     "offset": 53,
+     "type": "u8",
+     "notes": "Quantity for inventory slot 2; pairs with inventory2Content at 0x5A."
+    },
+    {
+     "name": "inventory3Quantity",
+     "offset": 54,
+     "type": "u8",
+     "notes": "Quantity for inventory slot 3; pairs with inventory3Content at 0x5C."
+    },
+    {
+     "name": "inventory4Quantity",
+     "offset": 55,
+     "type": "u8",
+     "notes": "Quantity for inventory slot 4; pairs with inventory4Content at 0x5E."
+    },
+    {
+     "name": "inventory5Quantity",
+     "offset": 56,
+     "type": "u8",
+     "notes": "Quantity for inventory slot 5; pairs with inventory5Content at 0x60."
+    },
+    {
+     "name": "inventory6Quantity",
+     "offset": 57,
+     "type": "u8",
+     "notes": "Quantity for inventory slot 6; pairs with inventory6Content at 0x62."
+    },
+    {
+     "name": "inventory7Quantity",
+     "offset": 58,
+     "type": "u8",
+     "notes": "Quantity for inventory slot 7; pairs with inventory7Content at 0x64."
+    },
+    {
+     "name": "inventory8Quantity",
+     "offset": 59,
+     "type": "u8",
+     "notes": "Quantity for inventory slot 8; pairs with inventory8Content at 0x66."
+    },
+    {
+     "name": "inventory9Quantity",
+     "offset": 60,
+     "type": "u8",
+     "notes": "Quantity for inventory slot 9; pairs with inventory9Content at 0x68."
+    },
+    {
+     "name": "inventory10Quantity",
+     "offset": 61,
+     "type": "u8",
+     "notes": "Quantity for inventory slot 10; pairs with inventory10Content at 0x6A."
+    },
+    {
+     "name": "gil",
+     "offset": 62,
+     "type": "u16",
+     "notes": "Starting gil."
+    },
+    {
+     "name": "unknown40",
+     "offset": 64,
+     "type": "bytes",
+     "length": 4,
+     "notes": "Not interpreted."
+    },
+    {
+     "name": "lp",
+     "offset": 68,
+     "type": "u16",
+     "notes": "Starting LP."
+    },
+    {
+     "name": "mistBars",
+     "offset": 70,
+     "type": "u8",
+     "notes": "Number of Mist (MP) bars."
+    },
+    {
+     "name": "initialMpPercentage",
+     "offset": 71,
+     "type": "u8",
+     "notes": "MP percentage on entry."
+    },
+    {
+     "name": "statusEffects",
+     "offset": 72,
+     "type": "bf32",
+     "bits": [
+      {
+       "name": "ko",
+       "bitStart": 0,
+       "bitLength": 1
+      },
+      {
+       "name": "stone",
+       "bitStart": 1,
+       "bitLength": 1
+      },
+      {
+       "name": "petrify",
+       "bitStart": 2,
+       "bitLength": 1
+      },
+      {
+       "name": "stop",
+       "bitStart": 3,
+       "bitLength": 1
+      },
+      {
+       "name": "sleep",
+       "bitStart": 4,
+       "bitLength": 1
+      },
+      {
+       "name": "confuse",
+       "bitStart": 5,
+       "bitLength": 1
+      },
+      {
+       "name": "doom",
+       "bitStart": 6,
+       "bitLength": 1
+      },
+      {
+       "name": "blind",
+       "bitStart": 7,
+       "bitLength": 1
+      },
+      {
+       "name": "poison",
+       "bitStart": 8,
+       "bitLength": 1
+      },
+      {
+       "name": "silence",
+       "bitStart": 9,
+       "bitLength": 1
+      },
+      {
+       "name": "sap",
+       "bitStart": 10,
+       "bitLength": 1
+      },
+      {
+       "name": "oil",
+       "bitStart": 11,
+       "bitLength": 1
+      },
+      {
+       "name": "reverse",
+       "bitStart": 12,
+       "bitLength": 1
+      },
+      {
+       "name": "disable",
+       "bitStart": 13,
+       "bitLength": 1
+      },
+      {
+       "name": "immobilize",
+       "bitStart": 14,
+       "bitLength": 1
+      },
+      {
+       "name": "slow",
+       "bitStart": 15,
+       "bitLength": 1
+      },
+      {
+       "name": "disease",
+       "bitStart": 16,
+       "bitLength": 1
+      },
+      {
+       "name": "lure",
+       "bitStart": 17,
+       "bitLength": 1
+      },
+      {
+       "name": "protect",
+       "bitStart": 18,
+       "bitLength": 1
+      },
+      {
+       "name": "shell",
+       "bitStart": 19,
+       "bitLength": 1
+      },
+      {
+       "name": "haste",
+       "bitStart": 20,
+       "bitLength": 1
+      },
+      {
+       "name": "bravery",
+       "bitStart": 21,
+       "bitLength": 1
+      },
+      {
+       "name": "faith",
+       "bitStart": 22,
+       "bitLength": 1
+      },
+      {
+       "name": "reflect",
+       "bitStart": 23,
+       "bitLength": 1
+      },
+      {
+       "name": "invisible",
+       "bitStart": 24,
+       "bitLength": 1
+      },
+      {
+       "name": "regen",
+       "bitStart": 25,
+       "bitLength": 1
+      },
+      {
+       "name": "float",
+       "bitStart": 26,
+       "bitLength": 1
+      },
+      {
+       "name": "berserk",
+       "bitStart": 27,
+       "bitLength": 1
+      },
+      {
+       "name": "bubble",
+       "bitStart": 28,
+       "bitLength": 1
+      },
+      {
+       "name": "hpCritical",
+       "bitStart": 29,
+       "bitLength": 1
+      },
+      {
+       "name": "libra",
+       "bitStart": 30,
+       "bitLength": 1
+      },
+      {
+       "name": "xZone",
+       "bitStart": 31,
+       "bitLength": 1
+      }
+     ],
+     "enum": "StatusEffectFlags",
+     "notes": "Permanent/initial status effects."
+    },
+    {
+     "name": "statusEffectImmunities",
+     "offset": 76,
+     "type": "bf32",
+     "bits": [
+      {
+       "name": "ko",
+       "bitStart": 0,
+       "bitLength": 1
+      },
+      {
+       "name": "stone",
+       "bitStart": 1,
+       "bitLength": 1
+      },
+      {
+       "name": "petrify",
+       "bitStart": 2,
+       "bitLength": 1
+      },
+      {
+       "name": "stop",
+       "bitStart": 3,
+       "bitLength": 1
+      },
+      {
+       "name": "sleep",
+       "bitStart": 4,
+       "bitLength": 1
+      },
+      {
+       "name": "confuse",
+       "bitStart": 5,
+       "bitLength": 1
+      },
+      {
+       "name": "doom",
+       "bitStart": 6,
+       "bitLength": 1
+      },
+      {
+       "name": "blind",
+       "bitStart": 7,
+       "bitLength": 1
+      },
+      {
+       "name": "poison",
+       "bitStart": 8,
+       "bitLength": 1
+      },
+      {
+       "name": "silence",
+       "bitStart": 9,
+       "bitLength": 1
+      },
+      {
+       "name": "sap",
+       "bitStart": 10,
+       "bitLength": 1
+      },
+      {
+       "name": "oil",
+       "bitStart": 11,
+       "bitLength": 1
+      },
+      {
+       "name": "reverse",
+       "bitStart": 12,
+       "bitLength": 1
+      },
+      {
+       "name": "disable",
+       "bitStart": 13,
+       "bitLength": 1
+      },
+      {
+       "name": "immobilize",
+       "bitStart": 14,
+       "bitLength": 1
+      },
+      {
+       "name": "slow",
+       "bitStart": 15,
+       "bitLength": 1
+      },
+      {
+       "name": "disease",
+       "bitStart": 16,
+       "bitLength": 1
+      },
+      {
+       "name": "lure",
+       "bitStart": 17,
+       "bitLength": 1
+      },
+      {
+       "name": "protect",
+       "bitStart": 18,
+       "bitLength": 1
+      },
+      {
+       "name": "shell",
+       "bitStart": 19,
+       "bitLength": 1
+      },
+      {
+       "name": "haste",
+       "bitStart": 20,
+       "bitLength": 1
+      },
+      {
+       "name": "bravery",
+       "bitStart": 21,
+       "bitLength": 1
+      },
+      {
+       "name": "faith",
+       "bitStart": 22,
+       "bitLength": 1
+      },
+      {
+       "name": "reflect",
+       "bitStart": 23,
+       "bitLength": 1
+      },
+      {
+       "name": "invisible",
+       "bitStart": 24,
+       "bitLength": 1
+      },
+      {
+       "name": "regen",
+       "bitStart": 25,
+       "bitLength": 1
+      },
+      {
+       "name": "float",
+       "bitStart": 26,
+       "bitLength": 1
+      },
+      {
+       "name": "berserk",
+       "bitStart": 27,
+       "bitLength": 1
+      },
+      {
+       "name": "bubble",
+       "bitStart": 28,
+       "bitLength": 1
+      },
+      {
+       "name": "hpCritical",
+       "bitStart": 29,
+       "bitLength": 1
+      },
+      {
+       "name": "libra",
+       "bitStart": 30,
+       "bitLength": 1
+      },
+      {
+       "name": "xZone",
+       "bitStart": 31,
+       "bitLength": 1
+      }
+     ],
+     "enum": "StatusEffectFlags",
+     "notes": "Status immunities."
+    },
+    {
+     "name": "augments",
+     "offset": 80,
+     "type": "bf64",
+     "bits": [
+      {
+       "name": "stability",
+       "bitStart": 0,
+       "bitLength": 1
+      },
+      {
+       "name": "safety",
+       "bitStart": 1,
+       "bitLength": 1
+      },
+      {
+       "name": "accuracyBoost",
+       "bitStart": 2,
+       "bitLength": 1
+      },
+      {
+       "name": "shieldBoost",
+       "bitStart": 3,
+       "bitLength": 1
+      },
+      {
+       "name": "evasionBoost",
+       "bitStart": 4,
+       "bitLength": 1
+      },
+      {
+       "name": "lastStand",
+       "bitStart": 5,
+       "bitLength": 1
+      },
+      {
+       "name": "counter",
+       "bitStart": 6,
+       "bitLength": 1
+      },
+      {
+       "name": "counterBoost",
+       "bitStart": 7,
+       "bitLength": 1
+      },
+      {
+       "name": "spellbreaker",
+       "bitStart": 8,
+       "bitLength": 1
+      },
+      {
+       "name": "brawler",
+       "bitStart": 9,
+       "bitLength": 1
+      },
+      {
+       "name": "adrenaline",
+       "bitStart": 10,
+       "bitLength": 1
+      },
+      {
+       "name": "focus",
+       "bitStart": 11,
+       "bitLength": 1
+      },
+      {
+       "name": "lobbying",
+       "bitStart": 12,
+       "bitLength": 1
+      },
+      {
+       "name": "comboBoost",
+       "bitStart": 13,
+       "bitLength": 1
+      },
+      {
+       "name": "itemBoost",
+       "bitStart": 14,
+       "bitLength": 1
+      },
+      {
+       "name": "medicineReverse",
+       "bitStart": 15,
+       "bitLength": 1
+      },
+      {
+       "name": "weatherproof",
+       "bitStart": 16,
+       "bitLength": 1
+      },
+      {
+       "name": "thievery",
+       "bitStart": 17,
+       "bitLength": 1
+      },
+      {
+       "name": "saboteur",
+       "bitStart": 18,
+       "bitLength": 1
+      },
+      {
+       "name": "magickLore1",
+       "bitStart": 19,
+       "bitLength": 1
+      },
+      {
+       "name": "warmage",
+       "bitStart": 20,
+       "bitLength": 1
+      },
+      {
+       "name": "martyr",
+       "bitStart": 21,
+       "bitLength": 1
+      },
+      {
+       "name": "magickLore2",
+       "bitStart": 22,
+       "bitLength": 1
+      },
+      {
+       "name": "headsman",
+       "bitStart": 23,
+       "bitLength": 1
+      },
+      {
+       "name": "magickLore3",
+       "bitStart": 24,
+       "bitLength": 1
+      },
+      {
+       "name": "treasureHunter",
+       "bitStart": 25,
+       "bitLength": 1
+      },
+      {
+       "name": "magickLore4",
+       "bitStart": 26,
+       "bitLength": 1
+      },
+      {
+       "name": "doubleExp",
+       "bitStart": 27,
+       "bitLength": 1
+      },
+      {
+       "name": "doubleLp",
+       "bitStart": 28,
+       "bitLength": 1
+      },
+      {
+       "name": "noExp",
+       "bitStart": 29,
+       "bitLength": 1
+      },
+      {
+       "name": "spellbound",
+       "bitStart": 30,
+       "bitLength": 1
+      },
+      {
+       "name": "piercingMagick",
+       "bitStart": 31,
+       "bitLength": 1
+      },
+      {
+       "name": "offering",
+       "bitStart": 32,
+       "bitLength": 1
+      },
+      {
+       "name": "muffle",
+       "bitStart": 33,
+       "bitLength": 1
+      },
+      {
+       "name": "lifeCloak",
+       "bitStart": 34,
+       "bitLength": 1
+      },
+      {
+       "name": "battleLore1",
+       "bitStart": 35,
+       "bitLength": 1
+      },
+      {
+       "name": "parsimony",
+       "bitStart": 36,
+       "bitLength": 1
+      },
+      {
+       "name": "treadLightly",
+       "bitStart": 37,
+       "bitLength": 1
+      },
+      {
+       "name": "unusedBit38",
+       "bitStart": 38,
+       "bitLength": 1
+      },
+      {
+       "name": "emptiness",
+       "bitStart": 39,
+       "bitLength": 1
+      },
+      {
+       "name": "resistPiercingDamage",
+       "bitStart": 40,
+       "bitLength": 1
+      },
+      {
+       "name": "antiLibra",
+       "bitStart": 41,
+       "bitLength": 1
+      },
+      {
+       "name": "battleLore2",
+       "bitStart": 42,
+       "bitLength": 1
+      },
+      {
+       "name": "battleLore3",
+       "bitStart": 43,
+       "bitLength": 1
+      },
+      {
+       "name": "battleLore4",
+       "bitStart": 44,
+       "bitLength": 1
+      },
+      {
+       "name": "battleLore5",
+       "bitStart": 45,
+       "bitLength": 1
+      },
+      {
+       "name": "battleLore6",
+       "bitStart": 46,
+       "bitLength": 1
+      },
+      {
+       "name": "battleLore7",
+       "bitStart": 47,
+       "bitLength": 1
+      },
+      {
+       "name": "stoneskin",
+       "bitStart": 48,
+       "bitLength": 1
+      },
+      {
+       "name": "attackBoost",
+       "bitStart": 49,
+       "bitLength": 1
+      },
+      {
+       "name": "doubleEdged",
+       "bitStart": 50,
+       "bitLength": 1
+      },
+      {
+       "name": "spellspring",
+       "bitStart": 51,
+       "bitLength": 1
+      },
+      {
+       "name": "elementalShift",
+       "bitStart": 52,
+       "bitLength": 1
+      },
+      {
+       "name": "celerity",
+       "bitStart": 53,
+       "bitLength": 1
+      },
+      {
+       "name": "swiftcast",
+       "bitStart": 54,
+       "bitLength": 1
+      },
+      {
+       "name": "attackImmunity",
+       "bitStart": 55,
+       "bitLength": 1
+      },
+      {
+       "name": "magickImmunity",
+       "bitStart": 56,
+       "bitLength": 1
+      },
+      {
+       "name": "statusImmunity",
+       "bitStart": 57,
+       "bitLength": 1
+      },
+      {
+       "name": "damageSpikes",
+       "bitStart": 58,
+       "bitLength": 1
+      },
+      {
+       "name": "suicidal",
+       "bitStart": 59,
+       "bitLength": 1
+      },
+      {
+       "name": "battleLore8",
+       "bitStart": 60,
+       "bitLength": 1
+      },
+      {
+       "name": "battleLore9",
+       "bitStart": 61,
+       "bitLength": 1
+      },
+      {
+       "name": "battleLore10",
+       "bitStart": 62,
+       "bitLength": 1
+      },
+      {
+       "name": "battleLore11",
+       "bitStart": 63,
+       "bitLength": 1
+      }
+     ],
+     "enum": "AugmentFlags",
+     "notes": "Innate augments (64 bits)."
+    },
+    {
+     "name": "inventory1Content",
+     "offset": 88,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 1; for guests/espers these 10 slots are their ability list (Workshop: \"Inventory / Guest And Esper Abilities List\")."
+    },
+    {
+     "name": "inventory2Content",
+     "offset": 90,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 2; for guests/espers these 10 slots are their ability list (Workshop: \"Inventory / Guest And Esper Abilities List\")."
+    },
+    {
+     "name": "inventory3Content",
+     "offset": 92,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 3; for guests/espers these 10 slots are their ability list (Workshop: \"Inventory / Guest And Esper Abilities List\")."
+    },
+    {
+     "name": "inventory4Content",
+     "offset": 94,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 4; for guests/espers these 10 slots are their ability list (Workshop: \"Inventory / Guest And Esper Abilities List\")."
+    },
+    {
+     "name": "inventory5Content",
+     "offset": 96,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 5; for guests/espers these 10 slots are their ability list (Workshop: \"Inventory / Guest And Esper Abilities List\")."
+    },
+    {
+     "name": "inventory6Content",
+     "offset": 98,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 6; for guests/espers these 10 slots are their ability list (Workshop: \"Inventory / Guest And Esper Abilities List\")."
+    },
+    {
+     "name": "inventory7Content",
+     "offset": 100,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 7; for guests/espers these 10 slots are their ability list (Workshop: \"Inventory / Guest And Esper Abilities List\")."
+    },
+    {
+     "name": "inventory8Content",
+     "offset": 102,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 8; for guests/espers these 10 slots are their ability list (Workshop: \"Inventory / Guest And Esper Abilities List\")."
+    },
+    {
+     "name": "inventory9Content",
+     "offset": 104,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 9; for guests/espers these 10 slots are their ability list (Workshop: \"Inventory / Guest And Esper Abilities List\")."
+    },
+    {
+     "name": "inventory10Content",
+     "offset": 106,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 10; for guests/espers these 10 slots are their ability list (Workshop: \"Inventory / Guest And Esper Abilities List\")."
+    },
+    {
+     "name": "unknown6C",
+     "offset": 108,
+     "type": "bytes",
+     "length": 4,
+     "notes": "Not interpreted."
+    },
+    {
+     "name": "model",
+     "offset": 112,
+     "type": "s32",
+     "enum": "ModelList",
+     "notes": "Model id = (ASCII prefix << 16) | file number, e.g. c = main characters, s = espers (TK L940-L952)."
+    },
+    {
+     "name": "modelVariation",
+     "offset": 116,
+     "type": "u8",
+     "notes": "Model variation (Toolkit only; the Workshop treats 0x74-0x79 as unknown)."
+    },
+    {
+     "name": "modelColorVariation",
+     "offset": 117,
+     "type": "u8",
+     "notes": "Model colour variation (Toolkit only)."
+    },
+    {
+     "name": "unknown76",
+     "offset": 118,
+     "type": "bytes",
+     "length": 4,
+     "notes": "Not interpreted."
+    },
+    {
+     "name": "weight",
+     "offset": 122,
+     "type": "s16",
+     "notes": "Weight (the Toolkit shows it x10)."
+    },
+    {
+     "name": "unknown7C",
+     "offset": 124,
+     "type": "bytes",
+     "length": 4,
+     "notes": "Not interpreted."
+    }
+   ]
+  }
+ ],
+ "enums": {
+  "EquipmentCategoryFlags": {
+   "1": "Unarmed",
+   "2": "Sword",
+   "4": "Greatsword",
+   "8": "Katana",
+   "16": "Ninja Sword",
+   "32": "Spear",
+   "64": "Pole",
+   "128": "Bow",
+   "256": "Crossbow",
+   "512": "Gun",
+   "1024": "Axe",
+   "2048": "Hammer",
+   "4096": "Dagger",
+   "8192": "Rod",
+   "16384": "Staff",
+   "32768": "Mace",
+   "65536": "Measure",
+   "131072": "Hand-Bomb",
+   "262144": "Shield",
+   "524288": "Helm",
+   "1048576": "Armor",
+   "2097152": "Accessory",
+   "4194304": "Crown (accessory)",
+   "8388608": "Arrow",
+   "16777216": "Bolt",
+   "33554432": "Shot",
+   "67108864": "Bomb"
+  },
+  "StatusEffectFlags": {
+   "1": "KO",
+   "2": "Stone",
+   "4": "Petrify",
+   "8": "Stop",
+   "16": "Sleep",
+   "32": "Confuse",
+   "64": "Doom",
+   "128": "Blind",
+   "256": "Poison",
+   "512": "Silence",
+   "1024": "Sap",
+   "2048": "Oil",
+   "4096": "Reverse",
+   "8192": "Disable",
+   "16384": "Immobilize",
+   "32768": "Slow",
+   "65536": "Disease",
+   "131072": "Lure",
+   "262144": "Protect",
+   "524288": "Shell",
+   "1048576": "Haste",
+   "2097152": "Bravery",
+   "4194304": "Faith",
+   "8388608": "Reflect",
+   "16777216": "Invisible",
+   "33554432": "Regen",
+   "67108864": "Float",
+   "134217728": "Berserk",
+   "268435456": "Bubble",
+   "536870912": "HP Critical",
+   "1073741824": "Libra",
+   "2147483648": "X-Zone"
+  },
+  "AugmentFlags": {
+   "1": "Stability",
+   "2": "Safety",
+   "4": "Accuracy Boost",
+   "8": "Shield Boost",
+   "16": "Evasion Boost",
+   "32": "Last Stand",
+   "64": "Counter",
+   "128": "Counter Boost",
+   "256": "Spellbreaker",
+   "512": "Brawler",
+   "1024": "Adrenaline",
+   "2048": "Focus",
+   "4096": "Lobbying",
+   "8192": "Combo Boost",
+   "16384": "Item Boost",
+   "32768": "Medicine Reverse",
+   "65536": "Weatherproof",
+   "131072": "Thievery",
+   "262144": "Saboteur",
+   "524288": "Magick Lore 1",
+   "1048576": "Warmage",
+   "2097152": "Martyr",
+   "4194304": "Magick Lore 2",
+   "8388608": "Headsman",
+   "16777216": "Magick Lore 3",
+   "33554432": "Treasure Hunter",
+   "67108864": "Magick Lore 4",
+   "134217728": "Double EXP",
+   "268435456": "Double LP",
+   "536870912": "No EXP",
+   "1073741824": "Spellbound",
+   "2147483648": "Piercing Magick",
+   "4294967296": "Offering",
+   "8589934592": "Muffle",
+   "17179869184": "Life Cloak",
+   "34359738368": "Battle Lore 1",
+   "68719476736": "Parsimony",
+   "137438953472": "Tread Lightly",
+   "274877906944": "Unused (bit 38)",
+   "549755813888": "Emptiness",
+   "1099511627776": "Resist Piercing Damage",
+   "2199023255552": "Anti-Libra",
+   "4398046511104": "Battle Lore 2",
+   "8796093022208": "Battle Lore 3",
+   "17592186044416": "Battle Lore 4",
+   "35184372088832": "Battle Lore 5",
+   "70368744177664": "Battle Lore 6",
+   "140737488355328": "Battle Lore 7",
+   "281474976710656": "Stoneskin",
+   "562949953421312": "Attack Boost",
+   "1125899906842624": "Double-Edged",
+   "2251799813685248": "Spellspring",
+   "4503599627370496": "Elemental Shift",
+   "9007199254740992": "Celerity",
+   "18014398509481984": "Swiftcast",
+   "36028797018963968": "Attack Immunity",
+   "72057594037927936": "Magick Immunity",
+   "144115188075855872": "Status Immunity",
+   "288230376151711744": "Damage Spikes",
+   "576460752303423488": "Suicidal",
+   "1152921504606846976": "Battle Lore 8",
+   "2305843009213693952": "Battle Lore 9",
+   "4611686018427387904": "Battle Lore 10",
+   "9223372036854775808": "Battle Lore 11"
+  },
+  "BpePartyJoinLevelSyncTypeList": {
+   "0": "Never",
+   "1": "Only Once",
+   "2": "Always"
+  }
+ },
+ "roundTrip": [
+  "Edit fields in place; the record size is fixed and nothing in this section points at entries, so value edits never move data.",
+  "Copy every byte that no field interprets (unknown*/unused*/padding, unnamed bits) from the original; the Workshop writer zero-fills them (it seeks over them), so do not use its output as the byte-identical reference.",
+  "Keep the st2e header bytes verbatim except entryCount (and entryListOffset when the count goes to/from 0).",
+  "Keep the trailing zero padding that rounds the section to a multiple of 16 bytes.",
+  "If the section length changes (added/removed entries), rewrite the battlepack offset table: every later section offset and the end offset shift by the padded size delta.",
+  "flags (0x2C): change only bits 3-4 and 6; preserve the rest.",
+  "Store defaultGambitSet as row + 0x5000.",
+  "Do not reorder or delete rows."
+ ],
+ "gaps": [
+  "Whether the five equipment fields hold a section 13 row index or a content id (0x1000|row) is not stated by any source; check vanilla values.",
+  "The two Max HP modifiers (0x18, 0x19) and the other growth modifiers: formula not documented here.",
+  "flags (0x2C) bits 0-2, 5, 7 unnamed; bytes 0x08-0x09, 0x1C, 0x20, 0x23, 0x26, 0x29, 0x2D, 0x2F, 0x33, 0x40-0x43, 0x6C-0x6F, 0x76-0x79, 0x7C-0x7F never interpreted.",
+  "modelVariation/modelColorVariation (0x74/0x75) come from the Toolkit only.",
+  "Units of weight (Toolkit shows x10) and detectionRange not verified.",
+  "Esper abilities: the Workshop labels the inventory slots as the guest/esper ability list, while msg 365 suggests espers take abilities from the initial-inventory section (42); confirm which one the game reads."
+ ]
+}

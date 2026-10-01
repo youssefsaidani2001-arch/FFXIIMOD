@@ -1,0 +1,78 @@
+{
+ "id": "enums-content-ids",
+ "title": "Enumeration - content ids (category << 12 | index) used by chests, loot, shops and rewards",
+ "files": [
+  "**/*.ebp",
+  "**/*.ard",
+  "ps2data/image/ff12/test_battle/*/binaryfile/battle_pack.bin"
+ ],
+ "container": {
+  "kind": "custom",
+  "notes": "Enumeration spec: no file of its own. The pseudo-record describes how an id stored in a u16 field of other formats splits into bit fields; the enums give the labels."
+ },
+ "records": [
+  {
+   "name": "contentId",
+   "size": 2,
+   "count": "one per field that holds a content id",
+   "where": "Chest item fields (treasure-chests), unit loot fields (foe-drops, ard-units), shop, bazaar, reward and package tables of the battlepack.",
+   "fields": [
+    {
+     "name": "contentId",
+     "offset": 0,
+     "type": "bf16",
+     "bits": [
+      {
+       "name": "index",
+       "bitStart": 0,
+       "bitLength": 12,
+       "notes": "Index in the category (gil amount for category 14)."
+      },
+      {
+       "name": "category",
+       "bitStart": 12,
+       "bitLength": 4,
+       "enum": "ContentCategory",
+       "notes": "Content category."
+      }
+     ],
+     "notes": "Content id = category << 12 | index; 0xFFFF = none."
+    }
+   ]
+  }
+ ],
+ "enums": {
+  "ContentCategory": {
+   "0": "Item (0x0000-0x003F: Potion ... Knot of Rust)",
+   "1": "Equipment (weapons 0x1000-0x10C7, armour 0x10C8-0x1153, accessories 0x1154-0x1183, ammunition 0x1184-0x11A3, foe-only weapons and gear 0x11A4-0x122C)",
+   "2": "Loot (0x2000-0x21FF)",
+   "3": "Magick (0x3000-0x3050)",
+   "4": "Technick (0x4000-0x4017)",
+   "5": "Not used by the list",
+   "6": "Gambit (0x6000-0x60FF)",
+   "7": "Not used by the list",
+   "8": "Key item (0x8000-0x81FF; maps, monographs 0x8069.., Canopic Jar 0x806C)",
+   "9": "Package (0x9000-0x91FF; quest / story packages)",
+   "10": "Reward (0xA000-0xA0FF)",
+   "11": "Price (0xB000-0xB07F)",
+   "12": "Mist / Quickening (0xC000-0xC01F)",
+   "13": "Bazaar good (0xD000-0xD07F)",
+   "14": "Gil amount (0xE000 + amount, 0-4095)",
+   "15": "None (0xFFFF only)"
+  },
+  "ContentIdSpecial": {
+   "65535": "None / nothing",
+   "57344": "0 Gil"
+  }
+ },
+ "roundTrip": [
+  "Store as a plain u16; 0xFFFF means nothing.",
+  "Gil inside a content id is limited to 4095 (0xE000-0xEFFF); chest gil fields are plain amounts and are not content ids.",
+  "Use only ids that exist in the target table (Reserve labels mark unused rows)."
+ ],
+ "gaps": [
+  "Conflict: TK L1590 states gil = 0xF000 | amount, but the same Toolkit list ends at 61439 = 0xEFFF \"4095 Gil\" (TK L1574) and vanilla ARD data uses 57844 = 0xE1F4 for 500 gil (GS:ARDMap 4: Units!AM); this spec follows the data (0xE000).",
+  "Categories 5 and 7 have no labels.",
+  "The Drops sheet labels 0xE1F4 \"Reserve\" (its own lookup), so its names for gil ids are not reliable."
+ ]
+}

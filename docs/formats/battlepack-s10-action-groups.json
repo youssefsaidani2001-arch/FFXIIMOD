@@ -1,0 +1,76 @@
+{
+ "id": "battlepack-s10-action-groups",
+ "title": "Battlepack section 10 — Action Groups",
+ "files": [
+  "ps2data/image/ff12/test_battle/*/binaryfile/battle_pack.bin",
+  "battle_pack.bin.dir/section_010.bin"
+ ],
+ "container": {
+  "kind": "battlepack",
+  "notes": "Section 10 of battle_pack.bin (see container-battlepack). NOT st2e: u32 groupCount at +0, groupCount+1 u32 section-relative offsets from +4 (last = end of data before padding), zero padding to 16, then the groups back to back; each group is a run of 4-byte entries (u16 action, u16 chance); section zero-padded to 16. Groups are addressed by battle logic as 0x8000 | group index."
+ },
+ "records": [
+  {
+   "name": "header",
+   "where": "Offset 0 of battlepack section 10 (no st2e header).",
+   "size": 4,
+   "count": "1",
+   "fields": [
+    {
+     "name": "groupCount",
+     "offset": 0,
+     "type": "u32",
+     "notes": "Number of action groups; the offset table that follows has groupCount + 1 entries."
+    }
+   ]
+  },
+  {
+   "name": "groupOffset",
+   "where": "section 10 offset 4 + 4*i (directly after header)",
+   "size": 4,
+   "count": "header.groupCount + 1",
+   "fields": [
+    {
+     "name": "offset",
+     "offset": 0,
+     "type": "u32",
+     "notes": "Section-relative start of group i. The last row is the end-of-data offset (end of the last group, before the final padding). Non-decreasing."
+    }
+   ]
+  },
+  {
+   "name": "actionGroupEntry",
+   "where": "group i occupies [groupOffset[i], groupOffset[i+1]) of the section; entries of all groups are stored back to back from groupOffset[0]",
+   "size": 4,
+   "count": "(groupOffset[i+1] - groupOffset[i]) / 4 per group",
+   "fields": [
+    {
+     "name": "action",
+     "offset": 0,
+     "type": "u16",
+     "enum": "BpActionList",
+     "notes": "Action this entry can pick."
+    },
+    {
+     "name": "chance",
+     "offset": 2,
+     "type": "u16",
+     "notes": "Chance / weight of picking this entry."
+    }
+   ]
+  }
+ ],
+ "enums": {},
+ "roundTrip": [
+  "Unedited groups keep their entries and order; groups are never reordered (ids are positional).",
+  "groupOffset values are section-relative, non-decreasing, and the last one is the unpadded end of the data.",
+  "No padding between groups; header padded with zeros to 16 before group 0; section end padded with zeros to 16.",
+  "Editing action/chance in place needs no fix-up; any change in entry or group count requires recomputing every later groupOffset and the battlepack section offsets."
+ ],
+ "gaps": [
+  "Semantics of chance (percent vs. relative weight; behaviour when the sum is not 100).",
+  "Whether action is always a section 14 action row or can also hold battle-logic ids (e.g. movement 0x4000+).",
+  "Vanilla groupCount and whether vanilla pads the header exactly to 16 before group 0.",
+  "Whether empty groups exist in vanilla."
+ ]
+}

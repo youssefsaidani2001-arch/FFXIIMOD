@@ -1,0 +1,354 @@
+{
+ "id": "ard-aiscripts",
+ "title": "ARD section 3 - AI scripts (battle logics)",
+ "files": [
+  "**/*.ard",
+  "**/*.ard.dir/section_003.bin"
+ ],
+ "container": {
+  "kind": "ard",
+  "notes": "ARD section 3 (AI scripts / battle logics; NOT st2e: u16 scriptCount, u16 unknown, u32 offsets x (count+1, last = unpadded end), then scripts = 32 u8 group counts + 24-byte entries, section padded to 16). ARD = standalone *.ard or section 19 of an .ebp: 8-byte magic FF12AR03, ten u32 section offsets at 0x08 relative to the ARD start (0 = absent; this section = u32 at ARD+0x14); sections 0,2..9 written in index order on 16-byte boundaries with zero fill, section 1 written last with nothing after it. A section spans to the next larger non-zero offset (the highest to the end of the ARD)."
+ },
+ "records": [
+  {
+   "name": "aiHeader",
+   "where": "Offset 0 of ARD section 3 (ARD start + u32 at ARD+0x14).",
+   "size": 4,
+   "count": 1,
+   "fields": [
+    {
+     "name": "scriptCount",
+     "offset": 0,
+     "type": "u16",
+     "notes": "Number of AI scripts (= number of script offsets that follow, not counting the end offset)."
+    },
+    {
+     "name": "unknown02",
+     "offset": 2,
+     "type": "u16",
+     "notes": "Not read. The Workshop always writes 100 (0x64) and calls it an unknown/unused value; keep the original."
+    }
+   ]
+  },
+  {
+   "name": "scriptOffset",
+   "where": "ARD section 3, offset 4 + 4*i (i = 0 .. aiHeader.scriptCount)",
+   "size": 4,
+   "count": "aiHeader.scriptCount + 1",
+   "fields": [
+    {
+     "name": "offset",
+     "offset": 0,
+     "type": "u32",
+     "notes": "Section-relative offset. Entries 0 .. scriptCount-1 point at the start of each script; the extra last entry holds the offset just past the last script (before the section padding)."
+    }
+   ]
+  },
+  {
+   "name": "groupCounts",
+   "where": "ARD section 3, offset scriptOffset[s].offset (start of script s)",
+   "size": 32,
+   "count": "aiHeader.scriptCount (one per script)",
+   "fields": [
+    {
+     "name": "group00Count",
+     "offset": 0,
+     "type": "u8",
+     "notes": "Number of 24-byte entries in group 0 of this script (0 = group not used)."
+    },
+    {
+     "name": "group01Count",
+     "offset": 1,
+     "type": "u8",
+     "notes": "Number of 24-byte entries in group 1 of this script (0 = group not used)."
+    },
+    {
+     "name": "group02Count",
+     "offset": 2,
+     "type": "u8",
+     "notes": "Number of 24-byte entries in group 2 of this script (0 = group not used)."
+    },
+    {
+     "name": "group03Count",
+     "offset": 3,
+     "type": "u8",
+     "notes": "Number of 24-byte entries in group 3 of this script (0 = group not used)."
+    },
+    {
+     "name": "group04Count",
+     "offset": 4,
+     "type": "u8",
+     "notes": "Number of 24-byte entries in group 4 of this script (0 = group not used)."
+    },
+    {
+     "name": "group05Count",
+     "offset": 5,
+     "type": "u8",
+     "notes": "Number of 24-byte entries in group 5 of this script (0 = group not used)."
+    },
+    {
+     "name": "group06Count",
+     "offset": 6,
+     "type": "u8",
+     "notes": "Number of 24-byte entries in group 6 of this script (0 = group not used)."
+    },
+    {
+     "name": "group07Count",
+     "offset": 7,
+     "type": "u8",
+     "notes": "Number of 24-byte entries in group 7 of this script (0 = group not used)."
+    },
+    {
+     "name": "group08Count",
+     "offset": 8,
+     "type": "u8",
+     "notes": "Number of 24-byte entries in group 8 of this script (0 = group not used)."
+    },
+    {
+     "name": "group09Count",
+     "offset": 9,
+     "type": "u8",
+     "notes": "Number of 24-byte entries in group 9 of this script (0 = group not used)."
+    },
+    {
+     "name": "group10Count",
+     "offset": 10,
+     "type": "u8",
+     "notes": "Number of 24-byte entries in group 10 of this script (0 = group not used)."
+    },
+    {
+     "name": "group11Count",
+     "offset": 11,
+     "type": "u8",
+     "notes": "Number of 24-byte entries in group 11 of this script (0 = group not used)."
+    },
+    {
+     "name": "group12Count",
+     "offset": 12,
+     "type": "u8",
+     "notes": "Number of 24-byte entries in group 12 of this script (0 = group not used)."
+    },
+    {
+     "name": "group13Count",
+     "offset": 13,
+     "type": "u8",
+     "notes": "Number of 24-byte entries in group 13 of this script (0 = group not used)."
+    },
+    {
+     "name": "group14Count",
+     "offset": 14,
+     "type": "u8",
+     "notes": "Number of 24-byte entries in group 14 of this script (0 = group not used)."
+    },
+    {
+     "name": "group15Count",
+     "offset": 15,
+     "type": "u8",
+     "notes": "Number of 24-byte entries in group 15 of this script (0 = group not used)."
+    },
+    {
+     "name": "group16Count",
+     "offset": 16,
+     "type": "u8",
+     "notes": "Number of 24-byte entries in group 16 of this script (0 = group not used)."
+    },
+    {
+     "name": "group17Count",
+     "offset": 17,
+     "type": "u8",
+     "notes": "Number of 24-byte entries in group 17 of this script (0 = group not used)."
+    },
+    {
+     "name": "group18Count",
+     "offset": 18,
+     "type": "u8",
+     "notes": "Number of 24-byte entries in group 18 of this script (0 = group not used)."
+    },
+    {
+     "name": "group19Count",
+     "offset": 19,
+     "type": "u8",
+     "notes": "Number of 24-byte entries in group 19 of this script (0 = group not used)."
+    },
+    {
+     "name": "group20Count",
+     "offset": 20,
+     "type": "u8",
+     "notes": "Number of 24-byte entries in group 20 of this script (0 = group not used)."
+    },
+    {
+     "name": "group21Count",
+     "offset": 21,
+     "type": "u8",
+     "notes": "Number of 24-byte entries in group 21 of this script (0 = group not used)."
+    },
+    {
+     "name": "group22Count",
+     "offset": 22,
+     "type": "u8",
+     "notes": "Number of 24-byte entries in group 22 of this script (0 = group not used)."
+    },
+    {
+     "name": "group23Count",
+     "offset": 23,
+     "type": "u8",
+     "notes": "Number of 24-byte entries in group 23 of this script (0 = group not used)."
+    },
+    {
+     "name": "group24Count",
+     "offset": 24,
+     "type": "u8",
+     "notes": "Number of 24-byte entries in group 24 of this script (0 = group not used)."
+    },
+    {
+     "name": "group25Count",
+     "offset": 25,
+     "type": "u8",
+     "notes": "Number of 24-byte entries in group 25 of this script (0 = group not used)."
+    },
+    {
+     "name": "group26Count",
+     "offset": 26,
+     "type": "u8",
+     "notes": "Number of 24-byte entries in group 26 of this script (0 = group not used)."
+    },
+    {
+     "name": "group27Count",
+     "offset": 27,
+     "type": "u8",
+     "notes": "Number of 24-byte entries in group 27 of this script (0 = group not used)."
+    },
+    {
+     "name": "group28Count",
+     "offset": 28,
+     "type": "u8",
+     "notes": "Number of 24-byte entries in group 28 of this script (0 = group not used)."
+    },
+    {
+     "name": "group29Count",
+     "offset": 29,
+     "type": "u8",
+     "notes": "Number of 24-byte entries in group 29 of this script (0 = group not used)."
+    },
+    {
+     "name": "group30Count",
+     "offset": 30,
+     "type": "u8",
+     "notes": "Number of 24-byte entries in group 30 of this script (0 = group not used)."
+    },
+    {
+     "name": "group31Count",
+     "offset": 31,
+     "type": "u8",
+     "notes": "Number of 24-byte entries in group 31 of this script (0 = group not used)."
+    }
+   ]
+  },
+  {
+   "name": "aiEntry",
+   "where": "ARD section 3: entries of script s start at scriptOffset[s].offset + 32; group 0 entries first, then group 1, ... (entry k of the script at +32 + 24*k)",
+   "size": 24,
+   "count": "sum of groupCounts.group00Count .. group31Count of the owning script",
+   "fields": [
+    {
+     "name": "action",
+     "offset": 0,
+     "type": "u16",
+     "enum": "BattleLogicActionList",
+     "notes": "What to do. Id blocks in the Toolkit list: 0x0000+ battle actions (0 = Cure ...), 0x4000+ AI commands (movement, switch/jump group, add status or augment, stat changes ...), 0x8000+ \"Action Group n\"; 65535 = none."
+    },
+    {
+     "name": "actionParameter",
+     "offset": 2,
+     "type": "s16",
+     "notes": "Parameter of the action, shown as \"(p)\" in the action labels (e.g. a range in meters or a percent chance); signed in the Workshop."
+    },
+    {
+     "name": "flags",
+     "offset": 4,
+     "type": "u16",
+     "notes": "Behaviour flags of the line. The Workshop keeps the raw value; bit meanings are not documented for ARD lines (see gaps)."
+    },
+    {
+     "name": "case1TargetType",
+     "offset": 6,
+     "type": "u16",
+     "enum": "BattleLogicTargetTypeList",
+     "notes": "Who or what case 1 tests: 0-10 actors (foe, ally, leader, self ...); 0x1000+ blocks are variables and flags (scratch variables, global flags, quest values, map icon flags, battle logic flags, 0xA000 caster battle memory flags)."
+    },
+    {
+     "name": "case1TargetCondition",
+     "offset": 8,
+     "type": "u16",
+     "enum": "BattleLogicTargetConditionList",
+     "notes": "Condition case 1 tests (0 = unconditional)."
+    },
+    {
+     "name": "case1Parameter",
+     "offset": 10,
+     "type": "u16",
+     "notes": "Parameter of case 1, shown as \"(p)\" in the condition labels (e.g. \"Genus == (p)\")."
+    },
+    {
+     "name": "case2TargetType",
+     "offset": 12,
+     "type": "u16",
+     "enum": "BattleLogicTargetTypeList",
+     "notes": "Who or what case 2 tests: 0-10 actors (foe, ally, leader, self ...); 0x1000+ blocks are variables and flags (scratch variables, global flags, quest values, map icon flags, battle logic flags, 0xA000 caster battle memory flags)."
+    },
+    {
+     "name": "case2TargetCondition",
+     "offset": 14,
+     "type": "u16",
+     "enum": "BattleLogicTargetConditionList",
+     "notes": "Condition case 2 tests (0 = unconditional)."
+    },
+    {
+     "name": "case2Parameter",
+     "offset": 16,
+     "type": "u16",
+     "notes": "Parameter of case 2, shown as \"(p)\" in the condition labels (e.g. \"Genus == (p)\")."
+    },
+    {
+     "name": "case3TargetType",
+     "offset": 18,
+     "type": "u16",
+     "enum": "BattleLogicTargetTypeList",
+     "notes": "Who or what case 3 tests: 0-10 actors (foe, ally, leader, self ...); 0x1000+ blocks are variables and flags (scratch variables, global flags, quest values, map icon flags, battle logic flags, 0xA000 caster battle memory flags)."
+    },
+    {
+     "name": "case3TargetCondition",
+     "offset": 20,
+     "type": "u16",
+     "enum": "BattleLogicTargetConditionList",
+     "notes": "Condition case 3 tests (0 = unconditional)."
+    },
+    {
+     "name": "case3Parameter",
+     "offset": 22,
+     "type": "u16",
+     "notes": "Parameter of case 3, shown as \"(p)\" in the condition labels (e.g. \"Genus == (p)\")."
+    }
+   ]
+  }
+ ],
+ "enums": {},
+ "roundTrip": [
+  "Without size changes, edit entry fields in place; nothing moves.",
+  "Keep unknown02 and the flags word of each entry exactly as read.",
+  "The offset table has scriptCount + 1 words; the last one is the unpadded end of the script data. Rewrite all of them whenever any script changes size or a script is added.",
+  "Scripts are contiguous with no alignment; only the section end is padded to 16 with zeros.",
+  "Each script keeps its full 32-byte group-count array; used groups stay contiguous from group 0 (a 0 count ends the list for the Toolkit).",
+  "Keep script order: units refer to scripts by index.",
+  "If this section changes length, rebuild the ARD offset table: every section stored after it moves (recompute their u32 slots, keep 16-byte starts with zero fill, keep section 1 last with nothing after it); if the ARD sits in EBP section 19, the EBP offsets after section 19 move as well."
+ ],
+ "gaps": [
+  "unknown02 (Workshop writes 100): purpose unknown; vanilla value not confirmed to be constant.",
+  "Bit layout of the entry flags word. Battlepack section 7 gambit lines keep a u16 flag word whose bits 3-5 are the case-link type (see battlepack-s07-gambits) and the Toolkit edits a case-link type on live battle-logic lines (TK L1291), so the same layout is likely but unverified for ARD entries.",
+  "Which group is active when a script starts and how entries inside a group are evaluated (groups are switched by the 0x4048-0x404F / 0x4116-0x4121 commands; the start state is assumed to be group 0).",
+  "Whether the 0x0000 action block is exactly the battlepack section 14 row index and the 0x8000 block the battlepack section 10 group index (inferred from the list labels).",
+  "Which of a unit's four script slots runs first (slot 0 assumed) and whether a value such as 65535 marks an empty slot.",
+  "Meaning of actionParameter and caseNParameter per action/condition (no table in our sources).",
+  "Whether vanilla scripts ever contain a zero group count between used groups."
+ ]
+}

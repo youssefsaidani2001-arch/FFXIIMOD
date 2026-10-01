@@ -39,7 +39,7 @@
         const tr = document.createElement('tr');
         const ed = FX.detect(f.name.split('/').pop(), new Uint8Array(0));
         tr.innerHTML = '<td class="mono"></td><td class="mono"></td><td></td><td></td>';
-        tr.children[0].textContent = f.name; tr.children[1].textContent = fmtSize(f.size); tr.children[2].textContent = ed ? ed.title : '';
+        tr.children[0].textContent = f.name; tr.children[1].textContent = fmtSize(f.size); tr.children[2].textContent = ed && ed.id !== 'hex' ? ed.title : '';
         const open = document.createElement('button'); open.textContent = 'Open';
         const save = document.createElement('button'); save.textContent = 'Extract';
         open.onclick = () => go(f, true); save.onclick = () => go(f, false);
@@ -55,7 +55,8 @@
       if (!openIt) { FX.saveFile(base, bytes); return; }
       const ed = FX.detect(base, bytes);
       if (!ed || ed.id === 'vbf') { ctx.toast('No editor for ' + base + ' yet; use Extract.'); return; }
-      FX.openWith(ed, bytes.buffer, base, { vbfPath: f.name });
+      if (ed.id === 'hex') ctx.toast('No format editor for ' + base + '; opening it as hex.');
+      FX.openChild(ed, bytes, base, { vbfPath: f.name, backLabel: 'archive' });
       ctx.toast(`Opened ${base}. Save it under ${f.name} for the External File Loader.`);
     }
     q.oninput = draw; draw();

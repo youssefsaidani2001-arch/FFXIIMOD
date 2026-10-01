@@ -1,0 +1,131 @@
+{
+ "id": "ebp-navigationicons",
+ "title": "EBP section 4 - Navigation icons (NAVIICN2)",
+ "files": [
+  "**/*.ebp",
+  "**/*.ebp.dir/section_004.bin"
+ ],
+ "container": {
+  "kind": "ebp",
+  "notes": "EBP section 4 (navigation map icons; magic 'NAVIICN2', u16 groupCount at 0x08, group table of (u16 offset, u16 iconCount) from 0x0A, then 16-byte icon rows, zero padding to 16; group offsets are u16 counted from the section start). EBP = *.ebp, 0x80-byte header: magic 'EBP2' at 0x00, twenty u32 section offsets at 0x10-0x5F counted from the EBP start (0 = absent; this section = u32 at EBP+0x20), 0x04-0x0F and 0x60-0x7F not interpreted. Sections start on 16-byte boundaries with zero fill; a section spans to the next larger non-zero offset (the highest to end of file), so the span includes padding. Section 6 is a TIM2 texture and section 19 an embedded ARD (FF12AR03); a rebuild must carry both. Little-endian throughout."
+ },
+ "records": [
+  {
+   "name": "navHeader",
+   "where": "Offset 0 of EBP section 4 (EBP start + u32 at EBP+0x20).",
+   "size": 10,
+   "count": 1,
+   "fields": [
+    {
+     "name": "magic",
+     "offset": 0,
+     "type": "bytes",
+     "length": 8,
+     "notes": "ASCII 'NAVIICN2' = 4E 41 56 49 49 43 4E 32."
+    },
+    {
+     "name": "groupCount",
+     "offset": 8,
+     "type": "u16",
+     "notes": "Number of 4-byte group descriptors starting at 0x0A (16-bit; the group table begins right after it)."
+    }
+   ]
+  },
+  {
+   "name": "navGroup",
+   "where": "EBP section 4, offset 10 + 4*g (g = 0 .. groupCount-1). g is the group index; group names in enum NavIconGroup are inferred from the Toolkit.",
+   "size": 4,
+   "count": "navHeader.groupCount",
+   "fields": [
+    {
+     "name": "iconOffset",
+     "offset": 0,
+     "type": "u16",
+     "notes": "Offset of the first icon row of this group, counted from the start of section 4. 0 when the group has no icons (as written by the Workshop). Must be rewritten whenever rows move."
+    },
+    {
+     "name": "iconCount",
+     "offset": 2,
+     "type": "u16",
+     "notes": "Number of consecutive 16-byte icon rows at iconOffset."
+    }
+   ]
+  },
+  {
+   "name": "navIcon",
+   "where": "EBP section 4, offset navGroup[g].iconOffset + 16*j (j = 0 .. navGroup[g].iconCount-1). Rows of all groups follow the group table back to back (first row at 10 + 4*groupCount, so rows are only 2-byte aligned).",
+   "size": 16,
+   "count": "sum of navGroup[g].iconCount over all groups",
+   "fields": [
+    {
+     "name": "linePosX",
+     "offset": 0,
+     "type": "s16",
+     "notes": "X of the line marker (e.g. an exit line) on the navigation map; coordinate space unverified."
+    },
+    {
+     "name": "linePosY",
+     "offset": 2,
+     "type": "s16",
+     "notes": "Y of the line marker on the navigation map."
+    },
+    {
+     "name": "iconPosX",
+     "offset": 4,
+     "type": "s16",
+     "notes": "X of the icon on the navigation map."
+    },
+    {
+     "name": "iconPosY",
+     "offset": 6,
+     "type": "s16",
+     "notes": "Y of the icon on the navigation map."
+    },
+    {
+     "name": "iconLink",
+     "offset": 8,
+     "type": "u16",
+     "notes": "Link to the icon to show (target table unknown)."
+    },
+    {
+     "name": "requiredMapFlag",
+     "offset": 10,
+     "type": "u16",
+     "notes": "Map flag that must be set for the icon to appear (flag space unknown)."
+    },
+    {
+     "name": "unknown0C",
+     "offset": 12,
+     "type": "bytes",
+     "length": 4,
+     "notes": "Not interpreted (labelled unused with a question mark by the Workshop). Preserve."
+    }
+   ]
+  }
+ ],
+ "enums": {
+  "NavIconGroup": {
+   "0": "Local Exit Line",
+   "1": "Regional Exit Line",
+   "2": "Crystal",
+   "3": "Normal",
+   "4": "Strahl"
+  }
+ },
+ "roundTrip": [
+  "Keep the magic 'NAVIICN2'; groupCount is 16-bit and the group table starts at 0x0A.",
+  "Edit icon row fields in place when no rows are added or removed; nothing moves.",
+  "Keep unknown0C bytes as read.",
+  "When rows are added or removed: lay the rows out again group by group after the group table, rewrite every group iconOffset (0 for an empty group unless the original used something else) and iconCount, then zero-pad the section to 16.",
+  "All offsets are u16: the section must stay below 64 KiB.",
+  "Keep the number and order of groups; the group index carries the meaning.",
+  "If the section length changes, every EBP section stored after it moves: recompute their u32 slots at EBP+0x10+4n, keep 16-byte starts with zero fill, keep absent sections at 0, keep section 6 (TIM2) and section 19 (ARD) intact."
+ ],
+ "gaps": [
+  "Group meanings come from the Toolkit list EbpeMapIconGroupList (spelled \"Cystal\" there); our write-up of the Toolkit files that list under the script's Map Icons view, so the match with section 4 group indices is inferred.",
+  "Coordinate space of the line and icon positions (navigation-map pixels?).",
+  "What iconLink points to (an icon shape, a texture region in section 6, or an MRP element).",
+  "Which flag space requiredMapFlag uses (map reveal flags?).",
+  "Whether vanilla files ever share rows between groups, store groups out of order, or give empty groups a non-zero offset (the format allows all three)."
+ ]
+}

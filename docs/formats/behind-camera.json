@@ -1,0 +1,144 @@
+{
+ "id": "behind-camera",
+ "title": "Behind Camera table (per-character camera presets)",
+ "files": [],
+ "container": {
+  "kind": "custom",
+  "notes": "World file type 9 id 3 (name unknown). 0x40-byte records of 16 floats, indexed by the behind-camera id of battlepack section 16 +0x07; header not documented. Runtime copy at [0x02098DF0]."
+ },
+ "records": [
+  {
+   "name": "behindCamera",
+   "where": "Records of the Behind Camera world file (game file type 9, id 3); in memory at [0x02098DF0]. Record i = BcameBehindCameraList id i (party members reference it from battlepack section 16 +0x07; 255 = none).",
+   "size": 64,
+   "count": "16 (ids 0-15: Default, 13 espers, Chocobo, reserve)",
+   "fields": [
+    {
+     "name": "viewAngleYOffset",
+     "offset": 0,
+     "type": "f32",
+     "notes": "View angle Y offset (the only identified value). [src: TK L1194]"
+    },
+    {
+     "name": "unknownFloat04",
+     "offset": 4,
+     "type": "f32",
+     "notes": "Float not identified by the Toolkit (\"?\"). [src: TK L1194, L1856]"
+    },
+    {
+     "name": "unknownFloat08",
+     "offset": 8,
+     "type": "f32",
+     "notes": "Float not identified by the Toolkit (\"?\"). [src: TK L1194, L1856]"
+    },
+    {
+     "name": "unknownFloat0C",
+     "offset": 12,
+     "type": "f32",
+     "notes": "Float not identified by the Toolkit (\"?\"). [src: TK L1194, L1856]"
+    },
+    {
+     "name": "unknownFloat10",
+     "offset": 16,
+     "type": "f32",
+     "notes": "Float not identified by the Toolkit (\"?\"). [src: TK L1194, L1856]"
+    },
+    {
+     "name": "unknownFloat14",
+     "offset": 20,
+     "type": "f32",
+     "notes": "Float not identified by the Toolkit (\"?\"). [src: TK L1194, L1856]"
+    },
+    {
+     "name": "unknownFloat18",
+     "offset": 24,
+     "type": "f32",
+     "notes": "Float not identified by the Toolkit (\"?\"). [src: TK L1194, L1856]"
+    },
+    {
+     "name": "unknownFloat1C",
+     "offset": 28,
+     "type": "f32",
+     "notes": "Float not identified by the Toolkit (\"?\"). [src: TK L1194, L1856]"
+    },
+    {
+     "name": "unknownFloat20",
+     "offset": 32,
+     "type": "f32",
+     "notes": "Float not identified by the Toolkit (\"?\"). [src: TK L1194, L1856]"
+    },
+    {
+     "name": "unknownFloat24",
+     "offset": 36,
+     "type": "f32",
+     "notes": "Float not identified by the Toolkit (\"?\"). [src: TK L1194, L1856]"
+    },
+    {
+     "name": "unknownFloat28",
+     "offset": 40,
+     "type": "f32",
+     "notes": "Float not identified by the Toolkit (\"?\"). [src: TK L1194, L1856]"
+    },
+    {
+     "name": "unknownFloat2C",
+     "offset": 44,
+     "type": "f32",
+     "notes": "Float not identified by the Toolkit (\"?\"). [src: TK L1194, L1856]"
+    },
+    {
+     "name": "unknownFloat30",
+     "offset": 48,
+     "type": "f32",
+     "notes": "Float not identified by the Toolkit (\"?\"). [src: TK L1194, L1856]"
+    },
+    {
+     "name": "unknownFloat34",
+     "offset": 52,
+     "type": "f32",
+     "notes": "Float not identified by the Toolkit (\"?\"). [src: TK L1194, L1856]"
+    },
+    {
+     "name": "unknownFloat38",
+     "offset": 56,
+     "type": "f32",
+     "notes": "Float not identified by the Toolkit (\"?\"). [src: TK L1194, L1856]"
+    },
+    {
+     "name": "unknownFloat3C",
+     "offset": 60,
+     "type": "f32",
+     "notes": "Float not identified by the Toolkit (\"?\"). [src: TK L1194, L1856]"
+    }
+   ]
+  }
+ ],
+ "enums": {
+  "BcameBehindCameraList": {
+   "255": "None (0xFF)",
+   "0": "Default",
+   "1": "Belias",
+   "2": "Mateus",
+   "3": "Adrammelech",
+   "4": "Hashmal",
+   "5": "Cúchulainn",
+   "6": "Famfrit",
+   "7": "Zalera",
+   "8": "Shemhazai",
+   "9": "Chaos",
+   "10": "Zeromus",
+   "11": "Exodus",
+   "12": "Ultima",
+   "13": "Zodiark",
+   "14": "Chocobo",
+   "15": "Reserve (0x0F)"
+  }
+ },
+ "roundTrip": [
+  "Edit floats in place; keep the unknown header unchanged.",
+  "Do not change the record count (party members index it by id)."
+ ],
+ "gaps": [
+  "File name and header/record start.",
+  "Meaning of 15 of the 16 floats (+0x04 .. +0x3C)."
+ ]
+}

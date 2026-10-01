@@ -1,0 +1,1345 @@
+{
+ "id": "live-battle-actor-chain",
+ "title": "Battle Actor Work / Battle Unit Work / Actor Model & Keep — memory-only",
+ "files": [],
+ "container": {
+  "kind": "raw",
+  "notes": "MEMORY-ONLY (runtime). Reached from the Battle Script Keep array at 0x02098E10 (5 slots, stride 0x288): keep +0x08 -> actor list -> Battle Actor Work -> +0x30 Battle Unit Work -> +0x698 Battle Unit Keep. Steam 1.0.4.0 addresses."
+ },
+ "records": [
+  {
+   "name": "battleActorWork",
+   "where": "Battle Script Keep +0x08 -> actor list; actor i = u64 [list + 8 + i*8] (count = u32 [list]); game function 0x00358940(keep, actorId).",
+   "size": 288,
+   "count": "u32 [actorList] per Battle Script Keep",
+   "fields": [
+    {
+     "name": "identifier",
+     "offset": 0,
+     "type": "u16",
+     "notes": "Actor identifier. [src: Drive getBattleActorWork.lua:12-31]"
+    },
+    {
+     "name": "unknown02",
+     "offset": 2,
+     "type": "bytes",
+     "length": 12,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "activityFlags",
+     "offset": 14,
+     "type": "bf8",
+     "bits": [
+      {
+       "name": "unitType",
+       "bitStart": 0,
+       "bitLength": 4,
+       "enum": "UnitTypeList"
+      },
+      {
+       "name": "talkIconState",
+       "bitStart": 4,
+       "bitLength": 1
+      }
+     ],
+     "notes": "Activity flags. [src: Drive getBattleActorWork.lua:12-31; TK L645]"
+    },
+    {
+     "name": "unknown0F",
+     "offset": 15,
+     "type": "bytes",
+     "length": 33,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "battleUnitWork",
+     "offset": 48,
+     "type": "u64",
+     "notes": "Pointer to the Battle Unit Work. [src: TK L348]"
+    },
+    {
+     "name": "unknown38",
+     "offset": 56,
+     "type": "bytes",
+     "length": 8,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "actorDeclaration",
+     "offset": 64,
+     "type": "u64",
+     "notes": "Pointer to the actor declaration in the loaded script; its first u32 is the name offset (name = script + u32[script+0x4C] + offset, Shift-JIS). [src: TK L376, L677; Drive SummonProbe.lua:56-62]"
+    },
+    {
+     "name": "unknown48",
+     "offset": 72,
+     "type": "bytes",
+     "length": 88,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "battleTaskControlList",
+     "offset": 160,
+     "type": "u64",
+     "notes": "Pointer to the Battle Task Control list (20-byte records). [src: TK L380, L694]"
+    },
+    {
+     "name": "battleTaskExecutionList",
+     "offset": 168,
+     "type": "u64",
+     "notes": "Pointer to the Battle Task Execution list (40-byte records, VM stack at +0x18). [src: TK L384, L695]"
+    },
+    {
+     "name": "unknownB0",
+     "offset": 176,
+     "type": "bytes",
+     "length": 8,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "battleActorSkeleton",
+     "offset": 184,
+     "type": "u64",
+     "notes": "Pointer to the skeleton (1 Sign 128 B, 2 Line 32 B, 3 Unit 560 B). [src: TK L388, L691]"
+    },
+    {
+     "name": "battleActorModel",
+     "offset": 192,
+     "type": "u64",
+     "notes": "Pointer to the Battle Actor Model. [src: Drive getBattleActorWork.lua:12-31; TK L392]"
+    },
+    {
+     "name": "unknownC8",
+     "offset": 200,
+     "type": "bytes",
+     "length": 44,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "fieldSignIcon",
+     "offset": 244,
+     "type": "u8",
+     "enum": "BceFieldSignIconList",
+     "notes": "Field sign icon. [src: Drive getBattleActorWork.lua:12-31; TK L690]"
+    },
+    {
+     "name": "unknownF5",
+     "offset": 245,
+     "type": "bytes",
+     "length": 1,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "spawnGroup",
+     "offset": 246,
+     "type": "s16",
+     "notes": "Spawn group. [src: Drive getBattleActorWork.lua:12-31]"
+    },
+    {
+     "name": "targetInfoNamePointer",
+     "offset": 248,
+     "type": "u64",
+     "notes": "Target-info name pointer. [src: Drive getBattleActorWork.lua:12-31]"
+    },
+    {
+     "name": "unknown100",
+     "offset": 256,
+     "type": "bytes",
+     "length": 2,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "targetInfoNameIdentifier",
+     "offset": 258,
+     "type": "s16",
+     "enum": "CharacterNameList",
+     "notes": "Target-info name id. [src: Drive getBattleActorWork.lua:12-31]"
+    },
+    {
+     "name": "unknown104",
+     "offset": 260,
+     "type": "bytes",
+     "length": 3,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "overheadIconType",
+     "offset": 263,
+     "type": "u8",
+     "enum": "BceOverheadIconTypeList",
+     "notes": "Overhead icon type. [src: Drive getBattleActorWork.lua:12-31; TK L690]"
+    },
+    {
+     "name": "unknown108",
+     "offset": 264,
+     "type": "bytes",
+     "length": 24,
+     "notes": "Not identified by any source; keep the original bytes."
+    }
+   ]
+  },
+  {
+   "name": "battleUnitWork",
+   "where": "Battle Actor Work +0x30 -> Battle Unit Work; also game function 0x00321170 (by index) / 0x0031B860 (by actor). Count of units: [0x0208E6A0].",
+   "size": 3920,
+   "count": "[0x0208E6A0] (Battle Unit Work count, TK L314)",
+   "fields": [
+    {
+     "name": "battleFlags",
+     "offset": 0,
+     "type": "bf64",
+     "bits": [
+      {
+       "name": "useManuallySelectedAction",
+       "bitStart": 14,
+       "bitLength": 1
+      },
+      {
+       "name": "counterState",
+       "bitStart": 22,
+       "bitLength": 1
+      },
+      {
+       "name": "isInBattleStance",
+       "bitStart": 23,
+       "bitLength": 1
+      },
+      {
+       "name": "noMovementState",
+       "bitStart": 46,
+       "bitLength": 1
+      },
+      {
+       "name": "canBeInBattleStance",
+       "bitStart": 48,
+       "bitLength": 1
+      },
+      {
+       "name": "isTargeted",
+       "bitStart": 52,
+       "bitLength": 1
+      }
+     ],
+     "notes": "Battle flags (64-bit); only a few bits are named. [src: Drive getBattleUnitWork.lua:34-101]"
+    },
+    {
+     "name": "focusIdentifier",
+     "offset": 8,
+     "type": "u32",
+     "notes": "Focus id: the handle used everywhere to refer to this actor. Community scripts decode it as (id >> 16) & 0xF = Battle Script Keep slot, id & 0xFFFF = actor index in that keep. [src: Drive getBattleUnitWork.lua:34-101; TK L716; Drive BlueMagick.lua:1200-1210]"
+    },
+    {
+     "name": "unknown0C",
+     "offset": 12,
+     "type": "bytes",
+     "length": 4,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "battleActorWork",
+     "offset": 16,
+     "type": "u64",
+     "notes": "Pointer to the Battle Actor Work of this unit. [src: Drive getBattleUnitWork.lua:34-101; TK L717, L645]"
+    },
+    {
+     "name": "targetInfoNamePointer",
+     "offset": 24,
+     "type": "u64",
+     "notes": "Pointer to the name shown in the target info window. [src: Drive getBattleUnitWork.lua:34-101]"
+    },
+    {
+     "name": "unknown20",
+     "offset": 32,
+     "type": "bytes",
+     "length": 4,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "partyLeaderFocusIdentifier",
+     "offset": 36,
+     "type": "u32",
+     "notes": "Party leader focus id. [src: Drive getBattleUnitWork.lua:34-101; TK L718]"
+    },
+    {
+     "name": "counterTargetFocusIdentifier",
+     "offset": 40,
+     "type": "u32",
+     "notes": "Counter target focus id. [src: Drive getBattleUnitWork.lua:34-101; TK L718]"
+    },
+    {
+     "name": "animationCasterFocusIdentifier",
+     "offset": 44,
+     "type": "u32",
+     "notes": "Animation caster focus id. [src: TK L718]"
+    },
+    {
+     "name": "koCasterFocusIdentifier",
+     "offset": 48,
+     "type": "u32",
+     "notes": "Focus id of whoever KOed this unit. [src: Drive getBattleUnitWork.lua:34-101; TK L718]"
+    },
+    {
+     "name": "unknown34",
+     "offset": 52,
+     "type": "bytes",
+     "length": 20,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "hpLowLimit",
+     "offset": 72,
+     "type": "s32",
+     "notes": "HP floor; HP is clamped to it (set > 0 for an unkillable unit). [src: Drive getBattleUnitWork.lua:34-101; TK L719]"
+    },
+    {
+     "name": "despawnPositionRange",
+     "offset": 76,
+     "type": "f32",
+     "notes": "Despawn position range. [src: Drive getBattleUnitWork.lua:34-101; TK L720]"
+    },
+    {
+     "name": "despawnType",
+     "offset": 80,
+     "type": "u8",
+     "enum": "BceDespawnTypeList",
+     "notes": "Despawn type. [src: Drive getBattleUnitWork.lua:34-101]"
+    },
+    {
+     "name": "despawnPositionIdentifier",
+     "offset": 81,
+     "type": "u8",
+     "notes": "Despawn position id. [src: Drive getBattleUnitWork.lua:34-101]"
+    },
+    {
+     "name": "unknown52",
+     "offset": 82,
+     "type": "bytes",
+     "length": 2,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "belong",
+     "offset": 84,
+     "type": "u8",
+     "notes": "Belong (side). [src: Drive getBattleUnitWork.lua:34-101; TK L721]"
+    },
+    {
+     "name": "classification",
+     "offset": 85,
+     "type": "u8",
+     "enum": "ClassificationList",
+     "notes": "Classification. [src: Drive getBattleUnitWork.lua:34-101]"
+    },
+    {
+     "name": "genus",
+     "offset": 86,
+     "type": "u8",
+     "enum": "GenusList",
+     "notes": "Genus. [src: Drive getBattleUnitWork.lua:34-101]"
+    },
+    {
+     "name": "spawnGroup",
+     "offset": 87,
+     "type": "s8",
+     "notes": "Spawn group. [src: Drive getBattleUnitWork.lua:34-101]"
+    },
+    {
+     "name": "unitType",
+     "offset": 88,
+     "type": "u8",
+     "enum": "UnitTypeList",
+     "notes": "Unit type. [src: Drive getBattleUnitWork.lua:34-101; TK L721]"
+    },
+    {
+     "name": "unknown59",
+     "offset": 89,
+     "type": "bytes",
+     "length": 11,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "angleDetection",
+     "offset": 100,
+     "type": "f32",
+     "notes": "Aggro cone angle. [src: Drive getBattleUnitWork.lua:34-101; TK L722]"
+    },
+    {
+     "name": "radiusDetection",
+     "offset": 104,
+     "type": "f32",
+     "notes": "Aggro radius. [src: Drive getBattleUnitWork.lua:34-101; TK L722]"
+    },
+    {
+     "name": "unknown6C",
+     "offset": 108,
+     "type": "bytes",
+     "length": 4,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "steps",
+     "offset": 112,
+     "type": "f32",
+     "notes": "Steps (0-27). [src: Drive getBattleUnitWork.lua:34-101; TK L723]"
+    },
+    {
+     "name": "unknown74",
+     "offset": 116,
+     "type": "bytes",
+     "length": 228,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "followerSpeed",
+     "offset": 344,
+     "type": "f32",
+     "notes": "Follower speed. The Toolkit lists yaw, walk/run/battle-run speed and flying height between 0x158 and 0x190 without exact offsets. [src: Drive getBattleUnitWork.lua:34-101; TK L724]"
+    },
+    {
+     "name": "unknown15C",
+     "offset": 348,
+     "type": "bytes",
+     "length": 52,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "followerDistance",
+     "offset": 400,
+     "type": "f32",
+     "notes": "Follower distance. [src: Drive getBattleUnitWork.lua:34-101; TK L724]"
+    },
+    {
+     "name": "unknown194",
+     "offset": 404,
+     "type": "bytes",
+     "length": 1280,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "nextMagickEffectProcessingIdentifier",
+     "offset": 1684,
+     "type": "u8",
+     "notes": "Index into the Magick Effect Processing array (0x022C17B0, 32 slots). [src: Drive getBattleUnitWork.lua:34-101; TK L725, L1323]"
+    },
+    {
+     "name": "currentMagickEffectProcessingIdentifier",
+     "offset": 1685,
+     "type": "u8",
+     "notes": "Current magick-effect slot. [src: Drive getBattleUnitWork.lua:34-101]"
+    },
+    {
+     "name": "quickeningMagickEffectProcessingIdentifier",
+     "offset": 1686,
+     "type": "u8",
+     "notes": "Quickening magick-effect slot. [src: Drive getBattleUnitWork.lua:34-101]"
+    },
+    {
+     "name": "unknown697",
+     "offset": 1687,
+     "type": "bytes",
+     "length": 1,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "battleUnitKeep",
+     "offset": 1688,
+     "type": "u64",
+     "notes": "Pointer to the Battle Unit Keep (see live-battle-unit-keep). [src: Drive getBattleUnitWork.lua:34-101; TK L352]"
+    },
+    {
+     "name": "battleUnitKeepPlus",
+     "offset": 1696,
+     "type": "u64",
+     "notes": "Pointer to the Battle Unit Keep Plus. [src: Drive getBattleUnitWork.lua:34-101; TK L356]"
+    },
+    {
+     "name": "unknown6A8",
+     "offset": 1704,
+     "type": "bytes",
+     "length": 12,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "actionProcessingType",
+     "offset": 1716,
+     "type": "u8",
+     "notes": "Action processing type. [src: Drive getBattleUnitWork.lua:34-101; TK L726]"
+    },
+    {
+     "name": "unknown6B5",
+     "offset": 1717,
+     "type": "bytes",
+     "length": 1,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "reserveTargetCount",
+     "offset": 1718,
+     "type": "u8",
+     "notes": "Reserve target count. [src: Drive getBattleUnitWork.lua:34-101]"
+    },
+    {
+     "name": "comboCount",
+     "offset": 1719,
+     "type": "u8",
+     "notes": "Combo count. [src: Drive getBattleUnitWork.lua:34-101]"
+    },
+    {
+     "name": "totalComboCount",
+     "offset": 1720,
+     "type": "u8",
+     "notes": "Total combo count. [src: Drive getBattleUnitWork.lua:34-101]"
+    },
+    {
+     "name": "reserveTargets",
+     "offset": 1721,
+     "type": "bytes",
+     "length": 5,
+     "notes": "5 x u8. Xeavin's class calls them reserve targets; the Toolkit calls the same 5 bytes \"Restrictions\". [src: Drive getBattleUnitWork.lua:34-101; TK L706]"
+    },
+    {
+     "name": "unknown6BE",
+     "offset": 1726,
+     "type": "bytes",
+     "length": 34,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "gambitBattleLogicPointer",
+     "offset": 1760,
+     "type": "u64",
+     "notes": "Pointer to the gambit battle logic. [src: Drive getBattleUnitWork.lua:34-101; TK L727]"
+    },
+    {
+     "name": "unknown6E8",
+     "offset": 1768,
+     "type": "bytes",
+     "length": 16,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "autoAttackBattleLogicPointer",
+     "offset": 1784,
+     "type": "u64",
+     "notes": "Pointer to the auto-attack battle logic. [src: Drive getBattleUnitWork.lua:34-101]"
+    },
+    {
+     "name": "unknown700",
+     "offset": 1792,
+     "type": "bytes",
+     "length": 8,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "currentBattleLogicPlusPointer",
+     "offset": 1800,
+     "type": "u64",
+     "notes": "Current battle-logic-plus pointer. [src: Drive getBattleUnitWork.lua:34-101]"
+    },
+    {
+     "name": "currentTargetFocusIdentifier",
+     "offset": 1808,
+     "type": "u32",
+     "notes": "Current target focus id. [src: Drive getBattleUnitWork.lua:34-101]"
+    },
+    {
+     "name": "currentAction",
+     "offset": 1812,
+     "type": "u16",
+     "enum": "BpActionList",
+     "notes": "Current action (section 14 row). [src: Drive getBattleUnitWork.lua:34-101]"
+    },
+    {
+     "name": "unknown716",
+     "offset": 1814,
+     "type": "bytes",
+     "length": 34,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "lastBattleLogicPlusPointer",
+     "offset": 1848,
+     "type": "u64",
+     "notes": "Last battle-logic-plus pointer. [src: Drive getBattleUnitWork.lua:34-101]"
+    },
+    {
+     "name": "lastTargetFocusIdentifier",
+     "offset": 1856,
+     "type": "u32",
+     "notes": "Last target focus id. [src: Drive getBattleUnitWork.lua:34-101]"
+    },
+    {
+     "name": "lastAction",
+     "offset": 1860,
+     "type": "u16",
+     "enum": "BpActionList",
+     "notes": "Last action. [src: Drive getBattleUnitWork.lua:34-101]"
+    },
+    {
+     "name": "unknown746",
+     "offset": 1862,
+     "type": "bytes",
+     "length": 2,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "autoAttackFocusIdentifier",
+     "offset": 1864,
+     "type": "u32",
+     "notes": "Auto-attack target focus id. [src: Drive getBattleUnitWork.lua:34-101; TK L728]"
+    },
+    {
+     "name": "unknown74C",
+     "offset": 1868,
+     "type": "bytes",
+     "length": 4,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "partyLeaderTargetFocusIdentifier",
+     "offset": 1872,
+     "type": "u32",
+     "notes": "Party leader target focus id. [src: Drive getBattleUnitWork.lua:34-101]"
+    },
+    {
+     "name": "unknown754",
+     "offset": 1876,
+     "type": "bytes",
+     "length": 8,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "idleChargeTime",
+     "offset": 1884,
+     "type": "u32",
+     "notes": "Idle charge time. [src: Drive getBattleUnitWork.lua:34-101]"
+    },
+    {
+     "name": "unknown760",
+     "offset": 1888,
+     "type": "bytes",
+     "length": 8,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "currentChargeTime",
+     "offset": 1896,
+     "type": "u32",
+     "notes": "Current charge time. [src: Drive getBattleUnitWork.lua:34-101]"
+    },
+    {
+     "name": "requiredChargeTime",
+     "offset": 1900,
+     "type": "u32",
+     "notes": "Required charge time. [src: Drive getBattleUnitWork.lua:34-101]"
+    },
+    {
+     "name": "lastChargeTime",
+     "offset": 1904,
+     "type": "u32",
+     "notes": "Last charge time. [src: Drive getBattleUnitWork.lua:34-101]"
+    },
+    {
+     "name": "unknown774",
+     "offset": 1908,
+     "type": "bytes",
+     "length": 8,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "activeTargetCount",
+     "offset": 1916,
+     "type": "s32",
+     "notes": "Number of active targets. The Toolkit places the 32-entry active target list at +0x778, so +0x778 is a list header and the 16-byte entries start at +0x780 (inferred). [src: Drive getBattleUnitWork.lua:34-101; TK L707]"
+    },
+    {
+     "name": "activeTargets",
+     "offset": 1920,
+     "type": "bytes",
+     "length": 512,
+     "notes": "32 x 16-byte active target entries (entry layout not documented; inferred start). [src: TK L707]"
+    },
+    {
+     "name": "reflectTargets",
+     "offset": 2432,
+     "type": "bytes",
+     "length": 512,
+     "notes": "32 x 16-byte reflect target entries (the Toolkit's offset; may also start with a header). [src: TK L708]"
+    },
+    {
+     "name": "unknownB80",
+     "offset": 2944,
+     "type": "bytes",
+     "length": 32,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "manuallySelectedAction",
+     "offset": 2976,
+     "type": "u16",
+     "enum": "BpActionList",
+     "notes": "Action picked manually from the battle menu. [src: Drive getBattleUnitWork.lua:34-101]"
+    },
+    {
+     "name": "unknownBA2",
+     "offset": 2978,
+     "type": "bytes",
+     "length": 22,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "manuallySelectedTargetFocusIdentifier",
+     "offset": 3000,
+     "type": "u32",
+     "notes": "Target picked manually. [src: Drive getBattleUnitWork.lua:34-101]"
+    },
+    {
+     "name": "unknownBBC",
+     "offset": 3004,
+     "type": "bytes",
+     "length": 8,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "potentialTargetCount",
+     "offset": 3012,
+     "type": "u32",
+     "notes": "Number of potential targets; the list starts at +0xBC0 (TK), entries from +0xBC8 (inferred). [src: Drive getBattleUnitWork.lua:34-101; TK L709]"
+    },
+    {
+     "name": "potentialTargets",
+     "offset": 3016,
+     "type": "bytes",
+     "length": 512,
+     "notes": "32 x 16-byte potential target entries (ends at 0xDC7, right before modifiedContent). [src: TK L709]"
+    },
+    {
+     "name": "modifiedContent",
+     "offset": 3528,
+     "type": "u16",
+     "notes": "Modified content. [src: Drive getBattleUnitWork.lua:34-101; TK L729]"
+    },
+    {
+     "name": "unknownDCA",
+     "offset": 3530,
+     "type": "bytes",
+     "length": 2,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "battleStanceSwitchTime",
+     "offset": 3532,
+     "type": "u32",
+     "notes": "Battle stance switch time. [src: Drive getBattleUnitWork.lua:34-101]"
+    },
+    {
+     "name": "unknownDD0",
+     "offset": 3536,
+     "type": "bytes",
+     "length": 132,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "removedGil",
+     "offset": 3668,
+     "type": "s32",
+     "notes": "Gil removed (e.g. Gil Toss). [src: Drive getBattleUnitWork.lua:34-101; TK L730]"
+    },
+    {
+     "name": "addedGil",
+     "offset": 3672,
+     "type": "s32",
+     "notes": "Gil added. [src: Drive getBattleUnitWork.lua:34-101]"
+    },
+    {
+     "name": "unknownE5C",
+     "offset": 3676,
+     "type": "bytes",
+     "length": 4,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "ardUnit",
+     "offset": 3680,
+     "type": "u64",
+     "notes": "Pointer to this foe's ARD Unit record (ARD section 4) - the bridge from a live foe to its data. [src: Drive getBattleUnitWork.lua:34-101; TK L731, L360]"
+    },
+    {
+     "name": "ardClass",
+     "offset": 3688,
+     "type": "u64",
+     "notes": "Pointer to the ARD Class record (section 2). [src: Drive getBattleUnitWork.lua:34-101; TK L364]"
+    },
+    {
+     "name": "ardDefaultStats",
+     "offset": 3696,
+     "type": "u64",
+     "notes": "Pointer to the ARD Default Stats record (section 7). [src: TK L368]"
+    },
+    {
+     "name": "ardAdditiveStats",
+     "offset": 3704,
+     "type": "u64",
+     "notes": "Pointer to the ARD Additive Stats record (section 8). [src: TK L372]"
+    },
+    {
+     "name": "permanentAugments",
+     "offset": 3712,
+     "type": "bytes",
+     "length": 16,
+     "notes": "Permanent augments of the unit, 16 bytes (same 128-bit layout as the keep's augment sets). [src: Drive getBattleUnitWork.lua:34-101]"
+    },
+    {
+     "name": "permanentStatusEffectImmunities",
+     "offset": 3728,
+     "type": "bf32",
+     "bits": [
+      {
+       "name": "ko",
+       "bitStart": 0,
+       "bitLength": 1
+      },
+      {
+       "name": "stone",
+       "bitStart": 1,
+       "bitLength": 1
+      },
+      {
+       "name": "petrify",
+       "bitStart": 2,
+       "bitLength": 1
+      },
+      {
+       "name": "stop",
+       "bitStart": 3,
+       "bitLength": 1
+      },
+      {
+       "name": "sleep",
+       "bitStart": 4,
+       "bitLength": 1
+      },
+      {
+       "name": "confuse",
+       "bitStart": 5,
+       "bitLength": 1
+      },
+      {
+       "name": "doom",
+       "bitStart": 6,
+       "bitLength": 1
+      },
+      {
+       "name": "blind",
+       "bitStart": 7,
+       "bitLength": 1
+      },
+      {
+       "name": "poison",
+       "bitStart": 8,
+       "bitLength": 1
+      },
+      {
+       "name": "silence",
+       "bitStart": 9,
+       "bitLength": 1
+      },
+      {
+       "name": "sap",
+       "bitStart": 10,
+       "bitLength": 1
+      },
+      {
+       "name": "oil",
+       "bitStart": 11,
+       "bitLength": 1
+      },
+      {
+       "name": "reverse",
+       "bitStart": 12,
+       "bitLength": 1
+      },
+      {
+       "name": "disable",
+       "bitStart": 13,
+       "bitLength": 1
+      },
+      {
+       "name": "immobilize",
+       "bitStart": 14,
+       "bitLength": 1
+      },
+      {
+       "name": "slow",
+       "bitStart": 15,
+       "bitLength": 1
+      },
+      {
+       "name": "disease",
+       "bitStart": 16,
+       "bitLength": 1
+      },
+      {
+       "name": "lure",
+       "bitStart": 17,
+       "bitLength": 1
+      },
+      {
+       "name": "protect",
+       "bitStart": 18,
+       "bitLength": 1
+      },
+      {
+       "name": "shell",
+       "bitStart": 19,
+       "bitLength": 1
+      },
+      {
+       "name": "haste",
+       "bitStart": 20,
+       "bitLength": 1
+      },
+      {
+       "name": "bravery",
+       "bitStart": 21,
+       "bitLength": 1
+      },
+      {
+       "name": "faith",
+       "bitStart": 22,
+       "bitLength": 1
+      },
+      {
+       "name": "reflect",
+       "bitStart": 23,
+       "bitLength": 1
+      },
+      {
+       "name": "invisible",
+       "bitStart": 24,
+       "bitLength": 1
+      },
+      {
+       "name": "regen",
+       "bitStart": 25,
+       "bitLength": 1
+      },
+      {
+       "name": "float",
+       "bitStart": 26,
+       "bitLength": 1
+      },
+      {
+       "name": "berserk",
+       "bitStart": 27,
+       "bitLength": 1
+      },
+      {
+       "name": "bubble",
+       "bitStart": 28,
+       "bitLength": 1
+      },
+      {
+       "name": "hpCritical",
+       "bitStart": 29,
+       "bitLength": 1
+      },
+      {
+       "name": "libra",
+       "bitStart": 30,
+       "bitLength": 1
+      },
+      {
+       "name": "xZone",
+       "bitStart": 31,
+       "bitLength": 1
+      }
+     ],
+     "notes": "Permanent status immunities. [src: Drive getBattleUnitWork.lua:34-101]"
+    },
+    {
+     "name": "unknownE94",
+     "offset": 3732,
+     "type": "bytes",
+     "length": 4,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "eventFlagGroup",
+     "offset": 3736,
+     "type": "u8",
+     "notes": "Event flag group. [src: Drive getBattleUnitWork.lua:34-101; TK L732]"
+    },
+    {
+     "name": "unknownE99",
+     "offset": 3737,
+     "type": "bytes",
+     "length": 1,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "deathFlags",
+     "offset": 3738,
+     "type": "bf8",
+     "bits": [
+      {
+       "name": "poison",
+       "bitStart": 0,
+       "bitLength": 1
+      },
+      {
+       "name": "petrify",
+       "bitStart": 1,
+       "bitLength": 1
+      },
+      {
+       "name": "poisonTick",
+       "bitStart": 2,
+       "bitLength": 1
+      },
+      {
+       "name": "noExpAndLp",
+       "bitStart": 3,
+       "bitLength": 1
+      }
+     ],
+     "notes": "Death flags. [src: Drive getBattleUnitWork.lua:34-101]"
+    },
+    {
+     "name": "unknownE9B",
+     "offset": 3739,
+     "type": "bytes",
+     "length": 13,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "attackerCount",
+     "offset": 3752,
+     "type": "u8",
+     "notes": "Attacker count. [src: Drive getBattleUnitWork.lua:34-101; TK L733]"
+    },
+    {
+     "name": "attackerIdentifier0",
+     "offset": 3753,
+     "type": "u8",
+     "notes": "Xeavin's class calls this byte `identifier`; the Toolkit says the attacker id list starts here (length not stated). [src: Drive getBattleUnitWork.lua:34-101; TK L733]"
+    },
+    {
+     "name": "unknownEAA",
+     "offset": 3754,
+     "type": "bytes",
+     "length": 166,
+     "notes": "Not identified by any source; keep the original bytes."
+    }
+   ]
+  },
+  {
+   "name": "battleActorModel",
+   "where": "Battle Actor Work +0xC0",
+   "size": 392,
+   "count": "one per actor with a model",
+   "fields": [
+    {
+     "name": "unknown00",
+     "offset": 0,
+     "type": "bytes",
+     "length": 312,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "battleActorKeep",
+     "offset": 312,
+     "type": "u64",
+     "notes": "Pointer to the Battle Actor Keep. [src: Drive getBattleActorModel.lua:2-15; TK L396]"
+    },
+    {
+     "name": "unknown140",
+     "offset": 320,
+     "type": "bytes",
+     "length": 8,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "weight",
+     "offset": 328,
+     "type": "f32",
+     "notes": "Weight. [src: Drive getBattleActorModel.lua:2-15]"
+    },
+    {
+     "name": "modelVariation",
+     "offset": 332,
+     "type": "u8",
+     "notes": "Model variation. [src: Drive getBattleActorModel.lua:2-15; TK L692]"
+    },
+    {
+     "name": "modelColorVariation",
+     "offset": 333,
+     "type": "u8",
+     "notes": "Model colour variation. [src: Drive getBattleActorModel.lua:2-15]"
+    },
+    {
+     "name": "unknown14E",
+     "offset": 334,
+     "type": "bytes",
+     "length": 58,
+     "notes": "Not identified by any source; keep the original bytes."
+    }
+   ]
+  },
+  {
+   "name": "battleActorKeep",
+   "where": "Battle Actor Model +0x138",
+   "size": 304,
+   "count": "one per actor model",
+   "fields": [
+    {
+     "name": "unknown00",
+     "offset": 0,
+     "type": "bytes",
+     "length": 8,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "weight",
+     "offset": 8,
+     "type": "f32",
+     "notes": "Weight. [src: Drive getBattleActorKeep.lua:2-21]"
+    },
+    {
+     "name": "unknown0C",
+     "offset": 12,
+     "type": "bytes",
+     "length": 36,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "positionX",
+     "offset": 48,
+     "type": "f32",
+     "notes": "Current position X (4-float vector). [src: Drive getBattleActorKeep.lua:2-21; Drive getQuaternion.lua:2-14]"
+    },
+    {
+     "name": "positionY",
+     "offset": 52,
+     "type": "f32",
+     "notes": "Current position Y."
+    },
+    {
+     "name": "positionZ",
+     "offset": 56,
+     "type": "f32",
+     "notes": "Current position Z."
+    },
+    {
+     "name": "positionW",
+     "offset": 60,
+     "type": "f32",
+     "notes": "Fourth component."
+    },
+    {
+     "name": "unknown40",
+     "offset": 64,
+     "type": "bytes",
+     "length": 16,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "currentColorRed",
+     "offset": 80,
+     "type": "f32",
+     "notes": "Current colour R. [src: Drive getBattleActorKeep.lua:2-21; Drive getColors.lua:2-14]"
+    },
+    {
+     "name": "currentColorGreen",
+     "offset": 84,
+     "type": "f32",
+     "notes": "Current colour G."
+    },
+    {
+     "name": "currentColorBlue",
+     "offset": 88,
+     "type": "f32",
+     "notes": "Current colour B."
+    },
+    {
+     "name": "currentColorAlpha",
+     "offset": 92,
+     "type": "f32",
+     "notes": "Current colour A."
+    },
+    {
+     "name": "defaultColorRed",
+     "offset": 96,
+     "type": "f32",
+     "notes": "Default colour R. [src: Drive getBattleActorKeep.lua:2-21]"
+    },
+    {
+     "name": "defaultColorGreen",
+     "offset": 100,
+     "type": "f32",
+     "notes": "Default colour G."
+    },
+    {
+     "name": "defaultColorBlue",
+     "offset": 104,
+     "type": "f32",
+     "notes": "Default colour B."
+    },
+    {
+     "name": "defaultColorAlpha",
+     "offset": 108,
+     "type": "f32",
+     "notes": "Default colour A."
+    },
+    {
+     "name": "unknown70",
+     "offset": 112,
+     "type": "bytes",
+     "length": 16,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "animationState",
+     "offset": 128,
+     "type": "u16",
+     "notes": "Animation state. [src: Drive getBattleActorKeep.lua:2-21]"
+    },
+    {
+     "name": "unknown82",
+     "offset": 130,
+     "type": "bytes",
+     "length": 6,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "mapJumpGroup",
+     "offset": 136,
+     "type": "s16",
+     "notes": "Map jump group. [src: Drive getBattleActorKeep.lua:2-21]"
+    },
+    {
+     "name": "terrain",
+     "offset": 138,
+     "type": "u16",
+     "enum": "MreTerrainList",
+     "notes": "Terrain under the actor (MreTerrainList ids, see mrf). [src: Drive getBattleActorKeep.lua:2-21]"
+    },
+    {
+     "name": "unknown8C",
+     "offset": 140,
+     "type": "bytes",
+     "length": 60,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "movementSpeed",
+     "offset": 200,
+     "type": "f32",
+     "notes": "Movement speed. [src: Drive getBattleActorKeep.lua:2-21; TK L693]"
+    },
+    {
+     "name": "unknownCC",
+     "offset": 204,
+     "type": "bytes",
+     "length": 44,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "yaw",
+     "offset": 248,
+     "type": "f32",
+     "notes": "Yaw (radians). [src: TK L693]"
+    },
+    {
+     "name": "unknownFC",
+     "offset": 252,
+     "type": "bytes",
+     "length": 52,
+     "notes": "Not identified by any source; keep the original bytes."
+    }
+   ]
+  }
+ ],
+ "enums": {
+  "UnitTypeList": {
+   "0": "None",
+   "1": "Foe / Party Member",
+   "2": "Reserve (0x02)",
+   "3": "Ally",
+   "4": "Gimmick",
+   "5": "Idle",
+   "6": "Reserve (0x06)",
+   "7": "Hunt / Boss",
+   "8": "Reserve (0x08)",
+   "9": "Reserve (0x09)",
+   "10": "Reserve (0x0A)",
+   "11": "Reserve (0x0B)",
+   "12": "Reserve (0x0C)",
+   "13": "Reserve (0x0D)",
+   "14": "Reserve (0x0E)",
+   "15": "Reserve (0x0F)"
+  },
+  "BceDespawnTypeList": {
+   "0": "None",
+   "1": "Leader",
+   "2": "Position"
+  },
+  "BceFieldSignIconList": {
+   "0": "None",
+   "1": "1 Exclamation Point",
+   "2": "2 Exclamation Points",
+   "3": "Magnifying Glass"
+  },
+  "BceOverheadIconTypeList": {
+   "0": "Normal",
+   "1": "Shop"
+  },
+  "MreTerrainList": {
+   "0": "Dirt / Soil",
+   "1": "Natural Stone / Rock",
+   "2": "Grass",
+   "3": "Unknown (0x03)",
+   "4": "Sand",
+   "5": "Snow",
+   "6": "Metal",
+   "7": "Wood",
+   "8": "Architecture (Stonework, Marble, Glass)",
+   "9": "Clay",
+   "10": "Carpet",
+   "11": "Stagnant Water",
+   "12": "Flowing Water",
+   "13": "Unknown (0x0D)",
+   "14": "Unknown (0x0E)",
+   "15": "Unknown (0x0F)",
+   "16": "Magickal Forcefield",
+   "17": "Ice",
+   "18": "Reserve (0x0C)",
+   "19": "Reserve (0x0D)",
+   "20": "Reserve (0x0E)",
+   "21": "Reserve (0x0F)",
+   "22": "Reserve (0x10)",
+   "23": "Reserve (0x11)",
+   "24": "Reserve (0x12)",
+   "25": "Reserve (0x13)",
+   "26": "Reserve (0x14)",
+   "27": "Reserve (0x15)",
+   "28": "Reserve (0x16)",
+   "29": "Reserve (0x17)",
+   "30": "Reserve (0x18)",
+   "31": "Reserve (0x19)"
+  }
+ },
+ "roundTrip": [
+  "Memory-only; nothing is written to files. Edits last until the actor/area is reloaded.",
+  "Never write the pointer fields (battleActorWork, battleUnitKeep, ard*, battleActorModel ...) unless you know the target object; follow them read-only.",
+  "Keep unknown bytes unchanged; many ranges are game-internal state."
+ ],
+ "gaps": [
+  "Most of Battle Actor Work / Model / Keep is unidentified (TK L1861).",
+  "Layout of the 16-byte target entries and whether the reflect list has a header like the active/potential lists.",
+  "Offsets of yaw, walk/run/battle-run speeds and flying height between BUW +0x158 and +0x190.",
+  "Length of the attacker id list at BUW +0xEA9.",
+  "Skeleton variants (Sign 128 B, Line 32 B, Unit 560 B) and task records (20 B / 40 B) are not mapped."
+ ]
+}

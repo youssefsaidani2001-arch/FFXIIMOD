@@ -1,0 +1,155 @@
+{
+  "id": "container-himgd",
+  "title": "himgd image packs and menuhandbook (Clan Primer) file family",
+  "files": [
+    "**/menuhandbook_knowledge0[0-2][0-9].dat",
+    "**/menuhandbook_monster[0-9][0-9][0-9].dat",
+    "**/menuhandbook_person0[0-2][0-9].dat",
+    "**/menuhandbook_story0[0-9][0-9].dat",
+    "**/menuhandbook_tutorial0[0-4][0-9].dat",
+    "**/menuhandbook_world0[0-4][0-9].dat",
+    "**/menuhandbook_*.bin",
+    "**/menuhandbook.bin"
+  ],
+  "container": {
+    "kind": "himgd",
+    "notes": "Little-endian. Detect by magic: 'himgd\\0\\0\\0' = image pack, 'hctgf\\0\\0\\0' = category index (menuhandbook_<cat>.bin), 'hcomg\\0\\0\\0' = global rules (menuhandbook.bin); any other menuhandbook_*.dat is an FFXII text table. himgd: u16 index at 0x08 (preserve), u16 imageCount at 0x0A, u32 absolute image offsets from 0x0C (0 = absent), header zero-padded to 16, then TIM2 images each zero-padded to 16. Image length = next larger non-zero offset minus this offset (end of file for the highest)."
+  },
+  "records": [
+    {
+      "name": "himgdHeader",
+      "where": "himgd file offset 0",
+      "size": 12,
+      "count": 1,
+      "fields": [
+        { "name": "magic", "offset": 0, "type": "bytes", "length": 8, "notes": "68 69 6D 67 64 00 00 00 ('himgd' + 3 zero bytes)" },
+        { "name": "index", "offset": 8, "type": "u16", "notes": "Unknown identifier, meaningful in vanilla (the reference packer cannot rebuild it and writes 0). Preserve." },
+        { "name": "imageCount", "offset": 10, "type": "u16", "notes": "Number of u32 slots in the image offset table." }
+      ]
+    },
+    {
+      "name": "himgdImageOffset",
+      "where": "himgd file offset 12; slot i at 12 + 4*i; table followed by zero padding to a 16-byte boundary",
+      "size": 4,
+      "count": "himgdHeader.imageCount",
+      "fields": [
+        { "name": "offset", "offset": 0, "type": "u32", "notes": "Absolute file offset of TIM2 image i, multiple of 16; 0 = empty slot (keep it 0 and keep slot numbering)." }
+      ]
+    },
+    {
+      "name": "hctgfHeader",
+      "where": "menuhandbook_<cat>.bin file offset 0",
+      "size": 24,
+      "count": 1,
+      "fields": [
+        { "name": "magic", "offset": 0, "type": "bytes", "length": 8, "notes": "68 63 74 67 66 00 00 00 ('hctgf' + 3 zero bytes)" },
+        { "name": "type", "offset": 8, "type": "u16", "notes": "Meaning unknown." },
+        { "name": "entryBasicInfoOffset", "offset": 10, "type": "u16", "notes": "Absolute file offset of the hctgfEntryBasicInfo table. Recompute if anything before it changes length." },
+        { "name": "entryExtendedInfoOffset", "offset": 12, "type": "u16", "notes": "Absolute file offset of the hctgfEntryExtendedInfo table." },
+        { "name": "entryBasicInfoCount", "offset": 14, "type": "u16" },
+        { "name": "entryExtendedInfoCount", "offset": 16, "type": "u16" },
+        { "name": "headerBasicInfoCount", "offset": 18, "type": "u16", "notes": "Number of s32 page-name text ids that start at file offset 0x18." },
+        { "name": "imagesFileLinkOffset", "offset": 20, "type": "u16", "notes": "Base link into the himgd image files." },
+        { "name": "imagesFileCount", "offset": 22, "type": "u16", "notes": "Number of image files used by this category." }
+      ]
+    },
+    {
+      "name": "hctgfHeaderBasicInfo",
+      "where": "menuhandbook_<cat>.bin file offset 24 (0x18), directly after hctgfHeader",
+      "size": 4,
+      "count": "hctgfHeader.headerBasicInfoCount",
+      "fields": [
+        { "name": "name", "offset": 0, "type": "s32", "notes": "Text id of a header/page name." }
+      ]
+    },
+    {
+      "name": "hctgfEntryExtendedInfo",
+      "where": "menuhandbook_<cat>.bin file offset hctgfHeader.entryExtendedInfoOffset (table padded to 4 at its end)",
+      "size": 2,
+      "count": "hctgfHeader.entryExtendedInfoCount",
+      "fields": [
+        { "name": "imageFileLink", "offset": 0, "type": "u16", "notes": "Link to an image file (observed range about 0-296)." }
+      ]
+    },
+    {
+      "name": "hctgfEntryBasicInfo",
+      "where": "menuhandbook_<cat>.bin file offset hctgfHeader.entryBasicInfoOffset",
+      "size": 12,
+      "count": "hctgfHeader.entryBasicInfoCount",
+      "fields": [
+        { "name": "name", "offset": 0, "type": "s32", "notes": "Text id of the entry name." },
+        { "name": "headerBasicInfoLink", "offset": 4, "type": "u16", "notes": "Index into hctgfHeaderBasicInfo." },
+        { "name": "textFileLink", "offset": 6, "type": "u16", "notes": "Which text table (.dat) holds the entry body." },
+        { "name": "entryExtendedInfoLink", "offset": 8, "type": "u16", "notes": "Index into hctgfEntryExtendedInfo." },
+        { "name": "flags", "offset": 10, "type": "bf8", "bits": [
+          { "name": "autoUnlock", "bitStart": 0, "bitLength": 1 },
+          { "name": "unknownBits1to7", "bitStart": 1, "bitLength": 7 }
+        ], "notes": "Only bit 0 is known; the reference writer clears the other bits." },
+        { "name": "reserved11", "offset": 11, "type": "u8", "notes": "Unused; written as 0." }
+      ]
+    },
+    {
+      "name": "hcomgHeader",
+      "where": "menuhandbook.bin file offset 0",
+      "size": 60,
+      "count": 1,
+      "fields": [
+        { "name": "magic", "offset": 0, "type": "bytes", "length": 8, "notes": "68 63 6F 6D 67 00 00 00 ('hcomg' + 3 zero bytes)" },
+        { "name": "scrivenerBlockRelOffset", "offset": 8, "type": "u16", "notes": "8 + value = file offset of the scrivener block (0x3C when rebuilt)." },
+        { "name": "cartographerMapCount", "offset": 10, "type": "u16", "notes": "384; fixed in the executable." },
+        { "name": "cartographerMapBits", "offset": 12, "type": "bytes", "length": 48, "notes": "Bit (i % 8) of byte (i / 8) set = map i is required for the Cartographer achievement." }
+      ]
+    },
+    {
+      "name": "hcomgScrivenerEntry",
+      "where": "menuhandbook.bin scrivener block + 8 (block: u16 next, u16 requiredFoeCount <= 512, u16 unused, u16 entryCount, then entries)",
+      "size": 4,
+      "count": "u16 at scrivener block + 6",
+      "fields": [
+        { "name": "packed", "offset": 0, "type": "bf16", "bits": [
+          { "name": "viewedBestiaryId", "bitStart": 0, "bitLength": 12 },
+          { "name": "requirementType", "bitStart": 12, "bitLength": 4, "enum": "HcomgScrivenerType" }
+        ] },
+        { "name": "requirementValue", "offset": 2, "type": "u16", "notes": "Type 0: required story progress. Type 1: required bestiary id." }
+      ]
+    },
+    {
+      "name": "hcomgHuntEntry",
+      "where": "menuhandbook.bin hunt block + 4 (block: u16 next, u16 count, entries, zero pad to 4)",
+      "size": 2,
+      "count": "u16 at hunt block + 2",
+      "fields": [
+        { "name": "questId", "offset": 0, "type": "u8" },
+        { "name": "requiredQuestStage", "offset": 1, "type": "u8" }
+      ]
+    }
+  ],
+  "enums": {
+    "HcomgScrivenerType": {
+      "0": "Story progress requirement",
+      "1": "Bestiary (foe) requirement"
+    },
+    "MenuhandbookCategory": {
+      "0": "knowledge",
+      "1": "monster",
+      "2": "person",
+      "3": "story",
+      "4": "tutorial",
+      "5": "world"
+    }
+  },
+  "roundTrip": [
+    "himgd: preserve the u16 index at 0x08, imageCount, slot order and zero slots; write images at 16-byte boundaries followed by zero padding.",
+    "himgd: header table is zero-padded to 16 after the last offset slot.",
+    "hctgf: after any length change, rebuild entryBasicInfoOffset, entryExtendedInfoOffset and the two block-relative u16 offset lists; keep the 4-byte alignment inside the header-extended block and after the extended table, and 16-byte alignment around the footer block and at end of file.",
+    "hcomg: each block's first u16 is the distance from that u16 to the next block; the last block stores the unpadded end-of-data distance; pad the file to 16.",
+    "Never change hcomg cartographerMapCount (384) or the defeated-foe figure count (10)."
+  ],
+  "gaps": [
+    "Meaning of himgd index (possibly linked to hctgf imagesFileLinkOffset).",
+    "Upper bound of menuhandbook_monster image file numbers (reference pattern above 099 looks malformed).",
+    "hctgf type field meaning; unknown bits of hctgfEntryBasicInfo.flags.",
+    "VBF path of the menuhandbook files beyond the 'myoshiok' folder name.",
+    "hcomg figure-parameter count field is unreliable in vanilla; the presence bitmask is authoritative."
+  ]
+}

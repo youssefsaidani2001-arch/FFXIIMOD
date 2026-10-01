@@ -1,0 +1,80 @@
+{
+ "id": "battlepack-s00-weapon-stances",
+ "title": "Battlepack section 0 — Weapon Stances",
+ "files": [
+  "ps2data/image/ff12/test_battle/*/binaryfile/battle_pack.bin",
+  "battle_pack.bin.dir/section_000.bin"
+ ],
+ "container": {
+  "kind": "battlepack",
+  "notes": "Section 0 of battle_pack.bin (71-section battlepack; see container-battlepack). NOT an st2e table: u16 entrySize (=1) at +0, u16 entryCount at +2, then entryCount one-byte entries from +4, zero padding to a multiple of 16."
+ },
+ "records": [
+  {
+   "name": "header",
+   "where": "Offset 0 of battlepack section 0 (no st2e header in this section).",
+   "size": 4,
+   "count": "1",
+   "fields": [
+    {
+     "name": "entrySize",
+     "offset": 0,
+     "type": "u16",
+     "notes": "Bytes per stance entry; always 1. The Workshop ignores it on read and writes 1."
+    },
+    {
+     "name": "entryCount",
+     "offset": 2,
+     "type": "u16",
+     "notes": "Number of stance rows (23 in the vanilla game)."
+    }
+   ]
+  },
+  {
+   "name": "weaponStance",
+   "where": "section 0 offset 4 + i (one byte per stance, row i = weapon stance id i; row labels: list BpWeaponStanceList)",
+   "size": 1,
+   "count": "header.entryCount (vanilla 23)",
+   "fields": [
+    {
+     "name": "animation",
+     "offset": 0,
+     "type": "u8",
+     "enum": "WeaponStanceAnimationList",
+     "notes": "Animation set used while holding a weapon of this stance."
+    }
+   ]
+  }
+ ],
+ "enums": {
+  "WeaponStanceAnimationList": {
+   "0": "Reserve (0x00)",
+   "1": "Unarmed",
+   "2": "Unarmed (Brawler)",
+   "3": "Sword",
+   "4": "Dagger",
+   "5": "Hand-Bomb",
+   "6": "Ninja Sword",
+   "7": "Axe / Hammer",
+   "8": "Mace / Measure",
+   "9": "Rod / Staff",
+   "10": "Pole",
+   "11": "Spear",
+   "12": "Greatsword",
+   "13": "Katana",
+   "14": "Bow",
+   "15": "Crossbow / Gun",
+   "255": "None"
+  }
+ },
+ "roundTrip": [
+  "Keep entrySize = 1 and entryCount equal to the number of bytes that follow.",
+  "Edit animation bytes in place; nothing points at rows.",
+  "Keep the zero padding to 16; if the row count changes, recompute the padding and shift every later battlepack section offset by the padded delta."
+ ],
+ "gaps": [
+  "Which field chooses a weapon's stance (expected: a stance id inside section 13 weapon records) is outside this spec.",
+  "Whether entrySize may be anything but 1, and whether the game reads rows beyond the vanilla 23.",
+  "Padding bytes after the entries are assumed zero."
+ ]
+}

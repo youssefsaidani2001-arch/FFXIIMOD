@@ -1,0 +1,667 @@
+{
+ "id": "ard-classes",
+ "title": "ARD section 2 - Classes (foe species)",
+ "files": [
+  "**/*.ard",
+  "**/*.ard.dir/section_002.bin"
+ ],
+ "container": {
+  "kind": "ard",
+  "notes": "ARD section 2 (classes; st2e table, entrySize 84). ARD = standalone *.ard or section 19 of an .ebp: 8-byte magic FF12AR03, ten u32 section offsets at 0x08 relative to the ARD start (0 = absent; this section = u32 at ARD+0x10); sections 0,2..9 written in index order on 16-byte boundaries with zero fill, section 1 written last with nothing after it. A section spans to the next larger non-zero offset (the highest to the end of the ARD)."
+ },
+ "records": [
+  {
+   "name": "header",
+   "where": "Offset 0 of ARD section 2 (ARD start + u32 at ARD+0x10).",
+   "size": 32,
+   "count": 1,
+   "fields": [
+    {
+     "name": "magic",
+     "offset": 0,
+     "type": "bytes",
+     "length": 4,
+     "notes": "ASCII 'st2e' (73 74 32 65); reject the section if different."
+    },
+    {
+     "name": "entryCount",
+     "offset": 4,
+     "type": "u32",
+     "notes": "Number of class rows in this area."
+    },
+    {
+     "name": "entrySize",
+     "offset": 8,
+     "type": "u16",
+     "notes": "Bytes per row; always 84 (0x54) for this table."
+    },
+    {
+     "name": "unknown0A",
+     "offset": 10,
+     "type": "bytes",
+     "length": 2,
+     "notes": "Not read by any source; keep as found."
+    },
+    {
+     "name": "entryListOffset",
+     "offset": 12,
+     "type": "u32",
+     "notes": "Section-relative offset of row 0: 32 when entryCount > 0, otherwise 0."
+    },
+    {
+     "name": "offset10",
+     "offset": 16,
+     "type": "u32",
+     "notes": "Unknown offset word; 0 in Workshop output."
+    },
+    {
+     "name": "textSectionOffset",
+     "offset": 20,
+     "type": "u32",
+     "notes": "Named text-section offset; 0 on disk (the Toolkit clears it on export). No strings are stored in ARD tables."
+    },
+    {
+     "name": "offset18",
+     "offset": 24,
+     "type": "u32",
+     "notes": "Unknown offset word; 0 in Workshop output."
+    },
+    {
+     "name": "offset1C",
+     "offset": 28,
+     "type": "u32",
+     "notes": "Unknown offset word; 0 in Workshop output."
+    }
+   ]
+  },
+  {
+   "name": "class",
+   "where": "st2e rows of ARD section 2: section offset header.entryListOffset + i*84",
+   "size": 84,
+   "count": "header.entryCount",
+   "fields": [
+    {
+     "name": "model",
+     "offset": 0,
+     "type": "s32",
+     "enum": "ModelList",
+     "notes": "Model id of the species (prefix letter << 16 | number)."
+    },
+    {
+     "name": "classification",
+     "offset": 4,
+     "type": "u8",
+     "enum": "ClassificationList",
+     "notes": "Foe classification (Hume, Beast, Undead ...; 255 = none)."
+    },
+    {
+     "name": "genus",
+     "offset": 5,
+     "type": "u8",
+     "enum": "GenusList",
+     "notes": "Foe genus (Wolf, Bomb, Flan ...; 255 = none). Effects such as Eksir Berries may key off the genus (msg 598, speculation)."
+    },
+    {
+     "name": "unknown06",
+     "offset": 6,
+     "type": "u16",
+     "notes": "Read as a number by the Workshop but unnamed."
+    },
+    {
+     "name": "unknown08",
+     "offset": 8,
+     "type": "bytes",
+     "length": 8,
+     "notes": "Not read."
+    },
+    {
+     "name": "weight",
+     "offset": 16,
+     "type": "s16",
+     "notes": "Weight; the Toolkit labels it \"Weight (x10)\", i.e. the stored value is probably ten times the displayed weight."
+    },
+    {
+     "name": "flags12",
+     "offset": 18,
+     "type": "bf8",
+     "bits": [
+      {
+       "name": "chargeAuraAnimationScale",
+       "bitStart": 0,
+       "bitLength": 3,
+       "enum": "ArdeChargeAuraAnimationScaleList"
+      },
+      {
+       "name": "unknownBit3",
+       "bitStart": 3,
+       "bitLength": 1
+      },
+      {
+       "name": "unknownBit4",
+       "bitStart": 4,
+       "bitLength": 1
+      },
+      {
+       "name": "unknownBit5",
+       "bitStart": 5,
+       "bitLength": 1
+      },
+      {
+       "name": "hasCollision",
+       "bitStart": 6,
+       "bitLength": 1
+      },
+      {
+       "name": "requiresFlyingHit",
+       "bitStart": 7,
+       "bitLength": 1
+      }
+     ],
+     "notes": "Flag byte 1."
+    },
+    {
+     "name": "unknown13",
+     "offset": 19,
+     "type": "bytes",
+     "length": 5,
+     "notes": "Not read."
+    },
+    {
+     "name": "flags18",
+     "offset": 24,
+     "type": "bf8",
+     "bits": [
+      {
+       "name": "unknownBit0",
+       "bitStart": 0,
+       "bitLength": 1
+      },
+      {
+       "name": "specialBehavior",
+       "bitStart": 1,
+       "bitLength": 3,
+       "enum": "ArdeSpecialBehaviorList"
+      },
+      {
+       "name": "isFlying",
+       "bitStart": 4,
+       "bitLength": 1
+      },
+      {
+       "name": "isFloating",
+       "bitStart": 5,
+       "bitLength": 1
+      },
+      {
+       "name": "canTeleport",
+       "bitStart": 6,
+       "bitLength": 1
+      },
+      {
+       "name": "unknownBit7",
+       "bitStart": 7,
+       "bitLength": 1
+      }
+     ],
+     "notes": "Flag byte 2."
+    },
+    {
+     "name": "unknown19",
+     "offset": 25,
+     "type": "bytes",
+     "length": 7,
+     "notes": "Not read."
+    },
+    {
+     "name": "maxComboHits",
+     "offset": 32,
+     "type": "u8",
+     "notes": "Maximum number of hits in a combo."
+    },
+    {
+     "name": "flags21",
+     "offset": 33,
+     "type": "bf8",
+     "bits": [
+      {
+       "name": "unknownBit0",
+       "bitStart": 0,
+       "bitLength": 1
+      },
+      {
+       "name": "useDistancedAttack",
+       "bitStart": 1,
+       "bitLength": 1
+      },
+      {
+       "name": "unknownBits2to7",
+       "bitStart": 2,
+       "bitLength": 6
+      }
+     ],
+     "notes": "Flag byte 3."
+    },
+    {
+     "name": "angleDetection",
+     "offset": 34,
+     "type": "u8",
+     "notes": "Sight cone used for aggro."
+    },
+    {
+     "name": "radiusDetection",
+     "offset": 35,
+     "type": "u8",
+     "notes": "Sight range used for aggro."
+    },
+    {
+     "name": "unknown24",
+     "offset": 36,
+     "type": "u8",
+     "notes": "Not read."
+    },
+    {
+     "name": "soundAndMagickDetection",
+     "offset": 37,
+     "type": "u8",
+     "notes": "Detection by sound / magick use (Toolkit: \"Magick Detection\")."
+    },
+    {
+     "name": "lifeDetection",
+     "offset": 38,
+     "type": "u8",
+     "notes": "Life detection (Toolkit label; in-game this is the sense that notices weakened targets)."
+    },
+    {
+     "name": "unknown27",
+     "offset": 39,
+     "type": "u8",
+     "notes": "Read as a number by the Workshop but unnamed."
+    },
+    {
+     "name": "flags28",
+     "offset": 40,
+     "type": "bf8",
+     "bits": [
+      {
+       "name": "useGroundedAttack",
+       "bitStart": 0,
+       "bitLength": 1
+      },
+      {
+       "name": "noChain",
+       "bitStart": 1,
+       "bitLength": 1
+      },
+      {
+       "name": "unknownBits2to7",
+       "bitStart": 2,
+       "bitLength": 6
+      }
+     ],
+     "notes": "Flag byte 4."
+    },
+    {
+     "name": "elementAbsorb",
+     "offset": 41,
+     "type": "bf8",
+     "bits": [
+      {
+       "name": "fire",
+       "bitStart": 0,
+       "bitLength": 1
+      },
+      {
+       "name": "lightning",
+       "bitStart": 1,
+       "bitLength": 1
+      },
+      {
+       "name": "ice",
+       "bitStart": 2,
+       "bitLength": 1
+      },
+      {
+       "name": "earth",
+       "bitStart": 3,
+       "bitLength": 1
+      },
+      {
+       "name": "water",
+       "bitStart": 4,
+       "bitLength": 1
+      },
+      {
+       "name": "wind",
+       "bitStart": 5,
+       "bitLength": 1
+      },
+      {
+       "name": "holy",
+       "bitStart": 6,
+       "bitLength": 1
+      },
+      {
+       "name": "dark",
+       "bitStart": 7,
+       "bitLength": 1
+      }
+     ],
+     "notes": "Elements the foe absorbs; one bit per element (see ElementFlags)."
+    },
+    {
+     "name": "elementHalfDamage",
+     "offset": 42,
+     "type": "bf8",
+     "bits": [
+      {
+       "name": "fire",
+       "bitStart": 0,
+       "bitLength": 1
+      },
+      {
+       "name": "lightning",
+       "bitStart": 1,
+       "bitLength": 1
+      },
+      {
+       "name": "ice",
+       "bitStart": 2,
+       "bitLength": 1
+      },
+      {
+       "name": "earth",
+       "bitStart": 3,
+       "bitLength": 1
+      },
+      {
+       "name": "water",
+       "bitStart": 4,
+       "bitLength": 1
+      },
+      {
+       "name": "wind",
+       "bitStart": 5,
+       "bitLength": 1
+      },
+      {
+       "name": "holy",
+       "bitStart": 6,
+       "bitLength": 1
+      },
+      {
+       "name": "dark",
+       "bitStart": 7,
+       "bitLength": 1
+      }
+     ],
+     "notes": "Elements that deal half damage to the foe; one bit per element (see ElementFlags)."
+    },
+    {
+     "name": "elementImmune",
+     "offset": 43,
+     "type": "bf8",
+     "bits": [
+      {
+       "name": "fire",
+       "bitStart": 0,
+       "bitLength": 1
+      },
+      {
+       "name": "lightning",
+       "bitStart": 1,
+       "bitLength": 1
+      },
+      {
+       "name": "ice",
+       "bitStart": 2,
+       "bitLength": 1
+      },
+      {
+       "name": "earth",
+       "bitStart": 3,
+       "bitLength": 1
+      },
+      {
+       "name": "water",
+       "bitStart": 4,
+       "bitLength": 1
+      },
+      {
+       "name": "wind",
+       "bitStart": 5,
+       "bitLength": 1
+      },
+      {
+       "name": "holy",
+       "bitStart": 6,
+       "bitLength": 1
+      },
+      {
+       "name": "dark",
+       "bitStart": 7,
+       "bitLength": 1
+      }
+     ],
+     "notes": "Elements the foe is immune to; one bit per element (see ElementFlags)."
+    },
+    {
+     "name": "elementWeak",
+     "offset": 44,
+     "type": "bf8",
+     "bits": [
+      {
+       "name": "fire",
+       "bitStart": 0,
+       "bitLength": 1
+      },
+      {
+       "name": "lightning",
+       "bitStart": 1,
+       "bitLength": 1
+      },
+      {
+       "name": "ice",
+       "bitStart": 2,
+       "bitLength": 1
+      },
+      {
+       "name": "earth",
+       "bitStart": 3,
+       "bitLength": 1
+      },
+      {
+       "name": "water",
+       "bitStart": 4,
+       "bitLength": 1
+      },
+      {
+       "name": "wind",
+       "bitStart": 5,
+       "bitLength": 1
+      },
+      {
+       "name": "holy",
+       "bitStart": 6,
+       "bitLength": 1
+      },
+      {
+       "name": "dark",
+       "bitStart": 7,
+       "bitLength": 1
+      }
+     ],
+     "notes": "Elements the foe is weak to; one bit per element (see ElementFlags)."
+    },
+    {
+     "name": "elementPotency",
+     "offset": 45,
+     "type": "bf8",
+     "bits": [
+      {
+       "name": "fire",
+       "bitStart": 0,
+       "bitLength": 1
+      },
+      {
+       "name": "lightning",
+       "bitStart": 1,
+       "bitLength": 1
+      },
+      {
+       "name": "ice",
+       "bitStart": 2,
+       "bitLength": 1
+      },
+      {
+       "name": "earth",
+       "bitStart": 3,
+       "bitLength": 1
+      },
+      {
+       "name": "water",
+       "bitStart": 4,
+       "bitLength": 1
+      },
+      {
+       "name": "wind",
+       "bitStart": 5,
+       "bitLength": 1
+      },
+      {
+       "name": "holy",
+       "bitStart": 6,
+       "bitLength": 1
+      },
+      {
+       "name": "dark",
+       "bitStart": 7,
+       "bitLength": 1
+      }
+     ],
+     "notes": "Elements with potency (the foe's own attacks of that element are presumably strengthened); one bit per element (see ElementFlags)."
+    },
+    {
+     "name": "unused2E",
+     "offset": 46,
+     "type": "bytes",
+     "length": 2,
+     "notes": "Unused pair of bytes before the action array."
+    },
+    {
+     "name": "unusedAction0",
+     "offset": 48,
+     "type": "u16",
+     "notes": "Action slot 0 of an 8-entry action array that the game never reads (Toolkit marks the block \"(Unused)\")."
+    },
+    {
+     "name": "unusedAction1",
+     "offset": 50,
+     "type": "u16",
+     "notes": "Action slot 1 of an 8-entry action array that the game never reads (Toolkit marks the block \"(Unused)\")."
+    },
+    {
+     "name": "unusedAction2",
+     "offset": 52,
+     "type": "u16",
+     "notes": "Action slot 2 of an 8-entry action array that the game never reads (Toolkit marks the block \"(Unused)\")."
+    },
+    {
+     "name": "unusedAction3",
+     "offset": 54,
+     "type": "u16",
+     "notes": "Action slot 3 of an 8-entry action array that the game never reads (Toolkit marks the block \"(Unused)\")."
+    },
+    {
+     "name": "unusedAction4",
+     "offset": 56,
+     "type": "u16",
+     "notes": "Action slot 4 of an 8-entry action array that the game never reads (Toolkit marks the block \"(Unused)\")."
+    },
+    {
+     "name": "unusedAction5",
+     "offset": 58,
+     "type": "u16",
+     "notes": "Action slot 5 of an 8-entry action array that the game never reads (Toolkit marks the block \"(Unused)\")."
+    },
+    {
+     "name": "unusedAction6",
+     "offset": 60,
+     "type": "u16",
+     "notes": "Action slot 6 of an 8-entry action array that the game never reads (Toolkit marks the block \"(Unused)\")."
+    },
+    {
+     "name": "unusedAction7",
+     "offset": 62,
+     "type": "u16",
+     "notes": "Action slot 7 of an 8-entry action array that the game never reads (Toolkit marks the block \"(Unused)\")."
+    },
+    {
+     "name": "chainIdentifier",
+     "offset": 64,
+     "type": "u16",
+     "notes": "Chain group of the species (foes sharing it count as the same foe for chaining; inferred from the name)."
+    },
+    {
+     "name": "unknown42",
+     "offset": 66,
+     "type": "bytes",
+     "length": 16,
+     "notes": "Not read."
+    },
+    {
+     "name": "bestiaryIdentifier",
+     "offset": 82,
+     "type": "u16",
+     "enum": "BestiaryList",
+     "notes": "Bestiary entry the species belongs to."
+    }
+   ]
+  }
+ ],
+ "enums": {
+  "ElementFlags": {
+   "1": "Fire",
+   "2": "Lightning",
+   "4": "Ice",
+   "8": "Earth",
+   "16": "Water",
+   "32": "Wind",
+   "64": "Holy",
+   "128": "Dark"
+  },
+  "ArdeChargeAuraAnimationScaleList": {
+   "0": "Very Low",
+   "1": "Low",
+   "2": "Normal",
+   "3": "High",
+   "4": "Very High"
+  },
+  "ArdeSpecialBehaviorList": {
+   "0": "None",
+   "1": "Northern Gravitational Force Attraction",
+   "2": "Immobilized Action Charge",
+   "3": "Unknown Gravitational Force Attraction",
+   "4": "Unknown (0x04)",
+   "5": "Unknown (0x05)",
+   "6": "Unknown (0x06)",
+   "7": "Unknown (0x07)"
+  }
+ },
+ "roundTrip": [
+  "Edit fields in place; rows are fixed-size, so value edits never move data.",
+  "Copy every byte no field interprets (unknown*/unused* fields, unnamed bits) from the original. The Workshop writer seeks over those bytes and therefore writes zeros; do not treat its output as the byte-identical reference.",
+  "Keep the st2e header verbatim except entryCount (and entryListOffset when the table becomes empty or stops being empty).",
+  "Keep the zero padding that rounds the section to a multiple of 16 bytes.",
+  "If this section changes length, rebuild the ARD offset table: every section stored after it moves (recompute their u32 slots, keep 16-byte starts with zero fill, keep section 1 last with nothing after it); if the ARD sits in EBP section 19, the EBP offsets after section 19 move as well.",
+  "Do not reorder rows: units (section 4, +0x00) and the live battle structures reference them by index.",
+  "chargeAuraAnimationScale must stay within 0-4 and specialBehavior within 0-7 (3 bits); write the other bits of those bytes back unchanged."
+ ],
+ "gaps": [
+  "unknown06 (u16), unknown27 (u8) and the unread blocks 0x08-0x0F, 0x13-0x17, 0x19-0x1F, 0x24, 0x2E-0x2F, 0x42-0x51.",
+  "Flag bits 0x12 bit 3-5, 0x18 bits 0 and 7, 0x21 bits 0 and 2-7, 0x28 bits 2-7.",
+  "Exact meaning of the Special Behavior values beyond the three named ones, and of charge aura values above 4.",
+  "Units and scale of the detection bytes and of weight (Toolkit says weight is stored x10).",
+  "chainIdentifier semantics and value range (no list in our sources).",
+  "The 8-entry action array at 0x30-0x3F is labelled unused by the Toolkit; whether any build reads it is unknown."
+ ]
+}

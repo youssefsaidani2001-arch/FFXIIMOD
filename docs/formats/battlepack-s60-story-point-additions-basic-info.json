@@ -1,0 +1,1034 @@
+{
+ "id": "battlepack-s60-story-point-additions-basic-info",
+ "title": "Battlepack section 60 — Story Point Additions (basic info)",
+ "files": [
+  "ps2data/image/ff12/test_battle/*/binaryfile/battle_pack.bin",
+  "battle_pack.bin.dir/section_060.bin"
+ ],
+ "container": {
+  "kind": "battlepack",
+  "notes": "Section 60 of battle_pack.bin (71-section battlepack: u32 count, count+1 u32 file offsets incl. an unpadded end offset, sections 16-byte aligned with zero fill; see container-battlepack). The section is an st2e table: 32-byte header (magic, u32 entryCount @4, u16 entrySize @8 = 208, u32 entryListOffset @12 = 32, u32 textSectionOffset @20 = 0) followed by entryCount packed 208-byte entries and zero padding to a multiple of 16 bytes (see container-st2e)."
+ },
+ "records": [
+  {
+   "name": "header",
+   "where": "Offset 0 of battlepack section 60.",
+   "size": 32,
+   "count": "1",
+   "fields": [
+    {
+     "name": "magic",
+     "offset": 0,
+     "type": "bytes",
+     "length": 4,
+     "notes": "ASCII 'st2e' (73 74 32 65); reject the section if different."
+    },
+    {
+     "name": "entryCount",
+     "offset": 4,
+     "type": "u32",
+     "notes": "Number of story points (50 in the vanilla game)."
+    },
+    {
+     "name": "entrySize",
+     "offset": 8,
+     "type": "u16",
+     "notes": "Bytes per entry; 208 (0xD0) for this section."
+    },
+    {
+     "name": "unknown0A",
+     "offset": 10,
+     "type": "bytes",
+     "length": 2,
+     "notes": "Not interpreted; keep."
+    },
+    {
+     "name": "entryListOffset",
+     "offset": 12,
+     "type": "u32",
+     "notes": "Offset of entry 0 from the section start: 32 when entryCount > 0, else 0."
+    },
+    {
+     "name": "offset10",
+     "offset": 16,
+     "type": "u32",
+     "notes": "Unknown offset slot (0 in Workshop output)."
+    },
+    {
+     "name": "textSectionOffset",
+     "offset": 20,
+     "type": "u32",
+     "notes": "Inline text offset; 0 on disk for this section (filled at run time). No strings are stored here."
+    },
+    {
+     "name": "offset18",
+     "offset": 24,
+     "type": "u32",
+     "notes": "Unknown offset slot (0 in Workshop output for this section)."
+    },
+    {
+     "name": "offset1C",
+     "offset": 28,
+     "type": "u32",
+     "notes": "Unknown offset slot (0 in Workshop output)."
+    }
+   ]
+  },
+  {
+   "name": "storyPoint",
+   "where": "st2e entries of section 60: header.entryListOffset + i*208; row i = story point i (row labels: list BpStoryPointAdditionList: 0 = After first controlling Reks, 1 = After first controlling Vaan, rest reserve)",
+   "size": 208,
+   "count": "header.entryCount (vanilla 50)",
+   "fields": [
+    {
+     "name": "activeSlot1",
+     "offset": 0,
+     "type": "u8",
+     "enum": "PartyMemberList",
+     "notes": "Party member in active slot 1 (255 = empty; the Workshop reads the byte as signed, so -1)."
+    },
+    {
+     "name": "activeSlot2",
+     "offset": 1,
+     "type": "u8",
+     "enum": "PartyMemberList",
+     "notes": "Party member in active slot 2 (255 = empty; the Workshop reads the byte as signed, so -1)."
+    },
+    {
+     "name": "activeSlot3",
+     "offset": 2,
+     "type": "u8",
+     "enum": "PartyMemberList",
+     "notes": "Party member in active slot 3 (255 = empty; the Workshop reads the byte as signed, so -1)."
+    },
+    {
+     "name": "activeSlot4",
+     "offset": 3,
+     "type": "u8",
+     "enum": "PartyMemberList",
+     "notes": "Party member in active slot 4 (255 = empty; the Workshop reads the byte as signed, so -1)."
+    },
+    {
+     "name": "reserveSlot1",
+     "offset": 4,
+     "type": "u8",
+     "enum": "PartyMemberList",
+     "notes": "Party member in reserve slot 1 (255 = empty)."
+    },
+    {
+     "name": "reserveSlot2",
+     "offset": 5,
+     "type": "u8",
+     "enum": "PartyMemberList",
+     "notes": "Party member in reserve slot 2 (255 = empty)."
+    },
+    {
+     "name": "reserveSlot3",
+     "offset": 6,
+     "type": "u8",
+     "enum": "PartyMemberList",
+     "notes": "Party member in reserve slot 3 (255 = empty)."
+    },
+    {
+     "name": "reserveSlot4",
+     "offset": 7,
+     "type": "u8",
+     "enum": "PartyMemberList",
+     "notes": "Party member in reserve slot 4 (255 = empty)."
+    },
+    {
+     "name": "reserveSlot5",
+     "offset": 8,
+     "type": "u8",
+     "enum": "PartyMemberList",
+     "notes": "Party member in reserve slot 5 (255 = empty)."
+    },
+    {
+     "name": "unknown09",
+     "offset": 9,
+     "type": "bytes",
+     "length": 1,
+     "notes": "Not read; the Workshop leaves zero."
+    },
+    {
+     "name": "activePartyLeader",
+     "offset": 10,
+     "type": "u8",
+     "enum": "BpeActivePartyLeaderList",
+     "notes": "Which of the 9 slots is the party leader (0-3 active, 4-8 reserve)."
+    },
+    {
+     "name": "unknown0B",
+     "offset": 11,
+     "type": "bytes",
+     "length": 3,
+     "notes": "Not read; the Workshop leaves zeros."
+    },
+    {
+     "name": "gil",
+     "offset": 14,
+     "type": "u16",
+     "notes": "Gil (the Workshop reads it as signed 16-bit, the Lua Loader docs as u16)."
+    },
+    {
+     "name": "inventory1Content",
+     "offset": 16,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 1."
+    },
+    {
+     "name": "inventory2Content",
+     "offset": 18,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 2."
+    },
+    {
+     "name": "inventory3Content",
+     "offset": 20,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 3."
+    },
+    {
+     "name": "inventory4Content",
+     "offset": 22,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 4."
+    },
+    {
+     "name": "inventory5Content",
+     "offset": 24,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 5."
+    },
+    {
+     "name": "inventory6Content",
+     "offset": 26,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 6."
+    },
+    {
+     "name": "inventory7Content",
+     "offset": 28,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 7."
+    },
+    {
+     "name": "inventory8Content",
+     "offset": 30,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 8."
+    },
+    {
+     "name": "inventory9Content",
+     "offset": 32,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 9."
+    },
+    {
+     "name": "inventory10Content",
+     "offset": 34,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 10."
+    },
+    {
+     "name": "inventory11Content",
+     "offset": 36,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 11."
+    },
+    {
+     "name": "inventory12Content",
+     "offset": 38,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 12."
+    },
+    {
+     "name": "inventory13Content",
+     "offset": 40,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 13."
+    },
+    {
+     "name": "inventory14Content",
+     "offset": 42,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 14."
+    },
+    {
+     "name": "inventory15Content",
+     "offset": 44,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 15."
+    },
+    {
+     "name": "inventory16Content",
+     "offset": 46,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 16."
+    },
+    {
+     "name": "inventory17Content",
+     "offset": 48,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 17."
+    },
+    {
+     "name": "inventory18Content",
+     "offset": 50,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 18."
+    },
+    {
+     "name": "inventory19Content",
+     "offset": 52,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 19."
+    },
+    {
+     "name": "inventory20Content",
+     "offset": 54,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 20."
+    },
+    {
+     "name": "inventory21Content",
+     "offset": 56,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 21."
+    },
+    {
+     "name": "inventory22Content",
+     "offset": 58,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 22."
+    },
+    {
+     "name": "inventory23Content",
+     "offset": 60,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 23."
+    },
+    {
+     "name": "inventory24Content",
+     "offset": 62,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 24."
+    },
+    {
+     "name": "inventory25Content",
+     "offset": 64,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 25."
+    },
+    {
+     "name": "inventory26Content",
+     "offset": 66,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 26."
+    },
+    {
+     "name": "inventory27Content",
+     "offset": 68,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 27."
+    },
+    {
+     "name": "inventory28Content",
+     "offset": 70,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 28."
+    },
+    {
+     "name": "inventory29Content",
+     "offset": 72,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 29."
+    },
+    {
+     "name": "inventory30Content",
+     "offset": 74,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 30."
+    },
+    {
+     "name": "inventory31Content",
+     "offset": 76,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 31."
+    },
+    {
+     "name": "inventory32Content",
+     "offset": 78,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 32."
+    },
+    {
+     "name": "inventory33Content",
+     "offset": 80,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 33."
+    },
+    {
+     "name": "inventory34Content",
+     "offset": 82,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 34."
+    },
+    {
+     "name": "inventory35Content",
+     "offset": 84,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 35."
+    },
+    {
+     "name": "inventory36Content",
+     "offset": 86,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 36."
+    },
+    {
+     "name": "inventory37Content",
+     "offset": 88,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 37."
+    },
+    {
+     "name": "inventory38Content",
+     "offset": 90,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 38."
+    },
+    {
+     "name": "inventory39Content",
+     "offset": 92,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 39."
+    },
+    {
+     "name": "inventory40Content",
+     "offset": 94,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 40."
+    },
+    {
+     "name": "inventory41Content",
+     "offset": 96,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 41."
+    },
+    {
+     "name": "inventory42Content",
+     "offset": 98,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 42."
+    },
+    {
+     "name": "inventory43Content",
+     "offset": 100,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 43."
+    },
+    {
+     "name": "inventory44Content",
+     "offset": 102,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 44."
+    },
+    {
+     "name": "inventory45Content",
+     "offset": 104,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 45."
+    },
+    {
+     "name": "inventory46Content",
+     "offset": 106,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 46."
+    },
+    {
+     "name": "inventory47Content",
+     "offset": 108,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 47."
+    },
+    {
+     "name": "inventory48Content",
+     "offset": 110,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 48."
+    },
+    {
+     "name": "inventory49Content",
+     "offset": 112,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 49."
+    },
+    {
+     "name": "inventory50Content",
+     "offset": 114,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 50."
+    },
+    {
+     "name": "inventory51Content",
+     "offset": 116,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 51."
+    },
+    {
+     "name": "inventory52Content",
+     "offset": 118,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 52."
+    },
+    {
+     "name": "inventory53Content",
+     "offset": 120,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 53."
+    },
+    {
+     "name": "inventory54Content",
+     "offset": 122,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 54."
+    },
+    {
+     "name": "inventory55Content",
+     "offset": 124,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 55."
+    },
+    {
+     "name": "inventory56Content",
+     "offset": 126,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 56."
+    },
+    {
+     "name": "inventory57Content",
+     "offset": 128,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 57."
+    },
+    {
+     "name": "inventory58Content",
+     "offset": 130,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 58."
+    },
+    {
+     "name": "inventory59Content",
+     "offset": 132,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 59."
+    },
+    {
+     "name": "inventory60Content",
+     "offset": 134,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 60."
+    },
+    {
+     "name": "inventory61Content",
+     "offset": 136,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 61."
+    },
+    {
+     "name": "inventory62Content",
+     "offset": 138,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 62."
+    },
+    {
+     "name": "inventory63Content",
+     "offset": 140,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 63."
+    },
+    {
+     "name": "inventory64Content",
+     "offset": 142,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id of inventory slot 64."
+    },
+    {
+     "name": "inventory1Quantity",
+     "offset": 144,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 1."
+    },
+    {
+     "name": "inventory2Quantity",
+     "offset": 145,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 2."
+    },
+    {
+     "name": "inventory3Quantity",
+     "offset": 146,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 3."
+    },
+    {
+     "name": "inventory4Quantity",
+     "offset": 147,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 4."
+    },
+    {
+     "name": "inventory5Quantity",
+     "offset": 148,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 5."
+    },
+    {
+     "name": "inventory6Quantity",
+     "offset": 149,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 6."
+    },
+    {
+     "name": "inventory7Quantity",
+     "offset": 150,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 7."
+    },
+    {
+     "name": "inventory8Quantity",
+     "offset": 151,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 8."
+    },
+    {
+     "name": "inventory9Quantity",
+     "offset": 152,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 9."
+    },
+    {
+     "name": "inventory10Quantity",
+     "offset": 153,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 10."
+    },
+    {
+     "name": "inventory11Quantity",
+     "offset": 154,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 11."
+    },
+    {
+     "name": "inventory12Quantity",
+     "offset": 155,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 12."
+    },
+    {
+     "name": "inventory13Quantity",
+     "offset": 156,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 13."
+    },
+    {
+     "name": "inventory14Quantity",
+     "offset": 157,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 14."
+    },
+    {
+     "name": "inventory15Quantity",
+     "offset": 158,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 15."
+    },
+    {
+     "name": "inventory16Quantity",
+     "offset": 159,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 16."
+    },
+    {
+     "name": "inventory17Quantity",
+     "offset": 160,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 17."
+    },
+    {
+     "name": "inventory18Quantity",
+     "offset": 161,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 18."
+    },
+    {
+     "name": "inventory19Quantity",
+     "offset": 162,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 19."
+    },
+    {
+     "name": "inventory20Quantity",
+     "offset": 163,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 20."
+    },
+    {
+     "name": "inventory21Quantity",
+     "offset": 164,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 21."
+    },
+    {
+     "name": "inventory22Quantity",
+     "offset": 165,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 22."
+    },
+    {
+     "name": "inventory23Quantity",
+     "offset": 166,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 23."
+    },
+    {
+     "name": "inventory24Quantity",
+     "offset": 167,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 24."
+    },
+    {
+     "name": "inventory25Quantity",
+     "offset": 168,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 25."
+    },
+    {
+     "name": "inventory26Quantity",
+     "offset": 169,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 26."
+    },
+    {
+     "name": "inventory27Quantity",
+     "offset": 170,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 27."
+    },
+    {
+     "name": "inventory28Quantity",
+     "offset": 171,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 28."
+    },
+    {
+     "name": "inventory29Quantity",
+     "offset": 172,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 29."
+    },
+    {
+     "name": "inventory30Quantity",
+     "offset": 173,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 30."
+    },
+    {
+     "name": "inventory31Quantity",
+     "offset": 174,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 31."
+    },
+    {
+     "name": "inventory32Quantity",
+     "offset": 175,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 32."
+    },
+    {
+     "name": "inventory33Quantity",
+     "offset": 176,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 33."
+    },
+    {
+     "name": "inventory34Quantity",
+     "offset": 177,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 34."
+    },
+    {
+     "name": "inventory35Quantity",
+     "offset": 178,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 35."
+    },
+    {
+     "name": "inventory36Quantity",
+     "offset": 179,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 36."
+    },
+    {
+     "name": "inventory37Quantity",
+     "offset": 180,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 37."
+    },
+    {
+     "name": "inventory38Quantity",
+     "offset": 181,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 38."
+    },
+    {
+     "name": "inventory39Quantity",
+     "offset": 182,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 39."
+    },
+    {
+     "name": "inventory40Quantity",
+     "offset": 183,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 40."
+    },
+    {
+     "name": "inventory41Quantity",
+     "offset": 184,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 41."
+    },
+    {
+     "name": "inventory42Quantity",
+     "offset": 185,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 42."
+    },
+    {
+     "name": "inventory43Quantity",
+     "offset": 186,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 43."
+    },
+    {
+     "name": "inventory44Quantity",
+     "offset": 187,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 44."
+    },
+    {
+     "name": "inventory45Quantity",
+     "offset": 188,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 45."
+    },
+    {
+     "name": "inventory46Quantity",
+     "offset": 189,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 46."
+    },
+    {
+     "name": "inventory47Quantity",
+     "offset": 190,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 47."
+    },
+    {
+     "name": "inventory48Quantity",
+     "offset": 191,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 48."
+    },
+    {
+     "name": "inventory49Quantity",
+     "offset": 192,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 49."
+    },
+    {
+     "name": "inventory50Quantity",
+     "offset": 193,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 50."
+    },
+    {
+     "name": "inventory51Quantity",
+     "offset": 194,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 51."
+    },
+    {
+     "name": "inventory52Quantity",
+     "offset": 195,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 52."
+    },
+    {
+     "name": "inventory53Quantity",
+     "offset": 196,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 53."
+    },
+    {
+     "name": "inventory54Quantity",
+     "offset": 197,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 54."
+    },
+    {
+     "name": "inventory55Quantity",
+     "offset": 198,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 55."
+    },
+    {
+     "name": "inventory56Quantity",
+     "offset": 199,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 56."
+    },
+    {
+     "name": "inventory57Quantity",
+     "offset": 200,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 57."
+    },
+    {
+     "name": "inventory58Quantity",
+     "offset": 201,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 58."
+    },
+    {
+     "name": "inventory59Quantity",
+     "offset": 202,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 59."
+    },
+    {
+     "name": "inventory60Quantity",
+     "offset": 203,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 60."
+    },
+    {
+     "name": "inventory61Quantity",
+     "offset": 204,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 61."
+    },
+    {
+     "name": "inventory62Quantity",
+     "offset": 205,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 62."
+    },
+    {
+     "name": "inventory63Quantity",
+     "offset": 206,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 63."
+    },
+    {
+     "name": "inventory64Quantity",
+     "offset": 207,
+     "type": "u8",
+     "notes": "Quantity of inventory slot 64."
+    }
+   ]
+  }
+ ],
+ "enums": {
+  "BpeActivePartyLeaderList": {
+   "0": "Active Slot 1",
+   "1": "Active Slot 2",
+   "2": "Active Slot 3",
+   "3": "Active Slot 4",
+   "4": "Reserve Slot 1",
+   "5": "Reserve Slot 2",
+   "6": "Reserve Slot 3",
+   "7": "Reserve Slot 4",
+   "8": "Reserve Slot 5"
+  }
+ },
+ "roundTrip": [
+  "Edit fields in place; the record size is fixed and nothing in this section points at entries, so value edits never move data.",
+  "Copy every byte that no field interprets (unknown*/padding, unnamed bits) from the original; the Workshop writer zero-fills them (it seeks over them), so do not use its output as the byte-identical reference.",
+  "Keep the st2e header bytes verbatim except entryCount (and entryListOffset when the count goes to/from 0).",
+  "Keep the trailing zero padding that rounds the section to a multiple of 16 bytes.",
+  "If the section length changes (added/removed entries), rewrite the battlepack offset table: every later section offset and the end offset shift by the padded size delta.",
+  "Keep 9 party slots and 64 inventory slots (contents block 0x10-0x8F, quantities block 0x90-0xCF)."
+ ],
+ "gaps": [
+  "gil signedness (Workshop s16, Lua Loader u16) and whether gil is really only 16 bits (bytes 0x0B-0x0D unread could be its low part).",
+  "Bytes 0x09 and 0x0B-0x0D are never read.",
+  "Whether the inventory replaces or adds to the current inventory."
+ ]
+}

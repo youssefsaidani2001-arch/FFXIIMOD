@@ -1,0 +1,147 @@
+{
+ "id": "battlepack-s03-mp-regeneration",
+ "title": "Battlepack section 3 — MP Regeneration",
+ "files": [
+  "ps2data/image/ff12/test_battle/*/binaryfile/battle_pack.bin",
+  "battle_pack.bin.dir/section_003.bin"
+ ],
+ "container": {
+  "kind": "battlepack",
+  "notes": "Section 3 of battle_pack.bin (71-section battlepack: u32 count, count+1 u32 file offsets incl. an unpadded end offset, sections 16-byte aligned with zero fill; see container-battlepack). The section is an st2e table: 32-byte header (magic, u32 entryCount @4, u16 entrySize @8 = 8, u32 entryListOffset @12 = 32, u32 textSectionOffset @20 = 0) followed by entryCount packed 8-byte entries and zero padding to a multiple of 16 bytes (see container-st2e). Rows 0-19 use the damage layout, rows 20+ the walking layout."
+ },
+ "records": [
+  {
+   "name": "header",
+   "where": "Offset 0 of battlepack section 3.",
+   "size": 32,
+   "count": "1",
+   "fields": [
+    {
+     "name": "magic",
+     "offset": 0,
+     "type": "bytes",
+     "length": 4,
+     "notes": "ASCII 'st2e' (73 74 32 65); reject the section if different."
+    },
+    {
+     "name": "entryCount",
+     "offset": 4,
+     "type": "u32",
+     "notes": "20 + number of walking tiers (all rows share the 8-byte stride)."
+    },
+    {
+     "name": "entrySize",
+     "offset": 8,
+     "type": "u16",
+     "notes": "Bytes per entry; 8 (0x8) for this section."
+    },
+    {
+     "name": "unknown0A",
+     "offset": 10,
+     "type": "bytes",
+     "length": 2,
+     "notes": "Not interpreted; keep."
+    },
+    {
+     "name": "entryListOffset",
+     "offset": 12,
+     "type": "u32",
+     "notes": "Offset of entry 0 from the section start: 32 when entryCount > 0, else 0."
+    },
+    {
+     "name": "offset10",
+     "offset": 16,
+     "type": "u32",
+     "notes": "Unknown offset slot (0 in Workshop output)."
+    },
+    {
+     "name": "textSectionOffset",
+     "offset": 20,
+     "type": "u32",
+     "notes": "Inline text offset; 0 on disk for this section (filled at run time). No strings are stored here."
+    },
+    {
+     "name": "offset18",
+     "offset": 24,
+     "type": "u32",
+     "notes": "Unknown offset slot (0 in Workshop output for this section)."
+    },
+    {
+     "name": "offset1C",
+     "offset": 28,
+     "type": "u32",
+     "notes": "Unknown offset slot (0 in Workshop output)."
+    }
+   ]
+  },
+  {
+   "name": "mpRegenByDamage",
+   "where": "st2e rows 0-19 of section 3: header.entryListOffset + i*8, i = 0..19",
+   "size": 8,
+   "count": "20 (fixed)",
+   "fields": [
+    {
+     "name": "requiredDamage",
+     "offset": 0,
+     "type": "u16",
+     "notes": "Damage threshold of this tier."
+    },
+    {
+     "name": "regeneratedMp",
+     "offset": 2,
+     "type": "u8",
+     "notes": "MP restored when the tier applies."
+    },
+    {
+     "name": "regeneratedMpSummon",
+     "offset": 3,
+     "type": "u8",
+     "notes": "MP restored in the variant the Workshop labels \"Summon\"."
+    },
+    {
+     "name": "unknown04",
+     "offset": 4,
+     "type": "bytes",
+     "length": 4,
+     "notes": "Not read; the Workshop writes zeros."
+    }
+   ]
+  },
+  {
+   "name": "mpRegenByFoot",
+   "where": "st2e rows 20.. of section 3: header.entryListOffset + (20 + j)*8, j = 0..entryCount-21",
+   "size": 8,
+   "count": "header.entryCount - 20 (at least 1)",
+   "fields": [
+    {
+     "name": "steps",
+     "offset": 0,
+     "type": "u32",
+     "notes": "Steps of walking needed to regenerate 1 MP in this tier."
+    },
+    {
+     "name": "mpLimit",
+     "offset": 4,
+     "type": "u32",
+     "notes": "Upper MP bound of the tier; tiers are ordered by it and the last one must be >= 1000."
+    }
+   ]
+  }
+ ],
+ "enums": {},
+ "roundTrip": [
+  "Edit fields in place; the record size is fixed and nothing in this section points at entries, so value edits never move data.",
+  "Copy every byte that no field interprets (unknown*/padding, unnamed bits) from the original; the Workshop writer zero-fills them (it seeks over them), so do not use its output as the byte-identical reference.",
+  "Keep the st2e header bytes verbatim except entryCount (and entryListOffset when the count goes to/from 0).",
+  "Keep the trailing zero padding that rounds the section to a multiple of 16 bytes.",
+  "If the section length changes (added/removed entries), rewrite the battlepack offset table: every later section offset and the end offset shift by the padded size delta.",
+  "Keep exactly 20 damage rows first; walking rows follow in ascending mpLimit order, the last with mpLimit >= 1000."
+ ],
+ "gaps": [
+  "Exact lookup rule for walking tiers: whether current or max MP is compared with mpLimit, and whether the bound is inclusive.",
+  "Meaning of regeneratedMpSummon (Workshop label only).",
+  "Bytes 4-7 of damage rows are never read; assumed padding.",
+  "How the 20 damage rows map to Martyr / Inquisitor / Warmage (msg 96 gives only 10 Martyr tiers).",
+  "Section 3 is also referenced by name in TK L1044, but that is ARD section 3 (AI scripts), not this battlepack section."
+ ]
+}

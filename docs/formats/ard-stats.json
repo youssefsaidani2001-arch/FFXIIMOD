@@ -1,0 +1,328 @@
+{
+ "id": "ard-stats",
+ "title": "ARD sections 7 and 8 - Default and additive stats",
+ "files": [
+  "**/*.ard",
+  "**/*.ard.dir/section_007.bin",
+  "**/*.ard.dir/section_008.bin"
+ ],
+ "container": {
+  "kind": "ard",
+  "notes": "ARD section 7 (default stats; and section 8 = additive stats at ARD+0x28 with the same layout; st2e tables, entrySize 56). ARD = standalone *.ard or section 19 of an .ebp: 8-byte magic FF12AR03, ten u32 section offsets at 0x08 relative to the ARD start (0 = absent; this section = u32 at ARD+0x24); sections 0,2..9 written in index order on 16-byte boundaries with zero fill, section 1 written last with nothing after it. A section spans to the next larger non-zero offset (the highest to the end of the ARD)."
+ },
+ "records": [
+  {
+   "name": "header",
+   "where": "Offset 0 of ARD section 7 (ARD start + u32 at ARD+0x24) and, separately, of ARD section 8 (u32 at ARD+0x28).",
+   "size": 32,
+   "count": 1,
+   "fields": [
+    {
+     "name": "magic",
+     "offset": 0,
+     "type": "bytes",
+     "length": 4,
+     "notes": "ASCII 'st2e' (73 74 32 65); reject the section if different."
+    },
+    {
+     "name": "entryCount",
+     "offset": 4,
+     "type": "u32",
+     "notes": "Number of stat rows (section 7 or 8)."
+    },
+    {
+     "name": "entrySize",
+     "offset": 8,
+     "type": "u16",
+     "notes": "Bytes per row; always 56 (0x38) for this table."
+    },
+    {
+     "name": "unknown0A",
+     "offset": 10,
+     "type": "bytes",
+     "length": 2,
+     "notes": "Not read by any source; keep as found."
+    },
+    {
+     "name": "entryListOffset",
+     "offset": 12,
+     "type": "u32",
+     "notes": "Section-relative offset of row 0: 32 when entryCount > 0, otherwise 0."
+    },
+    {
+     "name": "offset10",
+     "offset": 16,
+     "type": "u32",
+     "notes": "Unknown offset word; 0 in Workshop output."
+    },
+    {
+     "name": "textSectionOffset",
+     "offset": 20,
+     "type": "u32",
+     "notes": "Named text-section offset; 0 on disk (the Toolkit clears it on export). No strings are stored in ARD tables."
+    },
+    {
+     "name": "offset18",
+     "offset": 24,
+     "type": "u32",
+     "notes": "Unknown offset word; 0 in Workshop output."
+    },
+    {
+     "name": "offset1C",
+     "offset": 28,
+     "type": "u32",
+     "notes": "Unknown offset word; 0 in Workshop output."
+    }
+   ]
+  },
+  {
+   "name": "defaultStats",
+   "where": "st2e rows of ARD section 7: section offset header.entryListOffset + i*56",
+   "size": 56,
+   "count": "header.entryCount of section 7",
+   "fields": [
+    {
+     "name": "clanPoints",
+     "offset": 0,
+     "type": "u16",
+     "notes": "Clan points awarded."
+    },
+    {
+     "name": "evadeShield",
+     "offset": 2,
+     "type": "u8",
+     "notes": "Evade from shield."
+    },
+    {
+     "name": "magickEvadeShield",
+     "offset": 3,
+     "type": "u8",
+     "notes": "Magick evade from shield."
+    },
+    {
+     "name": "unknown04",
+     "offset": 4,
+     "type": "bytes",
+     "length": 28,
+     "notes": "Not read."
+    },
+    {
+     "name": "maxHp",
+     "offset": 32,
+     "type": "u32",
+     "notes": "Maximum HP."
+    },
+    {
+     "name": "maxMp",
+     "offset": 36,
+     "type": "u16",
+     "notes": "Maximum MP."
+    },
+    {
+     "name": "strength",
+     "offset": 38,
+     "type": "u8",
+     "notes": "Strength."
+    },
+    {
+     "name": "magickPower",
+     "offset": 39,
+     "type": "u8",
+     "notes": "Magick power."
+    },
+    {
+     "name": "vitality",
+     "offset": 40,
+     "type": "u8",
+     "notes": "Vitality."
+    },
+    {
+     "name": "speed",
+     "offset": 41,
+     "type": "u8",
+     "notes": "Speed."
+    },
+    {
+     "name": "evadeParry",
+     "offset": 42,
+     "type": "u8",
+     "notes": "Parry evade."
+    },
+    {
+     "name": "defense",
+     "offset": 43,
+     "type": "u8",
+     "notes": "Defense."
+    },
+    {
+     "name": "magickResist",
+     "offset": 44,
+     "type": "u8",
+     "notes": "Magick resist."
+    },
+    {
+     "name": "attackPower",
+     "offset": 45,
+     "type": "u8",
+     "notes": "Attack power (probably unused when the unit takes attack power from its weapon, unit flag 0x15 bit 0; msg 637)."
+    },
+    {
+     "name": "evadeWeapon",
+     "offset": 46,
+     "type": "u8",
+     "notes": "Weapon evade (same remark as attackPower)."
+    },
+    {
+     "name": "licensePoints",
+     "offset": 47,
+     "type": "u8",
+     "notes": "License points awarded."
+    },
+    {
+     "name": "gil",
+     "offset": 48,
+     "type": "u32",
+     "notes": "Gil awarded."
+    },
+    {
+     "name": "experience",
+     "offset": 52,
+     "type": "u32",
+     "notes": "Experience awarded."
+    }
+   ]
+  },
+  {
+   "name": "additiveStats",
+   "where": "st2e rows of ARD section 8: section offset header.entryListOffset + i*56",
+   "size": 56,
+   "count": "header.entryCount of section 8",
+   "fields": [
+    {
+     "name": "clanPoints",
+     "offset": 0,
+     "type": "u16",
+     "notes": "Clan points awarded. Section 8: amount added on top of the default row (how it scales, e.g. per level, is not documented)."
+    },
+    {
+     "name": "evadeShield",
+     "offset": 2,
+     "type": "u8",
+     "notes": "Evade from shield. Section 8: amount added on top of the default row (how it scales, e.g. per level, is not documented)."
+    },
+    {
+     "name": "magickEvadeShield",
+     "offset": 3,
+     "type": "u8",
+     "notes": "Magick evade from shield. Section 8: amount added on top of the default row (how it scales, e.g. per level, is not documented)."
+    },
+    {
+     "name": "unknown04",
+     "offset": 4,
+     "type": "bytes",
+     "length": 28,
+     "notes": "Not read."
+    },
+    {
+     "name": "maxHp",
+     "offset": 32,
+     "type": "u32",
+     "notes": "Maximum HP. Section 8: amount added on top of the default row (how it scales, e.g. per level, is not documented)."
+    },
+    {
+     "name": "maxMp",
+     "offset": 36,
+     "type": "u16",
+     "notes": "Maximum MP. Section 8: amount added on top of the default row (how it scales, e.g. per level, is not documented)."
+    },
+    {
+     "name": "strength",
+     "offset": 38,
+     "type": "u8",
+     "notes": "Strength. Section 8: amount added on top of the default row (how it scales, e.g. per level, is not documented)."
+    },
+    {
+     "name": "magickPower",
+     "offset": 39,
+     "type": "u8",
+     "notes": "Magick power. Section 8: amount added on top of the default row (how it scales, e.g. per level, is not documented)."
+    },
+    {
+     "name": "vitality",
+     "offset": 40,
+     "type": "u8",
+     "notes": "Vitality. Section 8: amount added on top of the default row (how it scales, e.g. per level, is not documented)."
+    },
+    {
+     "name": "speed",
+     "offset": 41,
+     "type": "u8",
+     "notes": "Speed. Section 8: amount added on top of the default row (how it scales, e.g. per level, is not documented)."
+    },
+    {
+     "name": "evadeParry",
+     "offset": 42,
+     "type": "u8",
+     "notes": "Parry evade. Section 8: amount added on top of the default row (how it scales, e.g. per level, is not documented)."
+    },
+    {
+     "name": "defense",
+     "offset": 43,
+     "type": "u8",
+     "notes": "Defense. Section 8: amount added on top of the default row (how it scales, e.g. per level, is not documented)."
+    },
+    {
+     "name": "magickResist",
+     "offset": 44,
+     "type": "u8",
+     "notes": "Magick resist. Section 8: amount added on top of the default row (how it scales, e.g. per level, is not documented)."
+    },
+    {
+     "name": "attackPower",
+     "offset": 45,
+     "type": "u8",
+     "notes": "Attack power (probably unused when the unit takes attack power from its weapon, unit flag 0x15 bit 0; msg 637). Section 8: amount added on top of the default row (how it scales, e.g. per level, is not documented)."
+    },
+    {
+     "name": "evadeWeapon",
+     "offset": 46,
+     "type": "u8",
+     "notes": "Weapon evade (same remark as attackPower). Section 8: amount added on top of the default row (how it scales, e.g. per level, is not documented)."
+    },
+    {
+     "name": "licensePoints",
+     "offset": 47,
+     "type": "u8",
+     "notes": "License points awarded. Section 8: amount added on top of the default row (how it scales, e.g. per level, is not documented)."
+    },
+    {
+     "name": "gil",
+     "offset": 48,
+     "type": "u32",
+     "notes": "Gil awarded. Section 8: amount added on top of the default row (how it scales, e.g. per level, is not documented)."
+    },
+    {
+     "name": "experience",
+     "offset": 52,
+     "type": "u32",
+     "notes": "Experience awarded. Section 8: amount added on top of the default row (how it scales, e.g. per level, is not documented)."
+    }
+   ]
+  }
+ ],
+ "enums": {},
+ "roundTrip": [
+  "Edit fields in place; rows are fixed-size, so value edits never move data.",
+  "Copy every byte no field interprets (unknown*/unused* fields, unnamed bits) from the original. The Workshop writer seeks over those bytes and therefore writes zeros; do not treat its output as the byte-identical reference.",
+  "Keep the st2e header verbatim except entryCount (and entryListOffset when the table becomes empty or stops being empty).",
+  "Keep the zero padding that rounds the section to a multiple of 16 bytes.",
+  "If this section changes length, rebuild the ARD offset table: every section stored after it moves (recompute their u32 slots, keep 16-byte starts with zero fill, keep section 1 last with nothing after it); if the ARD sits in EBP section 19, the EBP offsets after section 19 move as well.",
+  "Sections 7 and 8 are separate st2e tables; resize and re-pad each one on its own, then fix the ARD offsets after it.",
+  "Do not reorder rows: units refer to them by index."
+ ],
+ "gaps": [
+  "The 28 unread bytes at 0x04-0x1F of every row.",
+  "How additive values combine with the default row (per level, per story point, or otherwise) - the Toolkit only says \"per-level growth applied on top\".",
+  "Value caps the engine applies (e.g. MP above 999, msg 375-388) are not encoded here."
+ ]
+}

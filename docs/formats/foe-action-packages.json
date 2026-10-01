@@ -1,0 +1,80 @@
+{
+ "id": "foe-action-packages",
+ "title": "Battlepack section 10 - foe action packages (weighted action groups used by ARD AI)",
+ "files": [
+  "ps2data/image/ff12/test_battle/*/binaryfile/battle_pack.bin",
+  "battle_pack.bin.dir/section_010.bin"
+ ],
+ "container": {
+  "kind": "battlepack",
+  "notes": "Section 10 of battle_pack.bin (see container-battlepack). Not st2e: u32 packageCount, packageCount+1 u32 section-relative offsets (last = end of data), zero padding to 16, packages back to back, each a run of 4-byte entries (u16 action, u16 chance), zero padding to 16. AI entries in ARD section 3 call package n with action id 0x8000 + n. Same layout as battlepack-s10-action-groups; this spec adds the vanilla facts from the Foe Actions sheet."
+ },
+ "records": [
+  {
+   "name": "header",
+   "size": 4,
+   "count": 1,
+   "where": "Offset 0 of battlepack section 10 (no st2e header).",
+   "fields": [
+    {
+     "name": "packageCount",
+     "offset": 0,
+     "type": "u32",
+     "notes": "Number of packages (826 in vanilla); packageCount + 1 offsets follow."
+    }
+   ]
+  },
+  {
+   "name": "packageOffset",
+   "size": 4,
+   "count": "header.packageCount + 1",
+   "where": "Section 10 offset 4 + 4*i.",
+   "fields": [
+    {
+     "name": "offset",
+     "offset": 0,
+     "type": "u32",
+     "notes": "Section-relative start of package i; last word = end of data. Entries = (next - this) / 4."
+    }
+   ]
+  },
+  {
+   "name": "packageEntry",
+   "size": 4,
+   "count": "(packageOffset[i+1] - packageOffset[i]) / 4 per package; 1-12 in vanilla",
+   "where": "Package i occupies [packageOffset[i], packageOffset[i+1]); packages are stored back to back from packageOffset[0] (no padding between them).",
+   "fields": [
+    {
+     "name": "action",
+     "offset": 0,
+     "type": "u16",
+     "enum": "BpActionList",
+     "notes": "Section 14 action row (150 = Attack)."
+    },
+    {
+     "name": "chance",
+     "offset": 2,
+     "type": "u16",
+     "notes": "Percent; entries of a package sum to 100 in vanilla."
+    }
+   ]
+  }
+ ],
+ "enums": {},
+ "roundTrip": [
+  "Edit action and chance in place; nothing moves.",
+  "Keep the chances of each package summing to 100 (true for every vanilla package); behaviour for other sums is unknown.",
+  "Packages are addressed by position (AI action id 0x8000 + index): append new packages at the end, never reorder or delete.",
+  "Adding or removing an entry in package i moves packageOffset[i+1 ..] and the end word by 4 per entry; adding a package grows the offset table by 4 bytes and moves every offset.",
+  "Section layout: header and offset table, zero padding to 16, packages back to back, zero padding to 16; then shift the later battlepack section offsets by the padded size change (container-battlepack).",
+  "With 826 packages the header plus table is 4 + 4 x 827 = 3312 bytes (0xCF0), already 16-aligned, so package 0 starts at 0xCF0 in a packed rebuild."
+ ],
+ "gaps": [
+  "Only the first 36 of the 826 package rows were readable through the Drive connector; the maximum of 12 entries per package comes from the sheet's column layout (Action 0 .. Action 11) and package 34 (12 entries).",
+  "Whether the game requires the chances to add up to 100, or treats them as weights.",
+  "Whether entries can hold AI command ids (0x4000+) instead of section 14 rows (all vanilla samples are section 14 rows).",
+  "Packages 0-16 have no enemy, script or ARD in the sheet's cross-reference (\"none\"), i.e. no vanilla ARD entry uses them according to the sheet; whether the game uses them elsewhere (e.g. espers or guests) is not stated.",
+  "The Toolkit list BattleLogicActionList names 0x8000-0x8337 \"Action Group 0-823\" and then labels 0x8338 \"Action Group 825\"; with 826 packages 0x8338 is package 824 and 0x8339 (package 825) is missing from that list. enums-ai-actions carries corrected labels.",
+  "Whether vanilla pads the table exactly to 16 before package 0 (the Workshop writer does)."
+ ]
+}

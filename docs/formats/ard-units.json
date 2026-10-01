@@ -1,0 +1,466 @@
+{
+ "id": "ard-units",
+ "title": "ARD section 4 - Units (foe encounters)",
+ "files": [
+  "**/*.ard",
+  "**/*.ard.dir/section_004.bin"
+ ],
+ "container": {
+  "kind": "ard",
+  "notes": "ARD section 4 (units; st2e table, entrySize 88). ARD = standalone *.ard or section 19 of an .ebp: 8-byte magic FF12AR03, ten u32 section offsets at 0x08 relative to the ARD start (0 = absent; this section = u32 at ARD+0x18); sections 0,2..9 written in index order on 16-byte boundaries with zero fill, section 1 written last with nothing after it. A section spans to the next larger non-zero offset (the highest to the end of the ARD)."
+ },
+ "records": [
+  {
+   "name": "header",
+   "where": "Offset 0 of ARD section 4 (ARD start + u32 at ARD+0x18).",
+   "size": 32,
+   "count": 1,
+   "fields": [
+    {
+     "name": "magic",
+     "offset": 0,
+     "type": "bytes",
+     "length": 4,
+     "notes": "ASCII 'st2e' (73 74 32 65); reject the section if different."
+    },
+    {
+     "name": "entryCount",
+     "offset": 4,
+     "type": "u32",
+     "notes": "Number of unit rows in this area."
+    },
+    {
+     "name": "entrySize",
+     "offset": 8,
+     "type": "u16",
+     "notes": "Bytes per row; always 88 (0x58) for this table."
+    },
+    {
+     "name": "unknown0A",
+     "offset": 10,
+     "type": "bytes",
+     "length": 2,
+     "notes": "Not read by any source; keep as found."
+    },
+    {
+     "name": "entryListOffset",
+     "offset": 12,
+     "type": "u32",
+     "notes": "Section-relative offset of row 0: 32 when entryCount > 0, otherwise 0."
+    },
+    {
+     "name": "offset10",
+     "offset": 16,
+     "type": "u32",
+     "notes": "Unknown offset word; 0 in Workshop output."
+    },
+    {
+     "name": "textSectionOffset",
+     "offset": 20,
+     "type": "u32",
+     "notes": "Named text-section offset; 0 on disk (the Toolkit clears it on export). No strings are stored in ARD tables."
+    },
+    {
+     "name": "offset18",
+     "offset": 24,
+     "type": "u32",
+     "notes": "Unknown offset word; 0 in Workshop output."
+    },
+    {
+     "name": "offset1C",
+     "offset": 28,
+     "type": "u32",
+     "notes": "Unknown offset word; 0 in Workshop output."
+    }
+   ]
+  },
+  {
+   "name": "unit",
+   "where": "st2e rows of ARD section 4: section offset header.entryListOffset + i*88",
+   "size": 88,
+   "count": "header.entryCount",
+   "fields": [
+    {
+     "name": "classLink",
+     "offset": 0,
+     "type": "u16",
+     "notes": "Row index into section 2 (classes) of the same ARD."
+    },
+    {
+     "name": "nameVariationGroup",
+     "offset": 2,
+     "type": "u8",
+     "notes": "Group identifier (Toolkit: \"Name Variation Group Identifier\"). The Workshop accepts only 0-127 or 255."
+    },
+    {
+     "name": "flags03",
+     "offset": 3,
+     "type": "bf8",
+     "bits": [
+      {
+       "name": "healthBarType",
+       "bitStart": 0,
+       "bitLength": 2,
+       "enum": "ArdeCustomHealthBarTypeList"
+      },
+      {
+       "name": "unknownBits2to3",
+       "bitStart": 2,
+       "bitLength": 2
+      },
+      {
+       "name": "isHunt",
+       "bitStart": 4,
+       "bitLength": 1
+      },
+      {
+       "name": "isBoss",
+       "bitStart": 5,
+       "bitLength": 1
+      },
+      {
+       "name": "unknownBits6to7",
+       "bitStart": 6,
+       "bitLength": 2
+      }
+     ],
+     "notes": "Flag byte 1."
+    },
+    {
+     "name": "unknown04",
+     "offset": 4,
+     "type": "bytes",
+     "length": 4,
+     "notes": "Not read."
+    },
+    {
+     "name": "name",
+     "offset": 8,
+     "type": "u16",
+     "enum": "DescNameList",
+     "notes": "Name text id (character/foe name block, 16384+)."
+    },
+    {
+     "name": "sizeX",
+     "offset": 10,
+     "type": "u16",
+     "notes": "Scale on X in percent (Toolkit: \"Size %\"; makes giant or tiny foes)."
+    },
+    {
+     "name": "sizeY",
+     "offset": 12,
+     "type": "u16",
+     "notes": "Scale on Y in percent."
+    },
+    {
+     "name": "sizeZ",
+     "offset": 14,
+     "type": "u16",
+     "notes": "Scale on Z in percent."
+    },
+    {
+     "name": "unknown10",
+     "offset": 16,
+     "type": "u8",
+     "notes": "Not read."
+    },
+    {
+     "name": "modelVariation",
+     "offset": 17,
+     "type": "u8",
+     "notes": "Model variation index."
+    },
+    {
+     "name": "modelColorVariation",
+     "offset": 18,
+     "type": "u8",
+     "notes": "Model colour variation index."
+    },
+    {
+     "name": "forcedWeaponStanceAnimation",
+     "offset": 19,
+     "type": "u8",
+     "enum": "WeaponStanceAnimationList",
+     "notes": "Weapon stance animation forced on the unit (255 = none)."
+    },
+    {
+     "name": "unknown14",
+     "offset": 20,
+     "type": "u8",
+     "notes": "Not read."
+    },
+    {
+     "name": "flags15",
+     "offset": 21,
+     "type": "bf8",
+     "bits": [
+      {
+       "name": "useWeaponAttackAndEvade",
+       "bitStart": 0,
+       "bitLength": 1
+      },
+      {
+       "name": "hasShield",
+       "bitStart": 1,
+       "bitLength": 1
+      },
+      {
+       "name": "hasCustomHealthBar",
+       "bitStart": 2,
+       "bitLength": 1
+      },
+      {
+       "name": "noTargetLine",
+       "bitStart": 3,
+       "bitLength": 1
+      },
+      {
+       "name": "noActionCategoryTargetLine",
+       "bitStart": 4,
+       "bitLength": 1
+      },
+      {
+       "name": "unknownBits5to7",
+       "bitStart": 5,
+       "bitLength": 3
+      }
+     ],
+     "notes": "Flag byte 2. Toolkit names are matched to the Workshop bits by position."
+    },
+    {
+     "name": "weapon",
+     "offset": 22,
+     "type": "u16",
+     "notes": "Equipped weapon (equipment reference; whether it is a battlepack section 13 row or a 0x1000-block content id is not stated by our sources)."
+    },
+    {
+     "name": "customInitialHp",
+     "offset": 24,
+     "type": "u32",
+     "notes": "Initial HP override for this encounter."
+    },
+    {
+     "name": "offhand",
+     "offset": 28,
+     "type": "u16",
+     "notes": "Equipped off-hand (same encoding as weapon)."
+    },
+    {
+     "name": "unknown1E",
+     "offset": 30,
+     "type": "bytes",
+     "length": 4,
+     "notes": "Not read."
+    },
+    {
+     "name": "defaultStatsLink",
+     "offset": 34,
+     "type": "u16",
+     "notes": "Row index into section 7 (default stats)."
+    },
+    {
+     "name": "additiveStatsLink",
+     "offset": 36,
+     "type": "u16",
+     "notes": "Row index into section 8 (additive / per-level stats)."
+    },
+    {
+     "name": "unknown26",
+     "offset": 38,
+     "type": "s16",
+     "notes": "Unnamed signed value; the Toolkit relates it to the charseinfo_?.bin files (unconfirmed)."
+    },
+    {
+     "name": "commonDrop",
+     "offset": 40,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Common drop: content id (category << 12 | index; loot is the 0x2000 block); 65535 = none."
+    },
+    {
+     "name": "uncommonDrop",
+     "offset": 42,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Uncommon drop: content id (category << 12 | index; loot is the 0x2000 block); 65535 = none."
+    },
+    {
+     "name": "rareDrop",
+     "offset": 44,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Rare drop: content id (category << 12 | index; loot is the 0x2000 block); 65535 = none."
+    },
+    {
+     "name": "veryRareDrop",
+     "offset": 46,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Very rare drop: content id (category << 12 | index; loot is the 0x2000 block); 65535 = none."
+    },
+    {
+     "name": "guaranteedDrop",
+     "offset": 48,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Guaranteed drop: content id (category << 12 | index; loot is the 0x2000 block); 65535 = none."
+    },
+    {
+     "name": "commonSteal",
+     "offset": 50,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Common steal: content id."
+    },
+    {
+     "name": "uncommonSteal",
+     "offset": 52,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Uncommon steal: content id."
+    },
+    {
+     "name": "rareSteal",
+     "offset": 54,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Rare steal: content id."
+    },
+    {
+     "name": "firstOverlayModel",
+     "offset": 56,
+     "type": "s32",
+     "enum": "ModelList",
+     "notes": "First overlay model (extra model attached to the unit)."
+    },
+    {
+     "name": "secondOverlayModel",
+     "offset": 60,
+     "type": "s32",
+     "enum": "ModelList",
+     "notes": "Second overlay model."
+    },
+    {
+     "name": "unknown40",
+     "offset": 64,
+     "type": "u8",
+     "notes": "Read as a number by the Workshop but unnamed."
+    },
+    {
+     "name": "unknown41",
+     "offset": 65,
+     "type": "u8",
+     "notes": "Read as a number by the Workshop but unnamed."
+    },
+    {
+     "name": "monographRate",
+     "offset": 66,
+     "type": "u8",
+     "notes": "Chance of the monograph drop."
+    },
+    {
+     "name": "canopicJarRate",
+     "offset": 67,
+     "type": "u8",
+     "notes": "Chance of the canopic jar drop."
+    },
+    {
+     "name": "commonPoach",
+     "offset": 68,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Common poach: content id."
+    },
+    {
+     "name": "uncommonPoach",
+     "offset": 70,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Uncommon poach: content id."
+    },
+    {
+     "name": "monographType",
+     "offset": 72,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Which monograph enables the monograph drop (content id)."
+    },
+    {
+     "name": "monographDrop",
+     "offset": 74,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Item dropped when the monograph condition holds (content id)."
+    },
+    {
+     "name": "canopicJarType",
+     "offset": 76,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Which canopic jar enables the jar drop (content id)."
+    },
+    {
+     "name": "canopicJarDrop",
+     "offset": 78,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Item dropped when the canopic jar condition holds (content id)."
+    },
+    {
+     "name": "aiScriptLink0",
+     "offset": 80,
+     "type": "u16",
+     "notes": "AI slot 0: script index into section 3."
+    },
+    {
+     "name": "aiScriptLink1",
+     "offset": 82,
+     "type": "u16",
+     "notes": "AI slot 1: script index into section 3."
+    },
+    {
+     "name": "aiScriptLink2",
+     "offset": 84,
+     "type": "u16",
+     "notes": "AI slot 2: script index into section 3."
+    },
+    {
+     "name": "aiScriptLink3",
+     "offset": 86,
+     "type": "u16",
+     "notes": "AI slot 3: script index into section 3."
+    }
+   ]
+  }
+ ],
+ "enums": {
+  "ArdeCustomHealthBarTypeList": {
+   "0": "None",
+   "1": "1 Bar",
+   "2": "Unknown (0x02)",
+   "3": "50 Bars"
+  },
+  "ArdeRedDotSizeType": {
+   "0": "Small",
+   "1": "Big"
+  }
+ },
+ "roundTrip": [
+  "Edit fields in place; rows are fixed-size, so value edits never move data.",
+  "Copy every byte no field interprets (unknown*/unused* fields, unnamed bits) from the original. The Workshop writer seeks over those bytes and therefore writes zeros; do not treat its output as the byte-identical reference.",
+  "Keep the st2e header verbatim except entryCount (and entryListOffset when the table becomes empty or stops being empty).",
+  "Keep the zero padding that rounds the section to a multiple of 16 bytes.",
+  "If this section changes length, rebuild the ARD offset table: every section stored after it moves (recompute their u32 slots, keep 16-byte starts with zero fill, keep section 1 last with nothing after it); if the ARD sits in EBP section 19, the EBP offsets after section 19 move as well.",
+  "Do not reorder or delete rows: EBP spawn data and live battle structures reference units by index.",
+  "nameVariationGroup must stay 0-127 or 255; healthBarType is 2 bits (0-3). Write the unread bits of the flag bytes back unchanged."
+ ],
+ "gaps": [
+  "unknown04 (4 bytes), unknown10, unknown14, unknown1E (4 bytes), unknown26 (charseinfo-related per the Toolkit), unknown40, unknown41.",
+  "Flag bits 0x03 bits 2-3 and 6-7, 0x15 bits 5-7; the Toolkit-to-Workshop name match of 0x03 bit 4 and 0x15 bits 2-4 is by position only.",
+  "Encoding of weapon/offhand (battlepack section 13 row vs content id).",
+  "The content-id reading of drop/steal/poach/monograph/canopic fields follows the Toolkit's content-id lists; it is not spelled out in the Workshop.",
+  "Value used for an unused AI slot, and how the four AI slots are chosen at run time.",
+  "Scale of sizeX/Y/Z (percent per the Toolkit label; 100 presumably = normal) and of the monograph/canopic rates.",
+  "Whether customInitialHp = 0 means \"use the stats row\"."
+ ]
+}

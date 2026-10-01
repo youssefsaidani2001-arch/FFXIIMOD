@@ -1,0 +1,304 @@
+{
+ "id": "vm-script-runtime",
+ "title": "Script VM runtime tables (Battle Script Keep, call targets, opcodes, actor types) — memory-only",
+ "files": [],
+ "container": {
+  "kind": "raw",
+  "notes": "MEMORY-ONLY (runtime / executable data). Battle Script Keep array 0x02098E10 (5 x 0x288); EBP slot pointers 0x022C6C00; VM call-target tables [0x02B57EF0 + type*8]; opcode table 0x01EFEA50; script actor types 0x01E0C328; actor pointer lists 0x0209A1F0/0x0209A210. Steam 1.0.4.0."
+ },
+ "records": [
+  {
+   "name": "battleScriptKeep",
+   "where": "Static array at 0x02098E10 + slot*0x288, slot 0-4",
+   "size": 648,
+   "count": "5",
+   "fields": [
+    {
+     "name": "scriptPointer",
+     "offset": 0,
+     "type": "u64",
+     "notes": "Loaded script (EBP section 0 image) of this slot; 0 = slot free. [src: TK L1364; Drive SummonProbe.lua:72-74, 103, 113]"
+    },
+    {
+     "name": "actorList",
+     "offset": 8,
+     "type": "u64",
+     "notes": "Battle Actor Work list: u32 count at +0, u64 actor pointers from +8. [src: TK L311, L336-L340; Drive BlueMagick.lua:1203-1210]"
+    },
+    {
+     "name": "unknown10",
+     "offset": 16,
+     "type": "bytes",
+     "length": 16,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "actorCount",
+     "offset": 32,
+     "type": "u32",
+     "notes": "Actor count (width assumed). [src: TK L1364]"
+    },
+    {
+     "name": "unknown24",
+     "offset": 36,
+     "type": "bytes",
+     "length": 428,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "skeletonTypeSpans",
+     "offset": 464,
+     "type": "bytes",
+     "length": 10,
+     "notes": "5 x u16 read by a probe script as per-skeleton-type values; the Toolkit names a \"Skeleton Type Spans\" folder. [src: Drive SummonProbe.lua:76; TK L1364]"
+    },
+    {
+     "name": "unknown1DA",
+     "offset": 474,
+     "type": "bytes",
+     "length": 22,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "focusIdentifierList",
+     "offset": 496,
+     "type": "u64",
+     "notes": "Focus identifier list pointer. [src: TK L1364]"
+    },
+    {
+     "name": "unknown1F8",
+     "offset": 504,
+     "type": "bytes",
+     "length": 144,
+     "notes": "Not identified by any source; keep the original bytes."
+    }
+   ]
+  },
+  {
+   "name": "ebpSlotPointer",
+   "where": "Static array at 0x022C6C00 + slot*8 (the Battle Script Load Handler is a struct-of-arrays; this is its first array)",
+   "size": 8,
+   "count": "5",
+   "fields": [
+    {
+     "name": "ebpPointer",
+     "offset": 0,
+     "type": "u64",
+     "notes": "Loaded EBP pack of the slot (EbpTypeList 0 Battle ... 4 Debug). [src: TK L243, L1080, L1365]"
+    }
+   ]
+  },
+  {
+   "name": "scriptHeaderPartial",
+   "where": "Start of the loaded script image (Battle Script Keep +0x00 points here; EBP section 0)",
+   "size": 80,
+   "count": "1",
+   "fields": [
+    {
+     "name": "unknown00",
+     "offset": 0,
+     "type": "bytes",
+     "length": 76,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "actorNameTableOffset",
+     "offset": 76,
+     "type": "u32",
+     "notes": "Offset (from the script start) of the actor-name table; actor declaration +0 holds the name's offset inside it (Shift-JIS). [src: Drive SummonProbe.lua:53-62; TK L677]"
+    }
+   ]
+  },
+  {
+   "name": "scriptActorType",
+   "where": "Static array at 0x01E0C328 + actorType*4",
+   "size": 4,
+   "count": "8 (ActorTypeList)",
+   "fields": [
+    {
+     "name": "skeletonType",
+     "offset": 0,
+     "type": "u8",
+     "enum": "SkeletonTypeList",
+     "notes": "Skeleton type of the actor type. [src: TK L428, L1367]"
+    },
+    {
+     "name": "taskType",
+     "offset": 1,
+     "type": "u8",
+     "notes": "Task type. [src: TK L1367]"
+    },
+    {
+     "name": "sizeBytes",
+     "offset": 2,
+     "type": "u16",
+     "notes": "Allocation size of the actor type. Changing it without changing the allocator corrupts the heap. [src: TK L1367, L1792]"
+    }
+   ]
+  },
+  {
+   "name": "vmCallTarget",
+   "where": "Per type t: table = [0x02B57EF0 + t*8]; record = table + 0x08 + index*0x20, where call id = t << 12 | index",
+   "size": 32,
+   "count": "per type (VmctpCallList names 1,959 ids, 00000000:wait .. 00007067:unkCall_7067)",
+   "fields": [
+    {
+     "name": "startCall",
+     "offset": 0,
+     "type": "u64",
+     "notes": "Function run when the script calls this target. [src: TK L431, L1377]"
+    },
+    {
+     "name": "waitCall",
+     "offset": 8,
+     "type": "u64",
+     "notes": "Polled until the call reports done (for waiting calls). [src: TK L1377]"
+    },
+    {
+     "name": "unknown10",
+     "offset": 16,
+     "type": "u64",
+     "notes": "Not named by the Toolkit; copied along with the other three by the Companions mod. [src: Drive TheInsurgentsCompanions.lua:1188-1199]"
+    },
+    {
+     "name": "endCall",
+     "offset": 24,
+     "type": "u64",
+     "notes": "End call. [src: TK L1377]"
+    }
+   ]
+  },
+  {
+   "name": "vmOpcode",
+   "where": "Static table at 0x01EFEA50 + opcode*stride (stride not stated; 0x18 assumed)",
+   "size": 24,
+   "count": "100 (VmoeOpcodeList NOP .. REQIALL)",
+   "fields": [
+    {
+     "name": "namePointer",
+     "offset": 0,
+     "type": "u64",
+     "notes": "Pointer to the opcode mnemonic. [src: TK L432, L1407]"
+    },
+    {
+     "name": "unknown08",
+     "offset": 8,
+     "type": "bytes",
+     "length": 8,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "operandSize",
+     "offset": 16,
+     "type": "u16",
+     "notes": "Encoded size of the instruction. Changing it desynchronises every script decoder. [src: TK L1407, L1791]"
+    },
+    {
+     "name": "unknown12",
+     "offset": 18,
+     "type": "u16",
+     "notes": "Unidentified word. [src: TK L1407]"
+    },
+    {
+     "name": "unknown14",
+     "offset": 20,
+     "type": "bytes",
+     "length": 4,
+     "notes": "Not identified by any source; keep the original bytes."
+    }
+   ]
+  },
+  {
+   "name": "actorPointerLists",
+   "where": "Static: 0x0209A1F0 (4 x u64 Battle Player Character List) followed directly by 0x0209A210 (16 x u64 Map Jump Group List)",
+   "size": 160,
+   "count": "1",
+   "fields": [
+    {
+     "name": "playerCharacter0",
+     "offset": 0,
+     "type": "u64",
+     "notes": "Battle Actor Work of on-field party member 1. [src: TK L429, L1368]"
+    },
+    {
+     "name": "playerCharacter1",
+     "offset": 8,
+     "type": "u64",
+     "notes": "On-field party member 2."
+    },
+    {
+     "name": "playerCharacter2",
+     "offset": 16,
+     "type": "u64",
+     "notes": "On-field party member 3."
+    },
+    {
+     "name": "playerCharacter3",
+     "offset": 24,
+     "type": "u64",
+     "notes": "On-field party member 4."
+    },
+    {
+     "name": "mapJumpGroup",
+     "offset": 32,
+     "type": "bytes",
+     "length": 128,
+     "notes": "16 x u64 Battle Actor Work pointers (Map Jump Group List). [src: TK L430, L1369]"
+    }
+   ]
+  }
+ ],
+ "enums": {
+  "SkeletonTypeList": {
+   "0": "Logic",
+   "1": "Sign",
+   "2": "Line",
+   "3": "Unit",
+   "4": "Unused (0x04)"
+  },
+  "ActorTypeList": {
+   "0": "Logic Actor",
+   "1": "Sign Actor",
+   "2": "Unknown (0x02)",
+   "3": "Line Actor",
+   "4": "Unknown (0x04)",
+   "5": "Battle Unit",
+   "6": "Scene Unit",
+   "7": "Respawn Unit"
+  },
+  "EbpTypeList": {
+   "0": "Battle",
+   "1": "Slot 1 (name not in our write-up)",
+   "2": "Slot 2 (name not in our write-up)",
+   "3": "Slot 3 (name not in our write-up)",
+   "4": "Debug"
+  },
+  "VmcteReturnTypeList": {
+   "0": "None",
+   "1": "Wait",
+   "2": "Integer",
+   "3": "Float"
+  },
+  "VmcteArgumentTypeList": {
+   "0": "Integer",
+   "1": "Float"
+  },
+  "BsieTypeList": {
+   "0": "None",
+   "1": "Integer",
+   "2": "Float"
+  }
+ },
+ "roundTrip": [
+  "Memory-only engine tables. Never change vmOpcode.operandSize or scriptActorType.sizeBytes (immediate desync / heap corruption, TK L1791-L1792).",
+  "Only swap vmCallTarget records for targets with identical argument signatures; unnamed unkCall_xxxx signatures are unknown (TK L1864).",
+  "Do not dispose a slot whose script owns the actors you are standing among (TK L1795)."
+ ],
+ "gaps": [
+  "Battle Script Keep: offsets of most fields (variables, pools, dialogs, cameras, models ...).",
+  "vmOpcode stride (0x18 assumed) and the meaning of +0x08/+0x12.",
+  "vmCallTarget +0x10 meaning and the 8-byte header at the start of each type table (count?).",
+  "Battle Script Input slot layout; party member battle logic entry layout.",
+  "Battle Script Load Handler arrays other than the EBP pointer (struct-of-arrays, TK L1365)."
+ ]
+}

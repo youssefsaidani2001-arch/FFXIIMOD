@@ -1,0 +1,86 @@
+{
+ "id": "ebp-cameramappings",
+ "title": "EBP sections 8 and 10 - Camera mappings (CML1)",
+ "files": [
+  "**/*.ebp",
+  "**/*.ebp.dir/section_008.bin",
+  "**/*.ebp.dir/section_010.bin"
+ ],
+ "container": {
+  "kind": "ebp",
+  "notes": "EBP section 8 or 10 (camera mappings; magic 'CML1', u32 entryCount, 8 unknown bytes, 16-byte rows from 0x10 (u32 labelOffset, u32 link, 8 unknown bytes), then a pool of NUL-terminated Shift-JIS labels, zero padding to 16; labelOffset is counted from the section start). EBP = *.ebp, 0x80-byte header: magic 'EBP2' at 0x00, twenty u32 section offsets at 0x10-0x5F counted from the EBP start (0 = absent; this section = u32 at EBP+0x30 (section 8) / EBP+0x38 (section 10)), 0x04-0x0F and 0x60-0x7F not interpreted. Sections start on 16-byte boundaries with zero fill; a section spans to the next larger non-zero offset (the highest to end of file), so the span includes padding. Section 6 is a TIM2 texture and section 19 an embedded ARD (FF12AR03); a rebuild must carry both. Little-endian throughout."
+ },
+ "records": [
+  {
+   "name": "cml1Header",
+   "where": "Offset 0 of EBP section 8 (u32 at EBP+0x30) or section 10 (u32 at EBP+0x38).",
+   "size": 16,
+   "count": 1,
+   "fields": [
+    {
+     "name": "magic",
+     "offset": 0,
+     "type": "bytes",
+     "length": 4,
+     "notes": "ASCII 'CML1' = 43 4D 4C 31."
+    },
+    {
+     "name": "entryCount",
+     "offset": 4,
+     "type": "u32",
+     "notes": "Number of 16-byte mapping rows starting at 0x10."
+    },
+    {
+     "name": "unknown08",
+     "offset": 8,
+     "type": "bytes",
+     "length": 8,
+     "notes": "Not interpreted (zeros from the Workshop). Preserve."
+    }
+   ]
+  },
+  {
+   "name": "cameraMapping",
+   "where": "Section offset 16 + 16*i (i = 0 .. entryCount-1).",
+   "size": 16,
+   "count": "cml1Header.entryCount",
+   "fields": [
+    {
+     "name": "labelOffset",
+     "offset": 0,
+     "type": "u32",
+     "notes": "Offset (from the section start) of this row's label: a NUL-terminated Shift-JIS string in the pool after the row table. Must be rewritten when the pool is rebuilt."
+    },
+    {
+     "name": "link",
+     "offset": 4,
+     "type": "u32",
+     "notes": "Number the label maps to. Probably an index into the camera list (section 9 for section 8); unverified."
+    },
+    {
+     "name": "unknown08",
+     "offset": 8,
+     "type": "bytes",
+     "length": 8,
+     "notes": "Not interpreted (zeros from the Workshop). Preserve."
+    }
+   ]
+  }
+ ],
+ "enums": {},
+ "roundTrip": [
+  "Keep the magic 'CML1' and header bytes 0x08-0x0F as read.",
+  "Editing link (or the 8 trailing bytes) in place needs no other change.",
+  "A changed label is safest done by rebuilding the pool: write all labels (Shift-JIS, one 0x00 terminator each, no alignment between them) right after the row table, rewrite every labelOffset, zero-pad the section to 16.",
+  "A label whose Shift-JIS bytes are not longer than the old one can also be overwritten in place (terminate with 0x00, fill the rest of the old string with 0x00).",
+  "Keep row order; if the vanilla rows turn out to be sorted by label, keep them sorted when adding rows.",
+  "Adding/removing rows moves the pool: rebuild it and all labelOffsets; update entryCount.",
+  "If the section length changes, every EBP section stored after it moves: recompute their u32 slots at EBP+0x10+4n, keep 16-byte starts with zero fill, keep absent sections at 0, keep section 6 (TIM2) and section 19 (ARD) intact."
+ ],
+ "gaps": [
+  "What link indexes. Likely section 8 maps camera names to section 9 camera blocks.",
+  "What section 10 maps: the runtime keeps camera mappings, cameras, camera-shake mappings, camera shakes and models in that order (Toolkit), which suggests section 10 = camera-shake mappings and section 11 = camera shakes. Unverified.",
+  "Meaning of header bytes 0x08-0x0F and of row bytes 0x08-0x0F.",
+  "Whether vanilla pools are in row order, deduplicated, or sorted, and whether the game looks labels up by binary search."
+ ]
+}

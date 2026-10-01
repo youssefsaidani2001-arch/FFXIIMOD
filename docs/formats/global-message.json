@@ -1,0 +1,52 @@
+{
+ "id": "global-message",
+ "title": "Global Message table (corner pop-ups) — memory-only, mostly unmapped",
+ "files": [],
+ "container": {
+  "kind": "raw",
+  "notes": "MEMORY-ONLY view (runtime): table at [0x02AEE888]; type byte at entry+0x07 with 6 types. Backing file, count and stride unknown."
+ },
+ "records": [
+  {
+   "name": "globalMessageEntry",
+   "where": "Table reached through [0x02AEE888]; the Toolkit selects an entry by id and clamps it to a count, but neither the count location nor the entry stride is in our write-up.",
+   "size": 8,
+   "count": "unknown (do not iterate with this size: only the first 8 bytes are mapped)",
+   "fields": [
+    {
+     "name": "unknown00",
+     "offset": 0,
+     "type": "bytes",
+     "length": 7,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "type",
+     "offset": 7,
+     "type": "u8",
+     "enum": "GmeEntryTypeList",
+     "notes": "Entry type; decides which \"Type Properties\" view applies to the rest of the entry. [src: TK L1186]"
+    }
+   ]
+  }
+ ],
+ "enums": {
+  "GmeEntryTypeList": {
+   "0": "Message",
+   "1": "Mist",
+   "2": "Quickening",
+   "3": "Party Member",
+   "4": "Party Members",
+   "5": "Key Item"
+  }
+ },
+ "roundTrip": [
+  "Runtime table: edit in place only; the entry stride and count are unknown, so never insert/remove entries.",
+  "Change `type` only together with the type-specific properties (layout unknown), otherwise the pop-up reads garbage."
+ ],
+ "gaps": [
+  "Entry size/stride, count location, bytes 0x00-0x06 (the \"Count/id\" header?) and the type-dependent property layouts.",
+  "Which game file the table is loaded from (it has an export action, so it is file-backed).",
+  "How text is referenced (text ids vs inline text)."
+ ]
+}

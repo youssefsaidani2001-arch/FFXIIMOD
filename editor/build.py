@@ -15,8 +15,8 @@ for p in sorted((repo / 'docs' / 'formats').glob('*.json')):
     except Exception as e:
         print('skip spec', p.name, e)
 src = here / 'src'
-order = ['core.js', 'registry.js', 'spec.js', 'vbf.js']
-editors = sorted((src / 'editors').glob('*.js'), key=lambda p: (p.name != 'battlepack.js', p.name))
+order = ['core.js', 'registry.js', 'spec.js', 'vbf.js', 'packs.js', 'container_doc.js']
+editors = sorted((src / 'editors').glob('*.js'), key=lambda p: (p.name != 'battlepack.js', p.name in ('pack.js', 'hex.js'), p.name))
 parts = [(src / n).read_text(encoding='utf-8') for n in order]
 parts.append('FX.bpackSchema = ' + js(schema) + ';\nFX.lists = ' + js(lists) + ';\nFX.specs = ' + js(specs) + ';')
 parts += [p.read_text(encoding='utf-8') for p in editors]

@@ -1,0 +1,75 @@
+{
+ "id": "battlepack-s70-license-board",
+ "title": "License Board grid (licd) — battlepack section 70 and board_1-12.bin",
+ "files": [
+  "ps2data/image/ff12/test_battle/*/binaryfile/battle_pack.bin",
+  "battle_pack.bin.dir/section_070.bin",
+  "**/board_*.bin"
+ ],
+ "container": {
+  "kind": "custom",
+  "notes": "licd grid, little-endian. Found as battlepack section 70 (locate through the battle_pack.bin offset table; offsets relative to the section start; last section of the pack) and as the standalone files board_1.bin .. board_12.bin (whole file = one board, game file ids 0x47-0x52). 8-byte header (magic 'licd', u16 columnCount, u16 rowCount), then columnCount*rowCount u16 cells stored row-major (cell(r,c) at 8 + 2*(r*W + c)), then zero padding to a multiple of 16."
+ },
+ "records": [
+  {
+   "name": "header",
+   "where": "Offset 0 of the board: start of battlepack section 70, or start of a board_N.bin file.",
+   "size": 8,
+   "count": "1",
+   "fields": [
+    {
+     "name": "magic",
+     "offset": 0,
+     "type": "bytes",
+     "length": 4,
+     "notes": "ASCII 'licd' (6C 69 63 64); reject the data if different."
+    },
+    {
+     "name": "columnCount",
+     "offset": 4,
+     "type": "u16",
+     "notes": "Grid width W (number of columns)."
+    },
+    {
+     "name": "rowCount",
+     "offset": 6,
+     "type": "u16",
+     "notes": "Grid height H (number of rows)."
+    }
+   ]
+  },
+  {
+   "name": "cell",
+   "where": "offset 8 + 2*(row*header.columnCount + column) from the start of the board; cells are stored row by row (all columns of row 0, then row 1, ...); row-major, NOT the column-major nesting of the Workshop JSON",
+   "size": 2,
+   "count": "header.columnCount * header.rowCount",
+   "fields": [
+    {
+     "name": "licenseNode",
+     "offset": 0,
+     "type": "u16",
+     "enum": "BpLicenseList",
+     "notes": "License placed on this square: a section 12 row id (0-367). Squares without a license hold a sentinel, expected 0xFFFF (unverified)."
+    }
+   ]
+  }
+ ],
+ "enums": {},
+ "roundTrip": [
+  "Keep the magic 'licd' and keep columnCount/rowCount equal to the real grid (cell count = W*H).",
+  "Cells are row-major: (row r, column c) at 8 + 2*(r*W + c). Do not write the Workshop JSON's column-first nesting to disk.",
+  "Edit cells in place for moves/additions/removals; nothing else in the file changes.",
+  "Copy cell values that are not license ids (the empty sentinel) unchanged.",
+  "Keep the trailing zero padding to a multiple of 16; when the dimensions are unchanged keep the original file/section length byte for byte.",
+  "Dimension change: rewrite the whole cell array, re-pad to 16; for section 70 also update the battlepack end-of-data offset (section 70 is the last section).",
+  "Do not renumber section 12 rows without rewriting every board that references them."
+ ],
+ "gaps": [
+  "VBF folder of board_1.bin .. board_12.bin is not stated by the sources.",
+  "Empty-square sentinel: 0xFFFF expected, not confirmed.",
+  "Cell value = section 12 row id: expected from context, not stated explicitly.",
+  "Vanilla grid dimensions (24 x 24 expected) and whether vanilla files are padded to 16.",
+  "Which job each board_N.bin belongs to, and what the section 70 board is used for (possibly the Classic Board, JobList 12).",
+  "Neighbour/adjacency rule for unlocking squares, and how far W/H can grow before the menu breaks."
+ ]
+}

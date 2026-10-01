@@ -1,0 +1,68 @@
+{
+  "id": "container-ard",
+  "title": "ARD container (FF12AR03, 10 sections)",
+  "files": [
+    "**/*.ard"
+  ],
+  "container": {
+    "kind": "ard",
+    "notes": "Little-endian. 0x30-byte header: 8-byte magic 'FF12AR03', then 10 u32 section offsets relative to the ARD start (0 = absent). Also found as section 19 of an EBP. Physical order: sections 0,2,3,4,5,6,7,8,9 each zero-padded to 16, then section 1 last with no padding after it. Section length = next larger non-zero offset minus this offset (end of ARD for the highest). Sections 2, 4, 7, 8 are st2e tables (84, 88, 56, 56-byte entries)."
+  },
+  "records": [
+    {
+      "name": "ardHeader",
+      "where": "ARD offset 0 (standalone file offset 0, or start of EBP section 19)",
+      "size": 48,
+      "count": 1,
+      "fields": [
+        { "name": "magic", "offset": 0, "type": "bytes", "length": 8, "notes": "'FF12AR03' = 46 46 31 32 41 52 30 33" },
+        { "name": "sectionOffset00", "offset": 8, "type": "u32", "notes": "Section 0: unknown. 0 = absent. Section names: enum ArdSection." },
+        { "name": "sectionOffset01", "offset": 12, "type": "u32", "notes": "Section 1: models (u32 count + 8-byte entries). Must be the physically last section, no padding after it." },
+        { "name": "sectionOffset02", "offset": 16, "type": "u32", "notes": "Section 2: classes, st2e with 84-byte entries." },
+        { "name": "sectionOffset03", "offset": 20, "type": "u32", "notes": "Section 3: AI scripts / battle logics." },
+        { "name": "sectionOffset04", "offset": 24, "type": "u32", "notes": "Section 4: units, st2e with 88-byte entries." },
+        { "name": "sectionOffset05", "offset": 28, "type": "u32", "notes": "Section 5: unknown." },
+        { "name": "sectionOffset06", "offset": 32, "type": "u32", "notes": "Section 6: unknown." },
+        { "name": "sectionOffset07", "offset": 36, "type": "u32", "notes": "Section 7: default stats, st2e with 56-byte entries." },
+        { "name": "sectionOffset08", "offset": 40, "type": "u32", "notes": "Section 8: additive stats, st2e with 56-byte entries." },
+        { "name": "sectionOffset09", "offset": 44, "type": "u32", "notes": "Section 9: special action animations (u32 count, entries from +0x10, 16 bytes each)." }
+      ]
+    },
+    {
+      "name": "ardModelEntry",
+      "where": "ARD section 1, starting at section offset +4 (after a u32 entry count at +0)",
+      "size": 8,
+      "count": "u32 at section 1 offset +0",
+      "fields": [
+        { "name": "model", "offset": 0, "type": "s32", "notes": "Model id." },
+        { "name": "unknownFlags", "offset": 4, "type": "u32", "notes": "Meaning unknown; preserve." }
+      ]
+    }
+  ],
+  "enums": {
+    "ArdSection": {
+      "0": "Unknown",
+      "1": "Models / model motions (stored last)",
+      "2": "Classes (st2e, 84)",
+      "3": "AI scripts / battle logics",
+      "4": "Units (st2e, 88)",
+      "5": "Unknown",
+      "6": "Unknown",
+      "7": "Default stats (st2e, 56)",
+      "8": "Additive stats (st2e, 56)",
+      "9": "Special action animations"
+    }
+  },
+  "roundTrip": [
+    "Write sections 0,2,3,4,5,6,7,8,9 in that order, each at a 16-byte boundary followed by zero padding; then write section 1 last with no trailing padding.",
+    "Absent sections keep offset 0.",
+    "Copy unedited sections byte-for-byte.",
+    "When the ARD lives in EBP section 19, rebuild the ARD first, then recompute the EBP offsets that follow section 19."
+  ],
+  "gaps": [
+    "Sections 0, 5 and 6 are unidentified.",
+    "Reason section 1 must be last is not documented.",
+    "Meaning of the u32 flags in section 1 entries.",
+    "Not verified whether vanilla standalone ARD files end unpadded after section 1."
+  ]
+}

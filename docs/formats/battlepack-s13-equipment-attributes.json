@@ -1,0 +1,1324 @@
+{
+ "id": "battlepack-s13-equipment-attributes",
+ "title": "Battlepack section 13 — Equipment and Attributes",
+ "files": [
+  "ps2data/image/ff12/test_battle/*/binaryfile/battle_pack.bin",
+  "battle_pack.bin.dir/section_013.bin"
+ ],
+ "container": {
+  "kind": "battlepack",
+  "notes": "Section 13 of battle_pack.bin (71-section battlepack: u32 count, count+1 u32 offsets incl. an unpadded end offset, sections 16-byte aligned with zero fill). The section itself is an st2e table: 32-byte header (magic, u32 entryCount @4, u16 entrySize @8, u32 entryListOffset @12 = 32, u32 textSectionOffset @20 = 0) followed by packed entries and zero padding to 16 bytes. Header slot 0x18 = attribute-table offset; a second table of 24-byte attribute records runs from there to the end of the section."
+ },
+ "records": [
+  {
+   "name": "header",
+   "where": "Offset 0 of battlepack section 13.",
+   "size": 32,
+   "count": "1",
+   "fields": [
+    {
+     "name": "magic",
+     "offset": 0,
+     "type": "bytes",
+     "length": 4,
+     "notes": "ASCII 'st2e' (73 74 32 65); reject the section if different."
+    },
+    {
+     "name": "entryCount",
+     "offset": 4,
+     "type": "u32",
+     "notes": "Number of equipment records (the Toolkit lists name 557 rows, 0 Unarmed … 556)."
+    },
+    {
+     "name": "entrySize",
+     "offset": 8,
+     "type": "u16",
+     "notes": "Bytes per entry; 52 (0x34) for this section."
+    },
+    {
+     "name": "unknown0A",
+     "offset": 10,
+     "type": "bytes",
+     "length": 2,
+     "notes": "Not interpreted; keep."
+    },
+    {
+     "name": "entryListOffset",
+     "offset": 12,
+     "type": "u32",
+     "notes": "Offset of entry 0 from the section start: 32 when entryCount > 0, else 0."
+    },
+    {
+     "name": "offset10",
+     "offset": 16,
+     "type": "u32",
+     "notes": "Unknown offset slot (0 in Workshop output)."
+    },
+    {
+     "name": "textSectionOffset",
+     "offset": 20,
+     "type": "u32",
+     "notes": "Inline text offset; 0 on disk for this section (filled at run time). No strings are stored here."
+    },
+    {
+     "name": "offset18",
+     "offset": 24,
+     "type": "u32",
+     "notes": "attributeTableOffset: offset of the attribute table from the section start. The Workshop always places it right after the equipment records (= 32 + entryCount*52)."
+    },
+    {
+     "name": "offset1C",
+     "offset": 28,
+     "type": "u32",
+     "notes": "Unknown offset slot (0 in Workshop output)."
+    }
+   ]
+  },
+  {
+   "name": "equipment",
+   "where": "st2e entries of section 13: header.entryListOffset + i*52",
+   "size": 52,
+   "count": "header.entryCount",
+   "fields": [
+    {
+     "name": "unknown00",
+     "offset": 0,
+     "type": "u16",
+     "notes": "Not interpreted (the Workshop skips it and writes 0)."
+    },
+    {
+     "name": "name",
+     "offset": 2,
+     "type": "u16",
+     "enum": "DescEquipmentList",
+     "notes": "Name text id (equipment block, 2048+)."
+    },
+    {
+     "name": "icon",
+     "offset": 4,
+     "type": "u8",
+     "enum": "BpeIconList",
+     "notes": "Menu icon."
+    },
+    {
+     "name": "unknown05",
+     "offset": 5,
+     "type": "u8",
+     "notes": "Not interpreted."
+    },
+    {
+     "name": "optimizationTiebreaker",
+     "offset": 6,
+     "type": "u8",
+     "notes": "Tie-break rank used when the Optimize command compares equal items."
+    },
+    {
+     "name": "flags",
+     "offset": 7,
+     "type": "bf8",
+     "bits": [
+      {
+       "name": "unsaleable",
+       "bitStart": 1,
+       "bitLength": 1
+      },
+      {
+       "name": "hitsFlying",
+       "bitStart": 2,
+       "bitLength": 1
+      },
+      {
+       "name": "licenseIndependent",
+       "bitStart": 4,
+       "bitLength": 1
+      },
+      {
+       "name": "slotType",
+       "bitStart": 5,
+       "bitLength": 3,
+       "enum": "BpeEquipmentSlotTypeList"
+      }
+     ],
+     "notes": "Bits 0 and 3 are unnamed; the Workshop rebuilds the byte from the named bits only."
+    },
+    {
+     "name": "sort",
+     "offset": 8,
+     "type": "u8",
+     "notes": "Menu sort key."
+    },
+    {
+     "name": "category",
+     "offset": 9,
+     "type": "u8",
+     "enum": "BpEquipmentCategoryList",
+     "notes": "Equipment category; selects the variant layout of bytes 0x11 and 0x18-0x33: 0-17 weapon, 18 shield, 19-22 helm/armor/accessory/crown (\"armor\" variant), 23+ ammunition."
+    },
+    {
+     "name": "unknown0A",
+     "offset": 10,
+     "type": "bytes",
+     "length": 4,
+     "notes": "Not interpreted."
+    },
+    {
+     "name": "description",
+     "offset": 14,
+     "type": "u16",
+     "notes": "Description text id; labelled ineffectual (unused by the game) by the Workshop and the Toolkit."
+    },
+    {
+     "name": "metal",
+     "offset": 16,
+     "type": "u8",
+     "notes": "Metal property byte (meaning not documented beyond the name)."
+    },
+    {
+     "name": "offhandCategory",
+     "offset": 17,
+     "type": "u8",
+     "enum": "BpEquipmentCategoryList",
+     "notes": "only: weapon — category of the off-hand item (ammo/shield) this weapon pairs with; for other variants this byte is not interpreted."
+    },
+    {
+     "name": "gil",
+     "offset": 18,
+     "type": "u16",
+     "notes": "Buy price (all variants). Unsigned; 65535 acts as a \"none\" sentinel in places (msg 534-537, 620)."
+    },
+    {
+     "name": "unknown14",
+     "offset": 20,
+     "type": "bytes",
+     "length": 4,
+     "notes": "Not interpreted (all variants; ammunition also leaves 0x18-0x19 uninterpreted)."
+    },
+    {
+     "name": "range",
+     "offset": 24,
+     "type": "u8",
+     "notes": "only: weapon — attack range."
+    },
+    {
+     "name": "shieldEvade",
+     "offset": 24,
+     "type": "u8",
+     "notes": "only: shield — physical evade."
+    },
+    {
+     "name": "defense",
+     "offset": 24,
+     "type": "u8",
+     "notes": "only: armor — defense."
+    },
+    {
+     "name": "formula",
+     "offset": 25,
+     "type": "u8",
+     "enum": "BpeFormulaList",
+     "notes": "only: weapon — attack formula (same id space as action formulas; swapping it has side effects, msg 493-503)."
+    },
+    {
+     "name": "shieldMagickEvade",
+     "offset": 25,
+     "type": "u8",
+     "notes": "only: shield — magick evade."
+    },
+    {
+     "name": "magickResist",
+     "offset": 25,
+     "type": "u8",
+     "notes": "only: armor — magick resist."
+    },
+    {
+     "name": "attackPower",
+     "offset": 26,
+     "type": "u8",
+     "notes": "only: weapon, ammunition — attack power."
+    },
+    {
+     "name": "augment",
+     "offset": 26,
+     "type": "u8",
+     "enum": "BpAugmentList",
+     "notes": "only: armor — augment granted while equipped (section 58 row)."
+    },
+    {
+     "name": "knockbackChance",
+     "offset": 27,
+     "type": "u8",
+     "notes": "only: weapon — knockback chance."
+    },
+    {
+     "name": "comboOrCriticalChance",
+     "offset": 28,
+     "type": "u8",
+     "notes": "only: weapon — combo (or critical, depending on weapon type) chance."
+    },
+    {
+     "name": "evade",
+     "offset": 29,
+     "type": "u8",
+     "notes": "only: weapon, ammunition — evade bonus."
+    },
+    {
+     "name": "elements",
+     "offset": 30,
+     "type": "bf8",
+     "bits": [
+      {
+       "name": "fire",
+       "bitStart": 0,
+       "bitLength": 1
+      },
+      {
+       "name": "lightning",
+       "bitStart": 1,
+       "bitLength": 1
+      },
+      {
+       "name": "ice",
+       "bitStart": 2,
+       "bitLength": 1
+      },
+      {
+       "name": "earth",
+       "bitStart": 3,
+       "bitLength": 1
+      },
+      {
+       "name": "water",
+       "bitStart": 4,
+       "bitLength": 1
+      },
+      {
+       "name": "wind",
+       "bitStart": 5,
+       "bitLength": 1
+      },
+      {
+       "name": "holy",
+       "bitStart": 6,
+       "bitLength": 1
+      },
+      {
+       "name": "dark",
+       "bitStart": 7,
+       "bitLength": 1
+      }
+     ],
+     "enum": "ElementFlags",
+     "notes": "only: weapon, ammunition — attack element(s)."
+    },
+    {
+     "name": "onHitRate",
+     "offset": 31,
+     "type": "u8",
+     "notes": "only: weapon, ammunition — chance to inflict statusEffects."
+    },
+    {
+     "name": "statusEffects",
+     "offset": 32,
+     "type": "bf32",
+     "bits": [
+      {
+       "name": "ko",
+       "bitStart": 0,
+       "bitLength": 1
+      },
+      {
+       "name": "stone",
+       "bitStart": 1,
+       "bitLength": 1
+      },
+      {
+       "name": "petrify",
+       "bitStart": 2,
+       "bitLength": 1
+      },
+      {
+       "name": "stop",
+       "bitStart": 3,
+       "bitLength": 1
+      },
+      {
+       "name": "sleep",
+       "bitStart": 4,
+       "bitLength": 1
+      },
+      {
+       "name": "confuse",
+       "bitStart": 5,
+       "bitLength": 1
+      },
+      {
+       "name": "doom",
+       "bitStart": 6,
+       "bitLength": 1
+      },
+      {
+       "name": "blind",
+       "bitStart": 7,
+       "bitLength": 1
+      },
+      {
+       "name": "poison",
+       "bitStart": 8,
+       "bitLength": 1
+      },
+      {
+       "name": "silence",
+       "bitStart": 9,
+       "bitLength": 1
+      },
+      {
+       "name": "sap",
+       "bitStart": 10,
+       "bitLength": 1
+      },
+      {
+       "name": "oil",
+       "bitStart": 11,
+       "bitLength": 1
+      },
+      {
+       "name": "reverse",
+       "bitStart": 12,
+       "bitLength": 1
+      },
+      {
+       "name": "disable",
+       "bitStart": 13,
+       "bitLength": 1
+      },
+      {
+       "name": "immobilize",
+       "bitStart": 14,
+       "bitLength": 1
+      },
+      {
+       "name": "slow",
+       "bitStart": 15,
+       "bitLength": 1
+      },
+      {
+       "name": "disease",
+       "bitStart": 16,
+       "bitLength": 1
+      },
+      {
+       "name": "lure",
+       "bitStart": 17,
+       "bitLength": 1
+      },
+      {
+       "name": "protect",
+       "bitStart": 18,
+       "bitLength": 1
+      },
+      {
+       "name": "shell",
+       "bitStart": 19,
+       "bitLength": 1
+      },
+      {
+       "name": "haste",
+       "bitStart": 20,
+       "bitLength": 1
+      },
+      {
+       "name": "bravery",
+       "bitStart": 21,
+       "bitLength": 1
+      },
+      {
+       "name": "faith",
+       "bitStart": 22,
+       "bitLength": 1
+      },
+      {
+       "name": "reflect",
+       "bitStart": 23,
+       "bitLength": 1
+      },
+      {
+       "name": "invisible",
+       "bitStart": 24,
+       "bitLength": 1
+      },
+      {
+       "name": "regen",
+       "bitStart": 25,
+       "bitLength": 1
+      },
+      {
+       "name": "float",
+       "bitStart": 26,
+       "bitLength": 1
+      },
+      {
+       "name": "berserk",
+       "bitStart": 27,
+       "bitLength": 1
+      },
+      {
+       "name": "bubble",
+       "bitStart": 28,
+       "bitLength": 1
+      },
+      {
+       "name": "hpCritical",
+       "bitStart": 29,
+       "bitLength": 1
+      },
+      {
+       "name": "libra",
+       "bitStart": 30,
+       "bitLength": 1
+      },
+      {
+       "name": "xZone",
+       "bitStart": 31,
+       "bitLength": 1
+      }
+     ],
+     "enum": "StatusEffectFlags",
+     "notes": "only: weapon, ammunition — statuses inflicted on hit."
+    },
+    {
+     "name": "unknown24",
+     "offset": 36,
+     "type": "u8",
+     "notes": "Not interpreted (any variant)."
+    },
+    {
+     "name": "distanceBehavior",
+     "offset": 37,
+     "type": "u8",
+     "enum": "BpeWeaponDistanceBehaviorList",
+     "notes": "only: weapon — approach behaviour, e.g. whether the attacker steps back before striking (msg 532)."
+    },
+    {
+     "name": "stance",
+     "offset": 38,
+     "type": "u8",
+     "enum": "BpWeaponStanceList",
+     "notes": "only: weapon — weapon stance (section 0 row)."
+    },
+    {
+     "name": "chargeTime",
+     "offset": 39,
+     "type": "u8",
+     "notes": "only: weapon — charge time of a normal attack."
+    },
+    {
+     "name": "attributeLink",
+     "offset": 40,
+     "type": "u32",
+     "notes": "All variants: byte offset of this item's attribute record, counted from the start of the attribute table (header.offset18). attributeIndex = attributeLink / 24; must be a multiple of 24. Several items may share one record."
+    },
+    {
+     "name": "particleEffect",
+     "offset": 44,
+     "type": "u16",
+     "enum": "BpeWeaponParticleEffectList",
+     "notes": "only: weapon — swing/trail particle effect."
+    },
+    {
+     "name": "unknown2E",
+     "offset": 46,
+     "type": "u16",
+     "notes": "Not interpreted (any variant)."
+    },
+    {
+     "name": "model",
+     "offset": 48,
+     "type": "s32",
+     "enum": "ModelList",
+     "notes": "only: weapon, shield, ammunition — model id (prefix letter << 16 | number; weapons use prefix w). For the armor variant bytes 0x2C-0x33 are not interpreted."
+    }
+   ]
+  },
+  {
+   "name": "attribute",
+   "where": "Attribute table of section 13: header.offset18 + k*24, running to the end of the section",
+   "size": 24,
+   "count": "floor((sectionLength - header.offset18) / 24), sectionLength = span of section 13 in the battlepack (trailing pad < 24 bytes is ignored)",
+   "fields": [
+    {
+     "name": "maxHp",
+     "offset": 0,
+     "type": "u16",
+     "notes": "Max HP bonus."
+    },
+    {
+     "name": "maxMp",
+     "offset": 2,
+     "type": "u16",
+     "notes": "Max MP bonus."
+    },
+    {
+     "name": "strength",
+     "offset": 4,
+     "type": "u8",
+     "notes": "Strength bonus."
+    },
+    {
+     "name": "magickPower",
+     "offset": 5,
+     "type": "u8",
+     "notes": "Magick Power bonus."
+    },
+    {
+     "name": "vitality",
+     "offset": 6,
+     "type": "u8",
+     "notes": "Vitality bonus."
+    },
+    {
+     "name": "speed",
+     "offset": 7,
+     "type": "u8",
+     "notes": "Speed bonus."
+    },
+    {
+     "name": "statusEffects",
+     "offset": 8,
+     "type": "bf32",
+     "bits": [
+      {
+       "name": "ko",
+       "bitStart": 0,
+       "bitLength": 1
+      },
+      {
+       "name": "stone",
+       "bitStart": 1,
+       "bitLength": 1
+      },
+      {
+       "name": "petrify",
+       "bitStart": 2,
+       "bitLength": 1
+      },
+      {
+       "name": "stop",
+       "bitStart": 3,
+       "bitLength": 1
+      },
+      {
+       "name": "sleep",
+       "bitStart": 4,
+       "bitLength": 1
+      },
+      {
+       "name": "confuse",
+       "bitStart": 5,
+       "bitLength": 1
+      },
+      {
+       "name": "doom",
+       "bitStart": 6,
+       "bitLength": 1
+      },
+      {
+       "name": "blind",
+       "bitStart": 7,
+       "bitLength": 1
+      },
+      {
+       "name": "poison",
+       "bitStart": 8,
+       "bitLength": 1
+      },
+      {
+       "name": "silence",
+       "bitStart": 9,
+       "bitLength": 1
+      },
+      {
+       "name": "sap",
+       "bitStart": 10,
+       "bitLength": 1
+      },
+      {
+       "name": "oil",
+       "bitStart": 11,
+       "bitLength": 1
+      },
+      {
+       "name": "reverse",
+       "bitStart": 12,
+       "bitLength": 1
+      },
+      {
+       "name": "disable",
+       "bitStart": 13,
+       "bitLength": 1
+      },
+      {
+       "name": "immobilize",
+       "bitStart": 14,
+       "bitLength": 1
+      },
+      {
+       "name": "slow",
+       "bitStart": 15,
+       "bitLength": 1
+      },
+      {
+       "name": "disease",
+       "bitStart": 16,
+       "bitLength": 1
+      },
+      {
+       "name": "lure",
+       "bitStart": 17,
+       "bitLength": 1
+      },
+      {
+       "name": "protect",
+       "bitStart": 18,
+       "bitLength": 1
+      },
+      {
+       "name": "shell",
+       "bitStart": 19,
+       "bitLength": 1
+      },
+      {
+       "name": "haste",
+       "bitStart": 20,
+       "bitLength": 1
+      },
+      {
+       "name": "bravery",
+       "bitStart": 21,
+       "bitLength": 1
+      },
+      {
+       "name": "faith",
+       "bitStart": 22,
+       "bitLength": 1
+      },
+      {
+       "name": "reflect",
+       "bitStart": 23,
+       "bitLength": 1
+      },
+      {
+       "name": "invisible",
+       "bitStart": 24,
+       "bitLength": 1
+      },
+      {
+       "name": "regen",
+       "bitStart": 25,
+       "bitLength": 1
+      },
+      {
+       "name": "float",
+       "bitStart": 26,
+       "bitLength": 1
+      },
+      {
+       "name": "berserk",
+       "bitStart": 27,
+       "bitLength": 1
+      },
+      {
+       "name": "bubble",
+       "bitStart": 28,
+       "bitLength": 1
+      },
+      {
+       "name": "hpCritical",
+       "bitStart": 29,
+       "bitLength": 1
+      },
+      {
+       "name": "libra",
+       "bitStart": 30,
+       "bitLength": 1
+      },
+      {
+       "name": "xZone",
+       "bitStart": 31,
+       "bitLength": 1
+      }
+     ],
+     "enum": "StatusEffectFlags",
+     "notes": "Statuses granted while equipped (auto-status)."
+    },
+    {
+     "name": "statusEffectImmunities",
+     "offset": 12,
+     "type": "bf32",
+     "bits": [
+      {
+       "name": "ko",
+       "bitStart": 0,
+       "bitLength": 1
+      },
+      {
+       "name": "stone",
+       "bitStart": 1,
+       "bitLength": 1
+      },
+      {
+       "name": "petrify",
+       "bitStart": 2,
+       "bitLength": 1
+      },
+      {
+       "name": "stop",
+       "bitStart": 3,
+       "bitLength": 1
+      },
+      {
+       "name": "sleep",
+       "bitStart": 4,
+       "bitLength": 1
+      },
+      {
+       "name": "confuse",
+       "bitStart": 5,
+       "bitLength": 1
+      },
+      {
+       "name": "doom",
+       "bitStart": 6,
+       "bitLength": 1
+      },
+      {
+       "name": "blind",
+       "bitStart": 7,
+       "bitLength": 1
+      },
+      {
+       "name": "poison",
+       "bitStart": 8,
+       "bitLength": 1
+      },
+      {
+       "name": "silence",
+       "bitStart": 9,
+       "bitLength": 1
+      },
+      {
+       "name": "sap",
+       "bitStart": 10,
+       "bitLength": 1
+      },
+      {
+       "name": "oil",
+       "bitStart": 11,
+       "bitLength": 1
+      },
+      {
+       "name": "reverse",
+       "bitStart": 12,
+       "bitLength": 1
+      },
+      {
+       "name": "disable",
+       "bitStart": 13,
+       "bitLength": 1
+      },
+      {
+       "name": "immobilize",
+       "bitStart": 14,
+       "bitLength": 1
+      },
+      {
+       "name": "slow",
+       "bitStart": 15,
+       "bitLength": 1
+      },
+      {
+       "name": "disease",
+       "bitStart": 16,
+       "bitLength": 1
+      },
+      {
+       "name": "lure",
+       "bitStart": 17,
+       "bitLength": 1
+      },
+      {
+       "name": "protect",
+       "bitStart": 18,
+       "bitLength": 1
+      },
+      {
+       "name": "shell",
+       "bitStart": 19,
+       "bitLength": 1
+      },
+      {
+       "name": "haste",
+       "bitStart": 20,
+       "bitLength": 1
+      },
+      {
+       "name": "bravery",
+       "bitStart": 21,
+       "bitLength": 1
+      },
+      {
+       "name": "faith",
+       "bitStart": 22,
+       "bitLength": 1
+      },
+      {
+       "name": "reflect",
+       "bitStart": 23,
+       "bitLength": 1
+      },
+      {
+       "name": "invisible",
+       "bitStart": 24,
+       "bitLength": 1
+      },
+      {
+       "name": "regen",
+       "bitStart": 25,
+       "bitLength": 1
+      },
+      {
+       "name": "float",
+       "bitStart": 26,
+       "bitLength": 1
+      },
+      {
+       "name": "berserk",
+       "bitStart": 27,
+       "bitLength": 1
+      },
+      {
+       "name": "bubble",
+       "bitStart": 28,
+       "bitLength": 1
+      },
+      {
+       "name": "hpCritical",
+       "bitStart": 29,
+       "bitLength": 1
+      },
+      {
+       "name": "libra",
+       "bitStart": 30,
+       "bitLength": 1
+      },
+      {
+       "name": "xZone",
+       "bitStart": 31,
+       "bitLength": 1
+      }
+     ],
+     "enum": "StatusEffectFlags",
+     "notes": "Status immunities granted."
+    },
+    {
+     "name": "elementAbsorb",
+     "offset": 16,
+     "type": "bf8",
+     "bits": [
+      {
+       "name": "fire",
+       "bitStart": 0,
+       "bitLength": 1
+      },
+      {
+       "name": "lightning",
+       "bitStart": 1,
+       "bitLength": 1
+      },
+      {
+       "name": "ice",
+       "bitStart": 2,
+       "bitLength": 1
+      },
+      {
+       "name": "earth",
+       "bitStart": 3,
+       "bitLength": 1
+      },
+      {
+       "name": "water",
+       "bitStart": 4,
+       "bitLength": 1
+      },
+      {
+       "name": "wind",
+       "bitStart": 5,
+       "bitLength": 1
+      },
+      {
+       "name": "holy",
+       "bitStart": 6,
+       "bitLength": 1
+      },
+      {
+       "name": "dark",
+       "bitStart": 7,
+       "bitLength": 1
+      }
+     ],
+     "enum": "ElementFlags",
+     "notes": "Elements absorbed."
+    },
+    {
+     "name": "elementImmune",
+     "offset": 17,
+     "type": "bf8",
+     "bits": [
+      {
+       "name": "fire",
+       "bitStart": 0,
+       "bitLength": 1
+      },
+      {
+       "name": "lightning",
+       "bitStart": 1,
+       "bitLength": 1
+      },
+      {
+       "name": "ice",
+       "bitStart": 2,
+       "bitLength": 1
+      },
+      {
+       "name": "earth",
+       "bitStart": 3,
+       "bitLength": 1
+      },
+      {
+       "name": "water",
+       "bitStart": 4,
+       "bitLength": 1
+      },
+      {
+       "name": "wind",
+       "bitStart": 5,
+       "bitLength": 1
+      },
+      {
+       "name": "holy",
+       "bitStart": 6,
+       "bitLength": 1
+      },
+      {
+       "name": "dark",
+       "bitStart": 7,
+       "bitLength": 1
+      }
+     ],
+     "enum": "ElementFlags",
+     "notes": "Elements nullified."
+    },
+    {
+     "name": "elementHalfDamage",
+     "offset": 18,
+     "type": "bf8",
+     "bits": [
+      {
+       "name": "fire",
+       "bitStart": 0,
+       "bitLength": 1
+      },
+      {
+       "name": "lightning",
+       "bitStart": 1,
+       "bitLength": 1
+      },
+      {
+       "name": "ice",
+       "bitStart": 2,
+       "bitLength": 1
+      },
+      {
+       "name": "earth",
+       "bitStart": 3,
+       "bitLength": 1
+      },
+      {
+       "name": "water",
+       "bitStart": 4,
+       "bitLength": 1
+      },
+      {
+       "name": "wind",
+       "bitStart": 5,
+       "bitLength": 1
+      },
+      {
+       "name": "holy",
+       "bitStart": 6,
+       "bitLength": 1
+      },
+      {
+       "name": "dark",
+       "bitStart": 7,
+       "bitLength": 1
+      }
+     ],
+     "enum": "ElementFlags",
+     "notes": "Elements halved."
+    },
+    {
+     "name": "elementWeak",
+     "offset": 19,
+     "type": "bf8",
+     "bits": [
+      {
+       "name": "fire",
+       "bitStart": 0,
+       "bitLength": 1
+      },
+      {
+       "name": "lightning",
+       "bitStart": 1,
+       "bitLength": 1
+      },
+      {
+       "name": "ice",
+       "bitStart": 2,
+       "bitLength": 1
+      },
+      {
+       "name": "earth",
+       "bitStart": 3,
+       "bitLength": 1
+      },
+      {
+       "name": "water",
+       "bitStart": 4,
+       "bitLength": 1
+      },
+      {
+       "name": "wind",
+       "bitStart": 5,
+       "bitLength": 1
+      },
+      {
+       "name": "holy",
+       "bitStart": 6,
+       "bitLength": 1
+      },
+      {
+       "name": "dark",
+       "bitStart": 7,
+       "bitLength": 1
+      }
+     ],
+     "enum": "ElementFlags",
+     "notes": "Elemental weaknesses."
+    },
+    {
+     "name": "elementPotency",
+     "offset": 20,
+     "type": "bf8",
+     "bits": [
+      {
+       "name": "fire",
+       "bitStart": 0,
+       "bitLength": 1
+      },
+      {
+       "name": "lightning",
+       "bitStart": 1,
+       "bitLength": 1
+      },
+      {
+       "name": "ice",
+       "bitStart": 2,
+       "bitLength": 1
+      },
+      {
+       "name": "earth",
+       "bitStart": 3,
+       "bitLength": 1
+      },
+      {
+       "name": "water",
+       "bitStart": 4,
+       "bitLength": 1
+      },
+      {
+       "name": "wind",
+       "bitStart": 5,
+       "bitLength": 1
+      },
+      {
+       "name": "holy",
+       "bitStart": 6,
+       "bitLength": 1
+      },
+      {
+       "name": "dark",
+       "bitStart": 7,
+       "bitLength": 1
+      }
+     ],
+     "enum": "ElementFlags",
+     "notes": "Elements whose damage is boosted."
+    },
+    {
+     "name": "unused15",
+     "offset": 21,
+     "type": "bytes",
+     "length": 3,
+     "notes": "Padding; the Workshop writes three zero bytes."
+    }
+   ]
+  }
+ ],
+ "enums": {
+  "BpEquipmentCategoryList": {
+   "0": "Unarmed",
+   "1": "Sword",
+   "2": "Greatsword",
+   "3": "Katana",
+   "4": "Ninja Sword",
+   "5": "Spear",
+   "6": "Pole",
+   "7": "Bow",
+   "8": "Crossbow",
+   "9": "Gun",
+   "10": "Axe",
+   "11": "Hammer",
+   "12": "Dagger",
+   "13": "Rod",
+   "14": "Staff",
+   "15": "Mace",
+   "16": "Measure",
+   "17": "Hand-Bomb",
+   "18": "Shield",
+   "19": "Helm",
+   "20": "Armor",
+   "21": "Accessory",
+   "22": "Crown (accessory)",
+   "23": "Arrow",
+   "24": "Bolt",
+   "25": "Shot",
+   "26": "Bomb",
+   "27": "Unused (0x1B)",
+   "28": "Unused (0x1C)",
+   "29": "Unused (0x1D)",
+   "30": "Unused (0x1E)",
+   "31": "Unused (0x1F)",
+   "255": "None"
+  },
+  "BpeEquipmentSlotTypeList": {
+   "0": "Weapon",
+   "1": "Off-hand",
+   "2": "Helm",
+   "3": "Armor",
+   "4": "Accessory"
+  },
+  "BpeWeaponDistanceBehaviorList": {
+   "0": "None",
+   "1": "Ninja Sword / Sword",
+   "2": "Bow / Crossbow / Gun / Hand-Bomb",
+   "3": "Axe / Dagger / Hammer / Mace / Measure",
+   "4": "Pole / Rod / Spear / Staff",
+   "5": "Greatsword / Katana"
+  },
+  "BpWeaponStanceList": {
+   "0": "Reserve (0x00)",
+   "1": "Unarmed",
+   "2": "Dagger",
+   "3": "Sword",
+   "4": "Greatsword",
+   "5": "Katana",
+   "6": "Ninja Sword",
+   "7": "Staff",
+   "8": "Mace",
+   "9": "Reserve (0x09)",
+   "10": "Measure",
+   "11": "Axe",
+   "12": "Hammer",
+   "13": "Rod",
+   "14": "Pole",
+   "15": "Spear",
+   "16": "Reserve (0x10)",
+   "17": "Bow",
+   "18": "Crossbow",
+   "19": "Reserve (0x13)",
+   "20": "Gun",
+   "21": "Hand-Bomb",
+   "22": "Unarmed (Brawler)"
+  },
+  "EquipmentVariant": {
+   "0": "weapon (category 0-17)",
+   "1": "shield (category 18)",
+   "2": "armor: helm/armor/accessory/crown (category 19-22)",
+   "3": "ammunition (category 23+)"
+  },
+  "ElementFlags": {
+   "1": "Fire",
+   "2": "Lightning",
+   "4": "Ice",
+   "8": "Earth",
+   "16": "Water",
+   "32": "Wind",
+   "64": "Holy",
+   "128": "Dark"
+  },
+  "StatusEffectFlags": {
+   "1": "KO",
+   "2": "Stone",
+   "4": "Petrify",
+   "8": "Stop",
+   "16": "Sleep",
+   "32": "Confuse",
+   "64": "Doom",
+   "128": "Blind",
+   "256": "Poison",
+   "512": "Silence",
+   "1024": "Sap",
+   "2048": "Oil",
+   "4096": "Reverse",
+   "8192": "Disable",
+   "16384": "Immobilize",
+   "32768": "Slow",
+   "65536": "Disease",
+   "131072": "Lure",
+   "262144": "Protect",
+   "524288": "Shell",
+   "1048576": "Haste",
+   "2097152": "Bravery",
+   "4194304": "Faith",
+   "8388608": "Reflect",
+   "16777216": "Invisible",
+   "33554432": "Regen",
+   "67108864": "Float",
+   "134217728": "Berserk",
+   "268435456": "Bubble",
+   "536870912": "HP Critical",
+   "1073741824": "Libra",
+   "2147483648": "X-Zone"
+  }
+ },
+ "roundTrip": [
+  "Edit fields in place; the record size is fixed and nothing in this section points at entries, so value edits never move data.",
+  "Copy every byte that no field interprets (unknown*/unused*/padding, unnamed bits) from the original; the Workshop writer zero-fills them (it seeks over them), so do not use its output as the byte-identical reference.",
+  "Keep the st2e header bytes verbatim except entryCount (and entryListOffset when the count goes to/from 0).",
+  "Keep the trailing zero padding that rounds the section to a multiple of 16 bytes.",
+  "If the section length changes (added/removed entries), rewrite the battlepack offset table: every later section offset and the end offset shift by the padded size delta.",
+  "Never zero bytes that are \"not interpreted\" for the record's variant; vanilla data in those bytes must survive.",
+  "Keep attributeLink a multiple of 24 and < attributeCount*24.",
+  "When equipment rows are added, move the attribute table and update header.offset18; attributeLink values stay.",
+  "Do not write 255 into weapon gil fields by accident: msg 665-675 report a tool that corrupted every weapon price that way.",
+  "flags (0x07): change only bits 1, 2, 4-7; preserve bits 0 and 3."
+ ],
+ "gaps": [
+  "Bytes 0x00-0x01, 0x05, 0x0A-0x0D, 0x14-0x17, 0x24, 0x2E-0x2F and every variant block byte not listed for a variant are never interpreted.",
+  "flags bits 0 and 3 are unnamed; the Workshop drops them on write.",
+  "Meaning of metal (0x10) beyond its name; optimizationTiebreaker semantics are inferred from the name.",
+  "Whether vanilla files always place the attribute table directly after the equipment records (the Workshop assumes so on write but reads header.offset18).",
+  "Whether attribute records may be shared intentionally by the game for anything beyond saving space.",
+  "Message 850-865: a third-party editor did not save ammunition edits; that was a tool bug, not a format issue."
+ ]
+}

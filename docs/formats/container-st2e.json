@@ -1,0 +1,130 @@
+{
+  "id": "container-st2e",
+  "title": "st2e record-table header (battlepack and ARD sections)",
+  "files": [
+    "**/battle_pack.bin",
+    "**/*.ard",
+    "**/*.ebp"
+  ],
+  "container": {
+    "kind": "st2e",
+    "notes": "Little-endian. Not a file but a section wrapper: a 32-byte header ('st2e', u32 entryCount, u16 entrySize, u16 reserved, u32 entryListOffset = 0x20 or 0 if empty, then four u32 offset words) followed by entryCount contiguous records of entrySize bytes, then zero padding to 16. Offsets are relative to the start of the section. Used by battlepack sections 3,5,6,7,8,9,11,12,13,14,15,16,17,18,26,28,29,30,31,32,33,34,35,37,38,41,42,57,58,59,60,68,69 and ARD sections 2,4,7,8 (ARD may sit inside EBP section 19). Battlepack section 13 adds a 24-byte attribute list located by header +0x18."
+  },
+  "records": [
+    {
+      "name": "st2eHeader",
+      "where": "offset 0 of any st2e section (battlepack: sectionOffset[n]; ARD: ard start + sectionOffset[n])",
+      "size": 32,
+      "count": 1,
+      "fields": [
+        { "name": "magic", "offset": 0, "type": "bytes", "length": 4, "notes": "'st2e' = 73 74 32 65" },
+        { "name": "entryCount", "offset": 4, "type": "u32", "notes": "Number of records. Update when adding/removing records." },
+        { "name": "entrySize", "offset": 8, "type": "u16", "enum": "St2eEntrySize", "notes": "Bytes per record; fixed per table, do not change." },
+        { "name": "reserved0A", "offset": 10, "type": "u16", "notes": "Not interpreted; 0 in rebuilt files. Preserve." },
+        { "name": "entryListOffset", "offset": 12, "type": "u32", "notes": "Section-relative offset of record 0: 32 (0x20), or 0 when entryCount is 0. In memory the game turns it into a pointer." },
+        { "name": "unknownOffset10", "offset": 16, "type": "u32", "notes": "Unknown; 0 in all tables the reference tool writes. Preserve." },
+        { "name": "textSectionOffset", "offset": 20, "type": "u32", "notes": "Named text section offset; 0 on disk in rebuilt files, zeroed by the toolkit's export (may be set at run time). Preserve." },
+        { "name": "unknownOffset18", "offset": 24, "type": "u32", "notes": "0, except battlepack section 13: section-relative offset of the attribute list = 32 + entryCount * 52." },
+        { "name": "unknownOffset1C", "offset": 28, "type": "u32", "notes": "Unknown; 0 in all tables the reference tool writes. Preserve." }
+      ]
+    },
+    {
+      "name": "st2eRecord",
+      "where": "section offset st2eHeader.entryListOffset (normally 32); record i at 32 + i * entrySize",
+      "size": 1,
+      "count": "st2eHeader.entryCount (each record is st2eHeader.entrySize bytes; field layout comes from the per-table spec)",
+      "fields": [
+        { "name": "firstByte", "offset": 0, "type": "u8", "notes": "Placeholder so the generic editor can address the table; real record size = st2eHeader.entrySize, real fields = per-table spec. Unknown tables should be shown as raw bytes of entrySize." }
+      ]
+    },
+    {
+      "name": "bp13AttributeListEntry",
+      "where": "battlepack section 13, section-relative offset st2eHeader.unknownOffset18 (= 32 + entryCount * 52); runs to the end of the section",
+      "size": 24,
+      "count": "floor((sectionLength - st2eHeader.unknownOffset18) / 24)",
+      "fields": [
+        { "name": "rawAttribute", "offset": 0, "type": "bytes", "length": 24, "notes": "Equipment attribute record (stats, status effects, element affinities); layout belongs to the battlepack section 13 spec. Equipment records reference it by byte offset into this list (index * 24), at equipment +0x28 per the toolkit." }
+      ]
+    }
+  ],
+  "enums": {
+    "St2eEntrySize": {
+      "2": "BP 9 level growth, BP 41 elements",
+      "4": "BP 5 equipment categories, BP 11 magick categories, BP 17 battle menu categories, BP 28 prices, BP 42 initial inventory",
+      "8": "BP 3 MP regeneration, BP 26 mist, BP 29 magicks, BP 30 technicks, BP 58 augments, BP 68 location movement, BP 69 movies",
+      "10": "BP 32 loot, BP 33 maps, BP 34 teleport locations, BP 35 key items",
+      "12": "BP 18 items, BP 37 packages, BP 38 rewards",
+      "13": "BP 31 concurrences",
+      "24": "BP 12 license nodes",
+      "32": "BP 7 gambits",
+      "36": "BP 57 bazaar goods",
+      "37": "BP 6 chain levels",
+      "40": "BP 15 status effects",
+      "44": "BP 59 story point additions (extended)",
+      "52": "BP 13 equipment",
+      "56": "ARD 7 default stats, ARD 8 additive stats",
+      "60": "BP 14 actions",
+      "64": "BP 8 default party member gambits",
+      "84": "ARD 2 classes",
+      "88": "ARD 4 units",
+      "128": "BP 16 party members",
+      "208": "BP 60 story point additions (basic)"
+    },
+    "St2eBattlepackSectionEntrySize": {
+      "3": "8",
+      "5": "4",
+      "6": "37",
+      "7": "32",
+      "8": "64",
+      "9": "2",
+      "11": "4",
+      "12": "24",
+      "13": "52",
+      "14": "60",
+      "15": "40",
+      "16": "128",
+      "17": "4",
+      "18": "12",
+      "26": "8",
+      "28": "4",
+      "29": "8",
+      "30": "8",
+      "31": "13",
+      "32": "10",
+      "33": "10",
+      "34": "10",
+      "35": "10",
+      "37": "12",
+      "38": "12",
+      "41": "2",
+      "42": "4",
+      "57": "36",
+      "58": "8",
+      "59": "44",
+      "60": "208",
+      "68": "8",
+      "69": "8"
+    },
+    "St2eArdSectionEntrySize": {
+      "2": "84",
+      "4": "88",
+      "7": "56",
+      "8": "56"
+    }
+  },
+  "roundTrip": [
+    "Header is exactly 32 bytes; records start at 0x20 and are contiguous.",
+    "After the records (and after the attribute list in battlepack section 13) pad the section with zeros to a multiple of 16.",
+    "entryListOffset is 0x20 for a non-empty table and 0 for an empty one.",
+    "Preserve reserved0A, unknownOffset10, textSectionOffset and unknownOffset1C as read.",
+    "Battlepack section 13: unknownOffset18 = 32 + entryCount * 52; attribute links in equipment records are byte offsets (index * 24) into the attribute list.",
+    "Copy record bytes the per-table spec does not name exactly as read (do not zero them).",
+    "After a section changes length, fix the host container's offsets (battlepack or ARD, and EBP if the ARD is nested)."
+  ],
+  "gaps": [
+    "Purpose of header words 0x10 and 0x1C.",
+    "Whether any vanilla st2e has a non-zero textSectionOffset on disk.",
+    "Not verified against vanilla that reserved0A and the unknown offset words are always zero.",
+    "BP 3 uses two record layouts inside one table (first 20 records vs the rest); a generic editor needs the per-table spec for that."
+  ]
+}

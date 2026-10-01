@@ -1,0 +1,156 @@
+{
+  "id": "menuhandbook-hctgf",
+  "title": "Clan Primer category index (hctgf, menuhandbook_<category>.bin)",
+  "files": [
+    "**/menuhandbook_knowledge.bin",
+    "**/menuhandbook_monster.bin",
+    "**/menuhandbook_person.bin",
+    "**/menuhandbook_story.bin",
+    "**/menuhandbook_tutorial.bin",
+    "**/menuhandbook_world.bin"
+  ],
+  "container": {"kind": "custom", "notes": "Little-endian, magic 'hctgf\\0\\0\\0'. Reference writer order: 24-byte header; s32 header names from 0x18; header-details block B (u16 count, u16 offsets relative to B, items each padded to 4); entry-picture table at the absolute entryExtendedInfoOffset (u16 each, pad to 4); entry table at the absolute entryBasicInfoOffset (12 bytes each); footer block F right after it (u16 count, u16 offsets relative to F, pad to 16, 8-byte items, pad to 16 = EOF). Always read through stored offsets. Strings live in the category's text .dat tables; pictures in its himgd packs (container-himgd, tim2). Folder: myoshiok (exact subfolder unrecorded)."},
+  "records": [
+    {
+      "name": "hctgfHeader",
+      "where": "file offset 0",
+      "size": 24,
+      "count": 1,
+      "fields": [
+        {"name": "magic", "offset": 0, "type": "bytes", "length": 8, "notes": "68 63 74 67 66 00 00 00 ('hctgf' + 3 zero bytes)."},
+        {"name": "type", "offset": 8, "type": "u16", "notes": "Meaning unknown. Keep it unchanged."},
+        {"name": "entryBasicInfoOffset", "offset": 10, "type": "u16", "notes": "ABSOLUTE file offset of the hctgfEntryBasicInfo table (4-aligned). Recompute when anything before it changes length."},
+        {"name": "entryExtendedInfoOffset", "offset": 12, "type": "u16", "notes": "ABSOLUTE file offset of the hctgfEntryExtendedInfo table (4-aligned)."},
+        {"name": "entryBasicInfoCount", "offset": 14, "type": "u16"},
+        {"name": "entryExtendedInfoCount", "offset": 16, "type": "u16"},
+        {"name": "headerBasicInfoCount", "offset": 18, "type": "u16", "notes": "Number of s32 header-name ids starting at 0x18."},
+        {"name": "imagesFileLinkOffset", "offset": 20, "type": "u16", "notes": "Base link to the category's himgd image packs (hypothesis: number of the first image .dat)."},
+        {"name": "imagesFileCount", "offset": 22, "type": "u16", "notes": "Number of image files (hypothesis: number of himgd packs)."}
+      ]
+    },
+    {
+      "name": "hctgfHeaderBasicInfo",
+      "where": "file offset 0x18 (directly after the header); record i at 0x18 + 4*i",
+      "size": 4,
+      "count": "hctgfHeader.headerBasicInfoCount",
+      "fields": [
+        {"name": "name", "offset": 0, "type": "s32", "notes": "Number of the header/page title string (string table mapping unverified)."}
+      ]
+    },
+    {
+      "name": "hctgfHeaderExtendedBlockCount",
+      "where": "B = 0x18 + 4*headerBasicInfoCount (start of the header-details block)",
+      "size": 2,
+      "count": 1,
+      "fields": [
+        {"name": "count", "offset": 0, "type": "u16", "notes": "Number of header-details items (C)."}
+      ]
+    },
+    {
+      "name": "hctgfHeaderExtendedItemOffset",
+      "where": "B + 2; slot k at B + 2 + 2*k",
+      "size": 2,
+      "count": "hctgfHeaderExtendedBlockCount.count",
+      "fields": [
+        {"name": "offset", "offset": 0, "type": "u16", "notes": "Offset of item k RELATIVE TO B. Items are 4-aligned. The reference writer starts item 0 at B + 4 + 2*C; keep the original gap."}
+      ]
+    },
+    {
+      "name": "hctgfHeaderExtendedItemHead",
+      "where": "B + itemOffset[k]; followed by contents[contentCount] and locations[locationCount] (u16 each), then zero padding to 4",
+      "size": 2,
+      "count": "hctgfHeaderExtendedBlockCount.count",
+      "fields": [
+        {"name": "counts", "offset": 0, "type": "bf8", "bits": [{"name": "unknownLowNibble", "bitStart": 0, "bitLength": 4, "notes": "Written 0 by the reference tool; keep it unchanged."}, {"name": "contentCount", "bitStart": 4, "bitLength": 4, "notes": "0-15."}]},
+        {"name": "locationCount", "offset": 1, "type": "u8"}
+      ]
+    },
+    {
+      "name": "hctgfHeaderExtendedContent",
+      "where": "B + itemOffset[k] + 2; value j at + 2*j",
+      "size": 2,
+      "count": "item.counts.contentCount (per item)",
+      "fields": [
+        {"name": "content", "offset": 0, "type": "u16", "notes": "Meaning unverified (perhaps entries shown under this header)."}
+      ]
+    },
+    {
+      "name": "hctgfHeaderExtendedLocation",
+      "where": "B + itemOffset[k] + 2 + 2*contentCount; value j at + 2*j",
+      "size": 2,
+      "count": "item.locationCount (per item)",
+      "fields": [
+        {"name": "location", "offset": 0, "type": "u16", "notes": "Meaning unverified (perhaps map/location numbers)."}
+      ]
+    },
+    {
+      "name": "hctgfEntryExtendedInfo",
+      "where": "file offset hctgfHeader.entryExtendedInfoOffset; table zero-padded to 4 at its end",
+      "size": 2,
+      "count": "hctgfHeader.entryExtendedInfoCount",
+      "fields": [
+        {"name": "imageFileLink", "offset": 0, "type": "u16", "notes": "Picture shown for the entry; observed range about 0-296. Probably a running image number across the category's himgd packs (unverified)."}
+      ]
+    },
+    {
+      "name": "hctgfEntryBasicInfo",
+      "where": "file offset hctgfHeader.entryBasicInfoOffset; record i at + 12*i",
+      "size": 12,
+      "count": "hctgfHeader.entryBasicInfoCount",
+      "fields": [
+        {"name": "name", "offset": 0, "type": "s32", "notes": "Number of the entry title string."},
+        {"name": "headerBasicInfoLink", "offset": 4, "type": "u16", "notes": "Index into hctgfHeaderBasicInfo: the header this entry is listed under."},
+        {"name": "textFileLink", "offset": 6, "type": "u16", "notes": "Which text table (.dat) holds the entry body."},
+        {"name": "entryExtendedInfoLink", "offset": 8, "type": "u16", "notes": "Index into hctgfEntryExtendedInfo (the picture)."},
+        {"name": "flags", "offset": 10, "type": "bf8", "bits": [{"name": "autoUnlock", "bitStart": 0, "bitLength": 1, "notes": "Entry is available without a trigger."}, {"name": "unknownBits1to7", "bitStart": 1, "bitLength": 7, "notes": "Cleared by the reference writer; keep it unchanged."}]},
+        {"name": "reserved", "offset": 11, "type": "u8", "notes": "Written 0 by the reference tool; keep it unchanged."}
+      ]
+    },
+    {
+      "name": "hctgfEntryFooterBlockCount",
+      "where": "F = entryBasicInfoOffset + 12*entryBasicInfoCount (directly after the entry table)",
+      "size": 2,
+      "count": 1,
+      "fields": [
+        {"name": "count", "offset": 0, "type": "u16", "notes": "Number of footer items (K)."}
+      ]
+    },
+    {
+      "name": "hctgfEntryFooterItemOffset",
+      "where": "F + 2; slot k at F + 2 + 2*k; the list is followed by zero padding to a 16-byte file boundary",
+      "size": 2,
+      "count": "hctgfEntryFooterBlockCount.count",
+      "fields": [
+        {"name": "offset", "offset": 0, "type": "u16", "notes": "Offset of footer item k RELATIVE TO F."}
+      ]
+    },
+    {
+      "name": "hctgfEntryFooterItem",
+      "where": "F + itemOffset[k]; items are 8 bytes, 16-aligned start; file zero-padded to 16 after the last",
+      "size": 8,
+      "count": "hctgfEntryFooterBlockCount.count",
+      "fields": [
+        {"name": "count", "offset": 0, "type": "u8", "notes": "0-7."},
+        {"name": "tail", "offset": 1, "type": "bytes", "length": 7, "notes": "Not read by any source; the reference writer zeroes it. Possibly up to 7 one-byte values. Keep it unchanged."}
+      ]
+    }
+  ],
+  "enums": {
+    "MenuhandbookCategory": {"0": "knowledge", "1": "monster", "2": "person", "3": "story", "4": "tutorial", "5": "world"}
+  },
+  "roundTrip": [
+    "Read every table through its stored offset (absolute for entry tables, block-relative for header-details and footer items).",
+    "Keep: type, the low nibble of each header-details counts byte, flags bits 1-7, the reserved byte of each entry, and the 7 tail bytes of each footer item (the reference writer zeroes them).",
+    "Keep the original gap between the header-details offset list and its first item (the reference writer always places item 0 at B + 4 + 2*C; vanilla rule for odd C unknown).",
+    "Alignment: header-details items padded to 4; entry-picture table padded to 4; footer offset list padded to a 16-byte file boundary; footer items end on 16 (EOF).",
+    "After a length change recompute entryExtendedInfoOffset, entryBasicInfoOffset, the relative item offsets of both blocks and all counts; links (headerBasicInfoLink, entryExtendedInfoLink) past an inserted/removed record must be renumbered.",
+    "Offsets are u16: the file must stay below 64 KiB."
+  ],
+  "gaps": [
+    "Meaning of header type, header-details contents/locations, footer items and their tail bytes.",
+    "Which string table/number space the s32 name fields use.",
+    "How imagesFileLinkOffset, imagesFileCount and imageFileLink map onto himgd file numbers and image slots.",
+    "Vanilla padding between the header-details offset list and its first item when the item count is odd.",
+    "Archive subfolder of the menuhandbook files (bestiary text is under 'myoshiok')."
+  ]
+}

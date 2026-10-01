@@ -1,0 +1,64 @@
+{
+ "id": "ard-models",
+ "title": "ARD section 1 - Models (model motions)",
+ "files": [
+  "**/*.ard",
+  "**/*.ard.dir/section_001.bin"
+ ],
+ "container": {
+  "kind": "ard",
+  "notes": "ARD section 1 (models / model motions; u32 count + 8-byte rows; stored LAST in the ARD with nothing after it). ARD = standalone *.ard or section 19 of an .ebp: 8-byte magic FF12AR03, ten u32 section offsets at 0x08 relative to the ARD start (0 = absent; this section = u32 at ARD+0x0C); sections 0,2..9 written in index order on 16-byte boundaries with zero fill, section 1 written last with nothing after it. A section spans to the next larger non-zero offset (the highest to the end of the ARD)."
+ },
+ "records": [
+  {
+   "name": "modelsHeader",
+   "where": "Offset 0 of ARD section 1 (ARD start + u32 at ARD+0x0C).",
+   "size": 4,
+   "count": 1,
+   "fields": [
+    {
+     "name": "entryCount",
+     "offset": 0,
+     "type": "u32",
+     "notes": "Number of 8-byte model rows that follow immediately (no st2e header, no gap)."
+    }
+   ]
+  },
+  {
+   "name": "model",
+   "where": "ARD section 1, offset 4 + i*8",
+   "size": 8,
+   "count": "modelsHeader.entryCount",
+   "fields": [
+    {
+     "name": "model",
+     "offset": 0,
+     "type": "s32",
+     "enum": "ModelList",
+     "notes": "Model id = (ASCII prefix letter << 16) | file number (foes use prefix m, TK L940-L952)."
+    },
+    {
+     "name": "unknownFlags",
+     "offset": 4,
+     "type": "u32",
+     "notes": "Flag word of unknown meaning. The Toolkit calls the section \"Model Motions\" (motion sets per model), so it may select motion data. Keep as found."
+    }
+   ]
+  }
+ ],
+ "enums": {},
+ "roundTrip": [
+  "Keep section 1 as the physically last section of the ARD and write nothing after it.",
+  "Values are edited in place; the 8-byte rows have no internal offsets.",
+  "Keep the bytes after the last row (padding, EBP padding) exactly as found when the row count does not change.",
+  "When rows are added or removed, update entryCount, re-pad to 16 with zeros, and fix the ARD total length / enclosing EBP offsets (no other ARD offset moves).",
+  "Keep unknownFlags verbatim unless you know what you are changing."
+ ],
+ "gaps": [
+  "Meaning of the u32 flag word in each row (possibly motion-set selection, per the Toolkit's \"Model Motions\" label).",
+  "Why the game requires section 1 to be stored last (possibly so it can be released or grown separately after loading).",
+  "Whether vanilla ARDs pad section 1 to 16 bytes; the Workshop always does.",
+  "Whether every model referenced by classes, overlays or special action animations must be present in this list.",
+  "Order significance of the rows (nothing is known to index them)."
+ ]
+}

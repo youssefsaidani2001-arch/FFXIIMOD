@@ -1,0 +1,226 @@
+{
+ "id": "battlepack-s39-shops",
+ "title": "Battlepack section 39 — Shops",
+ "files": [
+  "ps2data/image/ff12/test_battle/*/binaryfile/battle_pack.bin",
+  "battle_pack.bin.dir/section_039.bin"
+ ],
+ "container": {
+  "kind": "battlepack",
+  "notes": "Section 39 of battle_pack.bin (71-section battlepack, 16-byte aligned sections). NOT st2e: a bespoke three-level offset tree (shops -> events -> content ids). Every list has a 12-byte header: u16 tag=100, u16 level (0/1/2), u16 elementSize (8/8/2), u16 count, u32 listOffset; all offsets are relative to the start of section 39. Content lists are zero-padded to 4 bytes, the section to 16 bytes."
+ },
+ "records": [
+  {
+   "name": "shopTableHeader",
+   "where": "Offset 0 of battlepack section 39.",
+   "size": 12,
+   "count": "1",
+   "fields": [
+    {
+     "name": "tag",
+     "offset": 0,
+     "type": "u16",
+     "notes": "Constant 100 (0x64) at every level of the tree."
+    },
+    {
+     "name": "level",
+     "offset": 2,
+     "type": "u16",
+     "notes": "Tree level: 0 (shop list)."
+    },
+    {
+     "name": "elementSize",
+     "offset": 4,
+     "type": "u16",
+     "notes": "Stride of the list this header introduces: 8."
+    },
+    {
+     "name": "shopCount",
+     "offset": 6,
+     "type": "u16",
+     "notes": "Number of shops (57 in vanilla, TK L833)."
+    },
+    {
+     "name": "shopListOffset",
+     "offset": 8,
+     "type": "u32",
+     "notes": "Offset of shop[0] from the section start (12 in a rebuilt file: the list follows the header)."
+    }
+   ]
+  },
+  {
+   "name": "shop",
+   "where": "section39 + shopTableHeader.shopListOffset + i*8",
+   "size": 8,
+   "count": "shopTableHeader.shopCount (vanilla 57)",
+   "fields": [
+    {
+     "name": "ownerName",
+     "offset": 0,
+     "type": "u16",
+     "notes": "Text id of the shopkeeper/shop name."
+    },
+    {
+     "name": "unused02",
+     "offset": 2,
+     "type": "bytes",
+     "length": 2,
+     "notes": "Unused attribute; the Workshop writes 0."
+    },
+    {
+     "name": "eventTableOffset",
+     "offset": 4,
+     "type": "u32",
+     "notes": "Offset (from the section start) of this shop's eventTableHeader."
+    }
+   ]
+  },
+  {
+   "name": "eventTableHeader",
+   "where": "section39 + shop.eventTableOffset (one per shop)",
+   "size": 12,
+   "count": "1 per shop",
+   "fields": [
+    {
+     "name": "tag",
+     "offset": 0,
+     "type": "u16",
+     "notes": "Constant 100 (0x64) at every level of the tree."
+    },
+    {
+     "name": "level",
+     "offset": 2,
+     "type": "u16",
+     "notes": "Tree level: 1 (event list)."
+    },
+    {
+     "name": "elementSize",
+     "offset": 4,
+     "type": "u16",
+     "notes": "Stride of the list this header introduces: 8."
+    },
+    {
+     "name": "eventCount",
+     "offset": 6,
+     "type": "u16",
+     "notes": "Number of stock events of this shop."
+    },
+    {
+     "name": "eventListOffset",
+     "offset": 8,
+     "type": "u32",
+     "notes": "Offset of event[0]; 12 bytes after this header in a rebuilt file."
+    }
+   ]
+  },
+  {
+   "name": "event",
+   "where": "section39 + eventTableHeader.eventListOffset + j*8",
+   "size": 8,
+   "count": "eventTableHeader.eventCount",
+   "fields": [
+    {
+     "name": "condition",
+     "offset": 0,
+     "type": "u8",
+     "enum": "BpeShopEventConditionList",
+     "notes": "When this stock group becomes available."
+    },
+    {
+     "name": "conditionOffsetParameter",
+     "offset": 1,
+     "type": "u8",
+     "notes": "Secondary parameter of the condition (Workshop: \"condition offset parameter\"; e.g. a byte/bit offset for custom conditions — unverified)."
+    },
+    {
+     "name": "conditionParameter",
+     "offset": 2,
+     "type": "u16",
+     "notes": "Main parameter of the condition (e.g. story progress value or clan rank)."
+    },
+    {
+     "name": "contentTableOffset",
+     "offset": 4,
+     "type": "u32",
+     "notes": "Offset (from the section start) of this event's contentTableHeader."
+    }
+   ]
+  },
+  {
+   "name": "contentTableHeader",
+   "where": "section39 + event.contentTableOffset (one per event)",
+   "size": 12,
+   "count": "1 per event",
+   "fields": [
+    {
+     "name": "tag",
+     "offset": 0,
+     "type": "u16",
+     "notes": "Constant 100 (0x64) at every level of the tree."
+    },
+    {
+     "name": "level",
+     "offset": 2,
+     "type": "u16",
+     "notes": "Tree level: 2 (content list)."
+    },
+    {
+     "name": "elementSize",
+     "offset": 4,
+     "type": "u16",
+     "notes": "Stride of the list this header introduces: 2."
+    },
+    {
+     "name": "contentCount",
+     "offset": 6,
+     "type": "u16",
+     "notes": "Number of content ids in this stock group."
+    },
+    {
+     "name": "contentListOffset",
+     "offset": 8,
+     "type": "u32",
+     "notes": "Offset of content[0]; 12 bytes after this header in a rebuilt file."
+    }
+   ]
+  },
+  {
+   "name": "content",
+   "where": "section39 + contentTableHeader.contentListOffset + k*2; the list is zero-padded to a 4-byte boundary",
+   "size": 2,
+   "count": "contentTableHeader.contentCount",
+   "fields": [
+    {
+     "name": "contentId",
+     "offset": 0,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id offered for sale (category<<12 | index: items 0x0000, equipment 0x1000, magicks 0x3000, technicks 0x4000, gambits 0x6000 …)."
+    }
+   ]
+  }
+ ],
+ "enums": {
+  "BpeShopEventConditionList": {
+   "0": "None",
+   "1": "Custom",
+   "2": "Story Progress",
+   "3": "Clan Rank"
+  }
+ },
+ "roundTrip": [
+  "For value-only edits (ownerName, event condition fields, swapping one content id for another) patch bytes in place; the file stays byte-identical elsewhere.",
+  "Never rebuild the section unless an event or content count changes; a rebuild may reorder blocks relative to vanilla.",
+  "When rebuilding: write the 12-byte headers with their fixed signatures, recompute every offset relative to the section start, pad each content list to 4 bytes and the section to 16 bytes with zeros.",
+  "Preserve shop.unused02 bytes from the original when rebuilding (the Workshop zeroes them).",
+  "If the section length changes, rewrite the battlepack offset table (all later sections and the end offset).",
+  "Keep shop order: shop index is the merchant id the game opens."
+ ],
+ "gaps": [
+  "Exact meaning of conditionOffsetParameter and conditionParameter for each condition type (custom / story progress / clan rank).",
+  "Whether vanilla blocks are laid out in the same order as the Workshop writes them (a rebuild may not be byte-identical even without edits).",
+  "Content of shop.unused02 in vanilla data (the Workshop discards it).",
+  "Which text block shop.ownerName ids belong to (assumed the character-name block, 16384+).",
+  "Whether events are cumulative (all satisfied events add stock) or exclusive — assumed cumulative."
+ ]
+}

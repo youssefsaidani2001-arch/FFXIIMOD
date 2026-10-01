@@ -1,0 +1,589 @@
+{
+ "id": "save-game",
+ "title": "Save game image (Session / World / Battle / Menu blocks) — runtime memory layout",
+ "files": [],
+ "container": {
+  "kind": "raw",
+  "notes": "MEMORY-ONLY view of the save data: fixed image at 0x02164280, size 0x56690 (Lua Loader `save` table region; [0x02092758] points at it). Menu block via [0x020927C0], live Battle block via [0x02EBF190]. The on-disk save file wrapper is NOT documented; do not use this spec to write save files offline."
+ },
+ "records": [
+  {
+   "name": "saveImage",
+   "where": "Fixed address 0x02164280 (Lua Loader `save` table base; also the value of [0x02092758] = sge_mabase). Size 0x56690 = 353,936 bytes.",
+   "size": 353936,
+   "count": "1",
+   "fields": [
+    {
+     "name": "sessionBlock",
+     "offset": 0,
+     "type": "bytes",
+     "length": 512,
+     "notes": "Session block (record sessionBlock). [src: TK L294, L770]"
+    },
+    {
+     "name": "worldBlock",
+     "offset": 512,
+     "type": "bytes",
+     "length": 8192,
+     "notes": "World block: story progress and every quest/event/treasure flag (record worldBlock). [src: TK L295, L771]"
+    },
+    {
+     "name": "battleBlockCopy",
+     "offset": 8704,
+     "type": "bytes",
+     "length": 24576,
+     "notes": "Battle block copy, 0x6000 bytes. The Toolkit labels it \"(Ineffectual)\": writing here changes nothing in the running game. Its content mirrors the live Battle block (party members, inventory counters, bazaar goods, party slots). [src: TK L296, L772, L1839]"
+    },
+    {
+     "name": "remainder",
+     "offset": 33280,
+     "type": "bytes",
+     "length": 320656,
+     "notes": "Rest of the image. The Toolkit documents rows up to +0x56690 but our write-up does not give offsets for the Menu block or the live Battle block; both are reached through pointers instead (see menuBlock / liveBattleBlock). [src: TK L302, L763; LL save-config:73]"
+    }
+   ]
+  },
+  {
+   "name": "sessionBlock",
+   "where": "saveImage + 0x0000 (absolute 0x02164280)",
+   "size": 512,
+   "count": "1",
+   "fields": [
+    {
+     "name": "crcChecksum",
+     "offset": 0,
+     "type": "u32",
+     "notes": "Save CRC checksum / remainder. Not recomputed by the Toolkit; whether the game recomputes it on save is unknown. [src: TK L302, L770, L786]"
+    },
+    {
+     "name": "crcState",
+     "offset": 4,
+     "type": "u32",
+     "notes": "CRC state flag. [src: TK L302, L770]"
+    },
+    {
+     "name": "gil",
+     "offset": 8,
+     "type": "s32",
+     "notes": "Party gil. Read as s32 by Xeavin's formula scripts at absolute 0x02164288. [src: TK L770; Drive 163.lua:17; Drive 18.lua:24]"
+    },
+    {
+     "name": "totalSteps",
+     "offset": 12,
+     "type": "u32",
+     "notes": "Total steps walked. [src: TK L770]"
+    },
+    {
+     "name": "gameTimeFrames",
+     "offset": 16,
+     "type": "u64",
+     "notes": "Game time as total seconds x 60 (8 bytes). [src: TK L770]"
+    },
+    {
+     "name": "gameTimeHours",
+     "offset": 24,
+     "type": "u16",
+     "notes": "Game time hours (offset and width inferred: the minutes byte is at +0x1A). [src: TK L770 (inferred)]"
+    },
+    {
+     "name": "gameTimeMinutes",
+     "offset": 26,
+     "type": "u8",
+     "notes": "Game time minutes (read at absolute 0x0216429A). [src: Drive 133.lua:3; TK L770]"
+    },
+    {
+     "name": "gameTimeSeconds",
+     "offset": 27,
+     "type": "u8",
+     "notes": "Game time seconds (inferred position, right after minutes). [src: TK L770 (inferred)]"
+    },
+    {
+     "name": "unknown1C",
+     "offset": 28,
+     "type": "bytes",
+     "length": 484,
+     "notes": "Not identified by any source; keep the original bytes."
+    }
+   ]
+  },
+  {
+   "name": "worldBlock",
+   "where": "saveImage + 0x0200 (absolute 0x02164480 = sge_gibase)",
+   "size": 8192,
+   "count": "1",
+   "fields": [
+    {
+     "name": "storyProgress",
+     "offset": 0,
+     "type": "u16",
+     "notes": "Story progress counter (main scenario position). Width assumed 16-bit (Traveler's-tips requirements compare a 2-byte Story Progress). [src: Drive mappings.lua:7 (FehDead, absolute 0x02164480); TK L1165]"
+    },
+    {
+     "name": "unknown02",
+     "offset": 2,
+     "type": "bytes",
+     "length": 4162,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "currentLocationId",
+     "offset": 4164,
+     "type": "u32",
+     "notes": "Current location id (absolute 0x021654C4; read as s32 by several mods; also used as the index into the Map Ref locations table). [src: TK L320, L590; Drive getWeather.lua:8; Drive mappings.lua:6]"
+    },
+    {
+     "name": "currentPositionIndex",
+     "offset": 4168,
+     "type": "u32",
+     "notes": "Spawn/position index inside the location (absolute 0x021654C8). [src: TK L320, L593]"
+    },
+    {
+     "name": "unknown104C",
+     "offset": 4172,
+     "type": "bytes",
+     "length": 20,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "weatherMode",
+     "offset": 4192,
+     "type": "u8",
+     "notes": "Weather mode used to pick one of the per-region weather slots of the Map Ref file (absolute 0x021654E0). [src: Drive getWeather.lua:9-21]"
+    },
+    {
+     "name": "unknown1061",
+     "offset": 4193,
+     "type": "bytes",
+     "length": 1107,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "nonRespawnFlagArray",
+     "offset": 5300,
+     "type": "bytes",
+     "length": 1,
+     "notes": "Start of the \"non-respawn treasures\" flag array (absolute 0x02165934): EBP trap/treasure records whose flag byte is not 0xFF test a flag starting here (trap +0x04 uniqueFlagIndex, see treasure-chests). Length not stated (1 byte shown here). [src: msg 156, 168, 171]"
+    },
+    {
+     "name": "unknown14B5",
+     "offset": 5301,
+     "type": "bytes",
+     "length": 2891,
+     "notes": "Not identified by any source; keep the original bytes."
+    }
+   ]
+  },
+  {
+   "name": "menuBlock",
+   "where": "[0x020927C0] (sge_mebase). Not stated whether it lies inside saveImage.",
+   "size": 18456,
+   "count": "1",
+   "fields": [
+    {
+     "name": "unknown00",
+     "offset": 0,
+     "type": "bytes",
+     "length": 13316,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "bestiaryRegion",
+     "offset": 13316,
+     "type": "bytes",
+     "length": 1024,
+     "notes": "Clan Primer bestiary region; the Toolkit's Complete Bestiary fills these 0x400 bytes with 0xFF (every entry seen/complete). [src: TK L629, L773]"
+    },
+    {
+     "name": "unknown3804",
+     "offset": 14340,
+     "type": "bytes",
+     "length": 4020,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "inventoryContentTypeCounters",
+     "offset": 18360,
+     "type": "bytes",
+     "length": 48,
+     "notes": "12 x u32: number of entries currently stored in each inventory bag (bag order = SgeInventoryContentTypeList: 0 Items, 1 Weapons, 2 Armor, 3 Accessories, 4 Ammunition, 6 Gambits, 8 Technicks, 9 Magicks, 10 Key Items/Maps/Candles, 11 Loot). [src: TK L773; Drive BlueMagick.lua:752-767]"
+    },
+    {
+     "name": "unknown47E8",
+     "offset": 18408,
+     "type": "bytes",
+     "length": 48,
+     "notes": "Not identified by any source; keep the original bytes."
+    }
+   ]
+  },
+  {
+   "name": "inventoryBagDescriptor",
+   "where": "Static array at 0x02092760 + bag*8, 12 bags (0x02092760..0x020927BF, directly before the Menu block pointer).",
+   "size": 8,
+   "count": "12 (SgeInventoryContentTypeList ids 0-11)",
+   "fields": [
+    {
+     "name": "unknown00",
+     "offset": 0,
+     "type": "u16",
+     "notes": "Not identified. [src: Drive BlueMagick.lua:755]"
+    },
+    {
+     "name": "capacity",
+     "offset": 2,
+     "type": "s16",
+     "notes": "Maximum number of entries of the bag (magick bag = 81 in vanilla, full). [src: Drive BlueMagick.lua:752-773]"
+    },
+    {
+     "name": "entries",
+     "offset": 4,
+     "type": "u32",
+     "notes": "32-bit address of the bag's u16 content-id list (the inventory content slots). The engine appends to it when content is obtained and silently drops content when it is full. [src: Drive BlueMagick.lua:752-773]"
+    }
+   ]
+  },
+  {
+   "name": "liveBattleBlock",
+   "where": "[0x02EBF190] (sge_bibase; the battlepack section-pointer cache slot that the game also uses as the party/battle state root).",
+   "size": 32772,
+   "count": "1",
+   "fields": [
+    {
+     "name": "unknown00",
+     "offset": 0,
+     "type": "bytes",
+     "length": 4,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "magickSchoolMask",
+     "offset": 4,
+     "type": "u32",
+     "notes": "Unlocked battle-menu magick schools bitmask according to a community mod's notes (vanilla value 0x017F; bit 0x80 used by that mod for an extra school). Treat as unverified. [src: Drive BlueMagick.lua:54, 65]"
+    },
+    {
+     "name": "partyMemberKeeps",
+     "offset": 8,
+     "type": "bytes",
+     "length": 18240,
+     "notes": "40 Battle Unit Keeps of 0x1C8 bytes, one per party member id 0-39 (see live-battle-unit-keep). [src: Drive getBattleUnitKeep.lua (array helper):7; TK L774]"
+    },
+    {
+     "name": "unknown4748",
+     "offset": 18248,
+     "type": "bytes",
+     "length": 4736,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "bazaarGoodStates",
+     "offset": 22984,
+     "type": "bytes",
+     "length": 128,
+     "notes": "1 state byte per bazaar good, indexed by (content id & 0xFFF) = section 57 row 0-127 (record bazaarGoodState). [src: Drive TheInsurgentsItemizedBazaar.lua:128-140, 267-330; Drive TheInsurgentsThriftyBazaar.lua:55-59, 107-111]"
+    },
+    {
+     "name": "partySlotStructures",
+     "offset": 23112,
+     "type": "bytes",
+     "length": 90,
+     "notes": "5 party-slot structures of 0x12 bytes (record partySlotStructure), order = SgePartySlotStructureTypeList: Default, Battle (Current), Battle (UI), Menu (UI), Battle (Last). Stride inferred from the two offsets used by mods (0x5A48, 0x5A5A). [src: Drive TheInsurgentsCompanions.lua:829-842; Drive getActivePartyMember.lua:7-8; Lists SgePartySlotStructureTypeList]"
+    },
+    {
+     "name": "unknown5AA2",
+     "offset": 23202,
+     "type": "bytes",
+     "length": 2,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "partyLeaderMember",
+     "offset": 23204,
+     "type": "u8",
+     "notes": "Party member id that the game looks up in the Default slot structure to find the leader's slot (name inferred). [src: Drive TheInsurgentsCompanions.lua:829-842]"
+    },
+    {
+     "name": "unknown5AA5",
+     "offset": 23205,
+     "type": "bytes",
+     "length": 95,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "companionFlags",
+     "offset": 23300,
+     "type": "bf32",
+     "bits": [
+      {
+       "name": "esperSummoned",
+       "bitStart": 0,
+       "bitLength": 1
+      },
+      {
+       "name": "chocoboRidden",
+       "bitStart": 1,
+       "bitLength": 1
+      }
+     ],
+     "notes": "Summoned companion flags. [src: Drive TheInsurgentsCompanions.lua:442-446, 802-842; Drive Wayfarer.lua:50-53]"
+    },
+    {
+     "name": "unknown5B08",
+     "offset": 23304,
+     "type": "bytes",
+     "length": 8,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "partyMemberGambitSets",
+     "offset": 23312,
+     "type": "bytes",
+     "length": 6240,
+     "notes": "40 members x 3 gambit sets x 0x34 bytes (member stride 0x9C; record gambitSet). [src: Drive TheInsurgentsManifesto.lua:1914-1940, 2158-2165]"
+    },
+    {
+     "name": "unknown7370",
+     "offset": 29552,
+     "type": "bytes",
+     "length": 3220,
+     "notes": "Not identified by any source; keep the original bytes."
+    }
+   ]
+  },
+  {
+   "name": "partySlotStructure",
+   "where": "liveBattleBlock + 0x5A48 + structure*0x12, structure 0-4",
+   "size": 18,
+   "count": "5",
+   "fields": [
+    {
+     "name": "activeSlot0",
+     "offset": 0,
+     "type": "u16",
+     "enum": "PartyMemberList",
+     "notes": "Battle slot 1: party member id (0xFFFF = empty assumed). [src: Drive getActivePartyMember.lua:2-9]"
+    },
+    {
+     "name": "activeSlot1",
+     "offset": 2,
+     "type": "u16",
+     "enum": "PartyMemberList",
+     "notes": "Battle slot 2."
+    },
+    {
+     "name": "activeSlot2",
+     "offset": 4,
+     "type": "u16",
+     "enum": "PartyMemberList",
+     "notes": "Battle slot 3."
+    },
+    {
+     "name": "activeSlot3",
+     "offset": 6,
+     "type": "u16",
+     "enum": "PartyMemberList",
+     "notes": "Battle slot 4 (guest slot)."
+    },
+    {
+     "name": "reserveSlot0",
+     "offset": 8,
+     "type": "u16",
+     "enum": "PartyMemberList",
+     "notes": "Reserve slot 1 (inferred: 9 slots = 4 active + 5 reserve, like battlepack section 60)."
+    },
+    {
+     "name": "reserveSlot1",
+     "offset": 10,
+     "type": "u16",
+     "enum": "PartyMemberList",
+     "notes": "Reserve slot 2 (inferred)."
+    },
+    {
+     "name": "reserveSlot2",
+     "offset": 12,
+     "type": "u16",
+     "enum": "PartyMemberList",
+     "notes": "Reserve slot 3 (inferred)."
+    },
+    {
+     "name": "reserveSlot3",
+     "offset": 14,
+     "type": "u16",
+     "enum": "PartyMemberList",
+     "notes": "Reserve slot 4 (inferred)."
+    },
+    {
+     "name": "reserveSlot4",
+     "offset": 16,
+     "type": "u16",
+     "enum": "PartyMemberList",
+     "notes": "Reserve slot 5 (inferred)."
+    }
+   ]
+  },
+  {
+   "name": "gambitSet",
+   "where": "liveBattleBlock + 0x5B10 + member*0x9C + set*0x34, member 0-39, set 0-2",
+   "size": 52,
+   "count": "40 x 3",
+   "fields": [
+    {
+     "name": "unknown00",
+     "offset": 0,
+     "type": "bytes",
+     "length": 50,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "slotCount",
+     "offset": 50,
+     "type": "u8",
+     "notes": "Gambit slots of this set; the Manifesto mod forces it to at least 2 in all 3 sets. [src: Drive TheInsurgentsManifesto.lua:1914-1940]"
+    },
+    {
+     "name": "unknown33",
+     "offset": 51,
+     "type": "bytes",
+     "length": 1,
+     "notes": "Not identified by any source; keep the original bytes."
+    }
+   ]
+  },
+  {
+   "name": "bazaarGoodState",
+   "where": "liveBattleBlock + 0x59C8 + (bazaarContentId & 0xFFF)",
+   "size": 1,
+   "count": "128 (section 57 rows)",
+   "fields": [
+    {
+     "name": "state",
+     "offset": 0,
+     "type": "bf8",
+     "bits": [
+      {
+       "name": "stateBit0",
+       "bitStart": 0,
+       "bitLength": 1
+      },
+      {
+       "name": "stateBit1",
+       "bitStart": 1,
+       "bitLength": 1
+      },
+      {
+       "name": "stateBit2",
+       "bitStart": 2,
+       "bitLength": 1
+      }
+     ],
+     "notes": "Bazaar good state bits as used by the Bazaar mods. [src: Drive TheInsurgentsItemizedBazaar.lua:255-300; Drive TheInsurgentsThriftyBazaar.lua:55-59]"
+    }
+   ]
+  }
+ ],
+ "enums": {
+  "SgePartySlotStructureTypeList": {
+   "0": "Default",
+   "1": "Battle (Current)",
+   "2": "Battle (UI)",
+   "3": "Menu (UI)",
+   "4": "Battle (Last)"
+  },
+  "SgeInventoryContentTypeList": {
+   "0": "Items",
+   "1": "Weapons",
+   "2": "Armor",
+   "3": "Accessories",
+   "4": "Ammunition",
+   "5": "Unused (0x04)",
+   "6": "Gambits",
+   "7": "Unused (0x06)",
+   "8": "Technicks",
+   "9": "Magicks",
+   "10": "Key Items, Maps and Candles",
+   "11": "Loot"
+  },
+  "SgeSpecialFoeStateTypeList": {
+   "0": "Inaccessible",
+   "1": "Alive",
+   "2": "Dead"
+  },
+  "ClanRankList": {
+   "0": "None",
+   "1": "Moppet",
+   "2": "Hedge Knight",
+   "3": "Rear Guard",
+   "4": "Vanguard",
+   "5": "Headhunter",
+   "6": "Ward of Justice",
+   "7": "Brave Companion",
+   "8": "Riskbreaker",
+   "9": "Paragon of Justice",
+   "10": "High Guardian",
+   "11": "Knight of the Round",
+   "12": "Order of Ambrosia"
+  },
+  "PartyMemberList": {
+   "65535": "None (0xFFFF)",
+   "255": "None (0xFF)",
+   "0": "Vaan",
+   "1": "Ashe",
+   "2": "Fran",
+   "3": "Balthier",
+   "4": "Basch",
+   "5": "Penelo",
+   "6": "Reks",
+   "7": "Amalia",
+   "8": "Basch (Prisoner)",
+   "9": "Basch (Fugitive)",
+   "10": "Lamont",
+   "11": "Vossler (Judge)",
+   "12": "Vossler (Knight)",
+   "13": "Larsa",
+   "14": "Reddas",
+   "15": "Reserve (0x0F)",
+   "16": "Reserve (0x10)",
+   "17": "Reserve (0x11)",
+   "18": "Reserve (0x12)",
+   "19": "Reserve (0x13)",
+   "20": "Reserve (0x14)",
+   "21": "Reserve (0x15)",
+   "22": "Reserve (0x16)",
+   "23": "Reserve (0x17)",
+   "24": "Reserve (0x18)",
+   "25": "Reserve (0x19)",
+   "26": "Chocobo",
+   "27": "Belias",
+   "28": "Mateus",
+   "29": "Adrammelech",
+   "30": "Hashmal",
+   "31": "Cúchulainn",
+   "32": "Famfrit",
+   "33": "Zalera",
+   "34": "Shemhazai",
+   "35": "Chaos",
+   "36": "Zeromus",
+   "37": "Exodus",
+   "38": "Ultima",
+   "39": "Zodiark"
+  }
+ },
+ "roundTrip": [
+  "This is a memory image, not a file layout: do not write it to disk as a save file.",
+  "Session +0x00/+0x04 (CRC checksum/state) must be left alone in live edits; the game handles them on its own save path (unconfirmed).",
+  "Write fields in place only; the image never changes size (0x56690 bytes).",
+  "Edit the live Battle block ([0x02EBF190]) and never the ineffectual copy at +0x2200.",
+  "Keep bag counters (Menu +0x47B8) and bag content lists consistent with each other.",
+  "Unknown ranges are game state (flags, counters); copy them unchanged."
+ ],
+ "gaps": [
+  "On-disk save file format (header, compression/encryption, CRC algorithm and coverage) is not documented by any of our sources.",
+  "Offsets of the Session save-menu sub-block (party shown on save screen, clan points/rank, save count/slot, build date, version).",
+  "Offsets of the ~380 named World flag groups, Global Flags, special foe states, trophy games, teleport slots, quest table.",
+  "Menu block offsets of map reveals, handbook triggers and the inventory content slot arrays.",
+  "Live Battle block offsets of inventory content counters, seized counters, sold-loot quantities, and 0x7370-0x8003.",
+  "Whether the Menu and live Battle blocks lie inside the 0x56690-byte image.",
+  "Gambit set layout beyond slotCount (+0x32); party slot entries 4-8; meaning of bazaar state bits.",
+  "Length of the non-respawn treasure/trap flag array at World +0x14B4."
+ ]
+}

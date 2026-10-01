@@ -1,0 +1,79 @@
+{
+  "id": "container-otherpack",
+  "title": "Otherpack container (clutpack_ys, fontpack_fs/it, mrppack_ys, tex2pack_ys, texpack_ys)",
+  "files": [
+    "**/clutpack_ys.bin",
+    "**/fontpack_fs.bin",
+    "**/fontpack_it.bin",
+    "**/mrppack_ys.bin",
+    "**/tex2pack_ys.bin",
+    "**/texpack_ys.bin"
+  ],
+  "container": {
+    "kind": "otherpack",
+    "notes": "Little-endian. At 0x00 a list of u32 absolute file offsets, one per section, terminated by 0xFFFFFFFF (no count field, no end-of-data offset). The header is then filled with 0xFF bytes up to a 16-byte boundary. Each section is followed by zero padding to 16. Section i spans [offset[i], offset[i+1]); the last one runs to end of file. Section kind by first 4 bytes: CLT2 = colour table, MRP + state byte (0 on disk) = menu resource pack, TIM2 = texture, else opaque. Expected section counts: clutpack_ys 4, fontpack_fs 7, fontpack_it 6, mrppack_ys 23, tex2pack_ys 11, texpack_ys 5."
+  },
+  "records": [
+    {
+      "name": "sectionOffset",
+      "where": "file offset 0; entry i at 4*i; stop at the first value equal to 0xFFFFFFFF",
+      "size": 4,
+      "count": "number of dwords before the 0xFFFFFFFF terminator (see enum OtherpackSectionCount)",
+      "fields": [
+        { "name": "offset", "offset": 0, "type": "u32", "notes": "Absolute file offset of section i, multiple of 16. Empty section = same value as the next section's offset. Recompute all later rows if a section changes size." }
+      ]
+    },
+    {
+      "name": "terminator",
+      "where": "file offset 4*N, immediately after the last sectionOffset",
+      "size": 4,
+      "count": 1,
+      "fields": [
+        { "name": "endMarker", "offset": 0, "type": "u32", "notes": "Always 0xFFFFFFFF (4294967295). Followed by 0xFF fill bytes up to the next 16-byte boundary." }
+      ]
+    },
+    {
+      "name": "sectionMagic",
+      "where": "first 4 bytes of each section (file offset = sectionOffset[i]); informational, used to choose a sub-format",
+      "size": 4,
+      "count": "one per non-empty section",
+      "fields": [
+        { "name": "magic", "offset": 0, "type": "u32", "enum": "OtherpackSectionMagic", "notes": "Read as little-endian u32. For MRP only the low 3 bytes ('MRP') are the magic; byte 3 is a load state (0 on disk, 1 in memory)." }
+      ]
+    }
+  ],
+  "enums": {
+    "OtherpackSectionMagic": {
+      "844385347": "CLT2 colour lookup table (.cl2)",
+      "5263949": "MRP menu resource pack, state 0 (.mrp)",
+      "843925844": "TIM2 texture (.tm2)"
+    },
+    "OtherpackSectionCount": {
+      "4": "clutpack_ys.bin",
+      "5": "texpack_ys.bin",
+      "6": "fontpack_it.bin",
+      "7": "fontpack_fs.bin",
+      "11": "tex2pack_ys.bin",
+      "23": "mrppack_ys.bin"
+    },
+    "OtherpackFirstSectionOffset": {
+      "32": "N = 4..7 (clutpack_ys, texpack_ys, fontpack_it, fontpack_fs)",
+      "48": "N = 11 (tex2pack_ys)",
+      "96": "N = 23 (mrppack_ys)"
+    }
+  },
+  "roundTrip": [
+    "Keep the number of sections (offsets before 0xFFFFFFFF) unchanged.",
+    "Header fill after the terminator uses 0xFF bytes; padding after each section uses 0x00 bytes.",
+    "Lay out sections in index order: record start, append bytes, zero-pad to a multiple of 16.",
+    "Copy unedited sections byte-for-byte; the last section's bytes include the padding up to end of file.",
+    "Empty sections keep the same offset as the following section.",
+    "MRP sections written to disk keep state byte 3 = 0."
+  ],
+  "gaps": [
+    "Contents of fontpack_fs / fontpack_it sections and meaning of the fs / it suffixes.",
+    "VBF folder of these packs and whether language-specific copies exist.",
+    "Not verified that every vanilla otherpack ends on a 16-byte boundary.",
+    "texpack_ys assumed to hold TIM2 sections only (by name)."
+  ]
+}

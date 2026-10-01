@@ -1,0 +1,89 @@
+{
+ "id": "ard-specialactionanimations",
+ "title": "ARD section 9 - Special action animations",
+ "files": [
+  "**/*.ard",
+  "**/*.ard.dir/section_009.bin"
+ ],
+ "container": {
+  "kind": "ard",
+  "notes": "ARD section 9 (special action animations; NOT st2e: u32 count, 12 unread bytes, rows of 16 bytes from 0x10; empty = 32 zero bytes). ARD = standalone *.ard or section 19 of an .ebp: 8-byte magic FF12AR03, ten u32 section offsets at 0x08 relative to the ARD start (0 = absent; this section = u32 at ARD+0x2C); sections 0,2..9 written in index order on 16-byte boundaries with zero fill, section 1 written last with nothing after it. A section spans to the next larger non-zero offset (the highest to the end of the ARD)."
+ },
+ "records": [
+  {
+   "name": "header",
+   "where": "Offset 0 of ARD section 9 (ARD start + u32 at ARD+0x2C).",
+   "size": 16,
+   "count": 1,
+   "fields": [
+    {
+     "name": "entryCount",
+     "offset": 0,
+     "type": "u32",
+     "notes": "Number of 16-byte rows that start at section offset 0x10."
+    },
+    {
+     "name": "unknown04",
+     "offset": 4,
+     "type": "bytes",
+     "length": 12,
+     "notes": "Not read; zero in Workshop output."
+    }
+   ]
+  },
+  {
+   "name": "specialActionAnimation",
+   "where": "ARD section 9, offset 16 + i*16",
+   "size": 16,
+   "count": "header.entryCount",
+   "fields": [
+    {
+     "name": "model",
+     "offset": 0,
+     "type": "s32",
+     "enum": "ModelList",
+     "notes": "Model the animation belongs to."
+    },
+    {
+     "name": "weaponStance",
+     "offset": 4,
+     "type": "u16",
+     "notes": "Weapon stance the entry applies to (stance id; compare BpWeaponStanceList - list assignment not confirmed)."
+    },
+    {
+     "name": "actionCharacterAnimationLink",
+     "offset": 6,
+     "type": "u16",
+     "notes": "Character-animation id used by actions (links an action's character animation to this entry)."
+    },
+    {
+     "name": "animationFileLink",
+     "offset": 8,
+     "type": "u16",
+     "notes": "Which animation file to use (the Toolkit's file viewer has a \"Foe Special Action Animation\" file type, TK L1411)."
+    },
+    {
+     "name": "unknown0A",
+     "offset": 10,
+     "type": "bytes",
+     "length": 6,
+     "notes": "Not read; the Workshop writes six zero bytes."
+    }
+   ]
+  }
+ ],
+ "enums": {},
+ "roundTrip": [
+  "Edit fields in place; nothing inside the section points anywhere.",
+  "Keep the 12 bytes at 0x04-0x0F and the six trailing bytes of each row as read.",
+  "An empty section stays 32 zero bytes (do not shrink it to 16 or drop it).",
+  "Adding or removing rows: update entryCount; the section grows/shrinks by 16 per row.",
+  "If this section changes length, rebuild the ARD offset table: every section stored after it moves (recompute their u32 slots, keep 16-byte starts with zero fill, keep section 1 last with nothing after it); if the ARD sits in EBP section 19, the EBP offsets after section 19 move as well."
+ ],
+ "gaps": [
+  "Meaning of the 12 bytes after entryCount and of the six bytes at 0x0A-0x0F of each row.",
+  "Which list weaponStance uses (battlepack weapon stance rows or the stance animation list).",
+  "Id space of actionCharacterAnimationLink and animationFileLink (likely the battlepack action character-animation ids and the foe special action animation files).",
+  "Why an empty table is 32 bytes long."
+ ]
+}

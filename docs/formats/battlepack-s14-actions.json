@@ -1,0 +1,970 @@
+{
+ "id": "battlepack-s14-actions",
+ "title": "Battlepack section 14 — Actions",
+ "files": [
+  "ps2data/image/ff12/test_battle/*/binaryfile/battle_pack.bin",
+  "battle_pack.bin.dir/section_014.bin"
+ ],
+ "container": {
+  "kind": "battlepack",
+  "notes": "Section 14 of battle_pack.bin (71-section battlepack: u32 count, count+1 u32 offsets incl. an unpadded end offset, sections 16-byte aligned with zero fill). The section itself is an st2e table: 32-byte header (magic, u32 entryCount @4, u16 entrySize @8, u32 entryListOffset @12 = 32, u32 textSectionOffset @20 = 0) followed by packed entries and zero padding to 16 bytes."
+ },
+ "records": [
+  {
+   "name": "header",
+   "where": "Offset 0 of battlepack section 14.",
+   "size": 32,
+   "count": "1",
+   "fields": [
+    {
+     "name": "magic",
+     "offset": 0,
+     "type": "bytes",
+     "length": 4,
+     "notes": "ASCII 'st2e' (73 74 32 65); reject the section if different."
+    },
+    {
+     "name": "entryCount",
+     "offset": 4,
+     "type": "u32",
+     "notes": "Number of actions (the Toolkit lists name 543 rows, 0-542)."
+    },
+    {
+     "name": "entrySize",
+     "offset": 8,
+     "type": "u16",
+     "notes": "Bytes per entry; 60 (0x3C) for this section."
+    },
+    {
+     "name": "unknown0A",
+     "offset": 10,
+     "type": "bytes",
+     "length": 2,
+     "notes": "Not interpreted; keep."
+    },
+    {
+     "name": "entryListOffset",
+     "offset": 12,
+     "type": "u32",
+     "notes": "Offset of entry 0 from the section start: 32 when entryCount > 0, else 0."
+    },
+    {
+     "name": "offset10",
+     "offset": 16,
+     "type": "u32",
+     "notes": "Unknown offset slot (0 in Workshop output)."
+    },
+    {
+     "name": "textSectionOffset",
+     "offset": 20,
+     "type": "u32",
+     "notes": "Inline text offset; 0 on disk for this section (filled at run time). No strings are stored here."
+    },
+    {
+     "name": "offset18",
+     "offset": 24,
+     "type": "u32",
+     "notes": "Unknown offset slot (0 in Workshop output for this section)."
+    },
+    {
+     "name": "offset1C",
+     "offset": 28,
+     "type": "u32",
+     "notes": "Unknown offset slot (0 in Workshop output)."
+    }
+   ]
+  },
+  {
+   "name": "action",
+   "where": "st2e entries of section 14: header.entryListOffset + i*60",
+   "size": 60,
+   "count": "header.entryCount",
+   "fields": [
+    {
+     "name": "battleMenuDescription",
+     "offset": 0,
+     "type": "u16",
+     "enum": "MenuBattleActionList",
+     "notes": "Help text shown in the battle menu (battle-action help block, 4000+)."
+    },
+    {
+     "name": "dashRangeTo",
+     "offset": 2,
+     "type": "u8",
+     "notes": "Dash/approach distance toward the target (tenths of a unit, animation relative)."
+    },
+    {
+     "name": "dashRangeFrom",
+     "offset": 3,
+     "type": "u8",
+     "notes": "Dash/return distance away from the target."
+    },
+    {
+     "name": "knockbackChance",
+     "offset": 4,
+     "type": "u8",
+     "notes": "Knockback chance; only read by some formulas (msg 649)."
+    },
+    {
+     "name": "range",
+     "offset": 5,
+     "type": "u8",
+     "notes": "Cast range (tenths of a unit)."
+    },
+    {
+     "name": "areaOfEffectRange",
+     "offset": 6,
+     "type": "u8",
+     "notes": "Area-of-effect radius/size."
+    },
+    {
+     "name": "areaOfEffectPositioningRange",
+     "offset": 7,
+     "type": "u8",
+     "notes": "Second AoE dimension: cone angle or line length depending on the shape bits; also the start/end distance of moves such as Jump (msg 616)."
+    },
+    {
+     "name": "formula",
+     "offset": 8,
+     "type": "u8",
+     "enum": "BpeFormulaList",
+     "notes": "Damage/effect formula id (109 formulas, 0 = none). The formula decides which of the other fields are used (msg 655)."
+    },
+    {
+     "name": "chargeTime",
+     "offset": 9,
+     "type": "u8",
+     "notes": "Charge time before execution."
+    },
+    {
+     "name": "mpOrMistCost",
+     "offset": 10,
+     "type": "u8",
+     "notes": "MP cost, or Mist charge cost for Mist/quickening actions."
+    },
+    {
+     "name": "unknown0B",
+     "offset": 11,
+     "type": "u8",
+     "notes": "Unconfirmed; tentatively an esper/technick rank (Workshop label carries a question mark)."
+    },
+    {
+     "name": "flags1",
+     "offset": 12,
+     "type": "bf32",
+     "bits": [
+      {
+       "name": "canTargetSelf",
+       "bitStart": 0,
+       "bitLength": 1
+      },
+      {
+       "name": "reflectToParty",
+       "bitStart": 1,
+       "bitLength": 1
+      },
+      {
+       "name": "canTargetAlly",
+       "bitStart": 2,
+       "bitLength": 1
+      },
+      {
+       "name": "canTargetFoe",
+       "bitStart": 3,
+       "bitLength": 1
+      },
+      {
+       "name": "unknownBit4",
+       "bitStart": 4,
+       "bitLength": 1
+      },
+      {
+       "name": "initialTarget",
+       "bitStart": 5,
+       "bitLength": 3,
+       "enum": "BpeActionInitialTargetList"
+      },
+      {
+       "name": "battleMenuType",
+       "bitStart": 8,
+       "bitLength": 2,
+       "enum": "BpeBattleMenuTypeList"
+      },
+      {
+       "name": "unknownBit10",
+       "bitStart": 10,
+       "bitLength": 1
+      },
+      {
+       "name": "isPositive",
+       "bitStart": 11,
+       "bitLength": 1
+      },
+      {
+       "name": "noAreaOfEffectIndicators",
+       "bitStart": 12,
+       "bitLength": 1
+      },
+      {
+       "name": "allowMagickImmunity",
+       "bitStart": 13,
+       "bitLength": 1
+      },
+      {
+       "name": "allowPhysicalImmunity",
+       "bitStart": 14,
+       "bitLength": 1
+      },
+      {
+       "name": "unknownBit15",
+       "bitStart": 15,
+       "bitLength": 1
+      },
+      {
+       "name": "allowReflect",
+       "bitStart": 16,
+       "bitLength": 1
+      },
+      {
+       "name": "allowMagickEvade",
+       "bitStart": 17,
+       "bitLength": 1
+      },
+      {
+       "name": "unknownBit18",
+       "bitStart": 18,
+       "bitLength": 1
+      },
+      {
+       "name": "denyWhileSilenced",
+       "bitStart": 19,
+       "bitLength": 1
+      },
+      {
+       "name": "unknownBit20",
+       "bitStart": 20,
+       "bitLength": 1
+      },
+      {
+       "name": "areaOfEffectOrigin",
+       "bitStart": 21,
+       "bitLength": 1,
+       "enum": "BpeAoeOriginList"
+      },
+      {
+       "name": "unknownBit22",
+       "bitStart": 22,
+       "bitLength": 1
+      },
+      {
+       "name": "unknownBit23",
+       "bitStart": 23,
+       "bitLength": 1
+      },
+      {
+       "name": "areaOfEffectShape",
+       "bitStart": 24,
+       "bitLength": 2,
+       "enum": "BpeAoeShapeList"
+      },
+      {
+       "name": "useWeaponRange",
+       "bitStart": 26,
+       "bitLength": 1
+      },
+      {
+       "name": "useWeaponChargeTime",
+       "bitStart": 27,
+       "bitLength": 1
+      },
+      {
+       "name": "canTargetReserve",
+       "bitStart": 28,
+       "bitLength": 1
+      },
+      {
+       "name": "hasMpOrMistCost",
+       "bitStart": 29,
+       "bitLength": 1
+      },
+      {
+       "name": "useEventScript",
+       "bitStart": 30,
+       "bitLength": 1
+      },
+      {
+       "name": "hasCountableRequiredContent",
+       "bitStart": 31,
+       "bitLength": 1
+      }
+     ],
+     "notes": "Targeting and behaviour flags. The Workshop keeps it as a raw u32; bit names from the Lua Loader docs and the Toolkit."
+    },
+    {
+     "name": "power",
+     "offset": 16,
+     "type": "u8",
+     "notes": "Base power."
+    },
+    {
+     "name": "powerMultiplier",
+     "offset": 17,
+     "type": "u8",
+     "notes": "Power multiplier."
+    },
+    {
+     "name": "accuracyRate",
+     "offset": 18,
+     "type": "u8",
+     "notes": "Accuracy."
+    },
+    {
+     "name": "elements",
+     "offset": 19,
+     "type": "bf8",
+     "bits": [
+      {
+       "name": "fire",
+       "bitStart": 0,
+       "bitLength": 1
+      },
+      {
+       "name": "lightning",
+       "bitStart": 1,
+       "bitLength": 1
+      },
+      {
+       "name": "ice",
+       "bitStart": 2,
+       "bitLength": 1
+      },
+      {
+       "name": "earth",
+       "bitStart": 3,
+       "bitLength": 1
+      },
+      {
+       "name": "water",
+       "bitStart": 4,
+       "bitLength": 1
+      },
+      {
+       "name": "wind",
+       "bitStart": 5,
+       "bitLength": 1
+      },
+      {
+       "name": "holy",
+       "bitStart": 6,
+       "bitLength": 1
+      },
+      {
+       "name": "dark",
+       "bitStart": 7,
+       "bitLength": 1
+      }
+     ],
+     "enum": "ElementFlags",
+     "notes": "Element(s) of the action."
+    },
+    {
+     "name": "onHitRate",
+     "offset": 20,
+     "type": "u8",
+     "notes": "Chance to inflict statusEffects on hit."
+    },
+    {
+     "name": "amountMultiplier",
+     "offset": 21,
+     "type": "u8",
+     "notes": "Additional/amount multiplier (Workshop: \"additional power multiplier\")."
+    },
+    {
+     "name": "unused16",
+     "offset": 22,
+     "type": "bytes",
+     "length": 2,
+     "notes": "Unused; the Workshop skips them."
+    },
+    {
+     "name": "statusEffects",
+     "offset": 24,
+     "type": "bf32",
+     "bits": [
+      {
+       "name": "ko",
+       "bitStart": 0,
+       "bitLength": 1
+      },
+      {
+       "name": "stone",
+       "bitStart": 1,
+       "bitLength": 1
+      },
+      {
+       "name": "petrify",
+       "bitStart": 2,
+       "bitLength": 1
+      },
+      {
+       "name": "stop",
+       "bitStart": 3,
+       "bitLength": 1
+      },
+      {
+       "name": "sleep",
+       "bitStart": 4,
+       "bitLength": 1
+      },
+      {
+       "name": "confuse",
+       "bitStart": 5,
+       "bitLength": 1
+      },
+      {
+       "name": "doom",
+       "bitStart": 6,
+       "bitLength": 1
+      },
+      {
+       "name": "blind",
+       "bitStart": 7,
+       "bitLength": 1
+      },
+      {
+       "name": "poison",
+       "bitStart": 8,
+       "bitLength": 1
+      },
+      {
+       "name": "silence",
+       "bitStart": 9,
+       "bitLength": 1
+      },
+      {
+       "name": "sap",
+       "bitStart": 10,
+       "bitLength": 1
+      },
+      {
+       "name": "oil",
+       "bitStart": 11,
+       "bitLength": 1
+      },
+      {
+       "name": "reverse",
+       "bitStart": 12,
+       "bitLength": 1
+      },
+      {
+       "name": "disable",
+       "bitStart": 13,
+       "bitLength": 1
+      },
+      {
+       "name": "immobilize",
+       "bitStart": 14,
+       "bitLength": 1
+      },
+      {
+       "name": "slow",
+       "bitStart": 15,
+       "bitLength": 1
+      },
+      {
+       "name": "disease",
+       "bitStart": 16,
+       "bitLength": 1
+      },
+      {
+       "name": "lure",
+       "bitStart": 17,
+       "bitLength": 1
+      },
+      {
+       "name": "protect",
+       "bitStart": 18,
+       "bitLength": 1
+      },
+      {
+       "name": "shell",
+       "bitStart": 19,
+       "bitLength": 1
+      },
+      {
+       "name": "haste",
+       "bitStart": 20,
+       "bitLength": 1
+      },
+      {
+       "name": "bravery",
+       "bitStart": 21,
+       "bitLength": 1
+      },
+      {
+       "name": "faith",
+       "bitStart": 22,
+       "bitLength": 1
+      },
+      {
+       "name": "reflect",
+       "bitStart": 23,
+       "bitLength": 1
+      },
+      {
+       "name": "invisible",
+       "bitStart": 24,
+       "bitLength": 1
+      },
+      {
+       "name": "regen",
+       "bitStart": 25,
+       "bitLength": 1
+      },
+      {
+       "name": "float",
+       "bitStart": 26,
+       "bitLength": 1
+      },
+      {
+       "name": "berserk",
+       "bitStart": 27,
+       "bitLength": 1
+      },
+      {
+       "name": "bubble",
+       "bitStart": 28,
+       "bitLength": 1
+      },
+      {
+       "name": "hpCritical",
+       "bitStart": 29,
+       "bitLength": 1
+      },
+      {
+       "name": "libra",
+       "bitStart": 30,
+       "bitLength": 1
+      },
+      {
+       "name": "xZone",
+       "bitStart": 31,
+       "bitLength": 1
+      }
+     ],
+     "enum": "StatusEffectFlags",
+     "notes": "Statuses added or removed (see flags3.statusEffectActionType)."
+    },
+    {
+     "name": "characterAnimation",
+     "offset": 28,
+     "type": "u8",
+     "enum": "BpeCharacterAnimationList",
+     "notes": "Character pose used while acting (Workshop: \"cast animation\")."
+    },
+    {
+     "name": "enmityAddSelfVsFoe",
+     "offset": 29,
+     "type": "u8",
+     "notes": "Enmity the user gains with foes when targeting a foe."
+    },
+    {
+     "name": "battleMenuCategory",
+     "offset": 30,
+     "type": "u8",
+     "enum": "BpCategoryList",
+     "notes": "Battle-menu category the action is filed under (Attack, Magicks, Technicks …)."
+    },
+    {
+     "name": "enmityAddSelfVsAlly",
+     "offset": 31,
+     "type": "u8",
+     "notes": "Enmity the user gains when targeting an ally."
+    },
+    {
+     "name": "enmityRemoveAlliesVsFoe",
+     "offset": 32,
+     "type": "u8",
+     "notes": "Enmity removed from the other allies when targeting a foe."
+    },
+    {
+     "name": "chargeAuraAnimation",
+     "offset": 33,
+     "type": "u8",
+     "enum": "BpeChargeAuraAnimationList",
+     "notes": "Aura shown while charging."
+    },
+    {
+     "name": "requiredContent",
+     "offset": 34,
+     "type": "u16",
+     "enum": "ContAllList",
+     "notes": "Content id the action needs/consumes (item for item actions, ammo/loot for technicks)."
+    },
+    {
+     "name": "castAnimationOrEventScript",
+     "offset": 36,
+     "type": "u16",
+     "enum": "BpeCastAnimationList",
+     "notes": "Effect animation id, or an event-script id when flags1.useEventScript is set (Workshop: \"after animation\")."
+    },
+    {
+     "name": "summonedPartyMember",
+     "offset": 38,
+     "type": "u16",
+     "enum": "PartyMemberList",
+     "notes": "Section 16 row that is summoned (espers/guests); only meaningful for summon-type actions (msg 556)."
+    },
+    {
+     "name": "mistCastAnimation",
+     "offset": 40,
+     "type": "u16",
+     "notes": "Mist/quickening related id (Toolkit and Lua docs: mist cast animation; Workshop: \"mist action\")."
+    },
+    {
+     "name": "unused2A",
+     "offset": 42,
+     "type": "bytes",
+     "length": 2,
+     "notes": "Unused; the Workshop skips them."
+    },
+    {
+     "name": "flags2",
+     "offset": 44,
+     "type": "bf16",
+     "bits": [
+      {
+       "name": "magickCategory",
+       "bitStart": 0,
+       "bitLength": 3,
+       "enum": "BpMagickCategoryList"
+      },
+      {
+       "name": "triggersInquisitor",
+       "bitStart": 3,
+       "bitLength": 1
+      },
+      {
+       "name": "triggersWarmage",
+       "bitStart": 4,
+       "bitLength": 1
+      },
+      {
+       "name": "unknownBit5",
+       "bitStart": 5,
+       "bitLength": 1
+      },
+      {
+       "name": "canTargetKo",
+       "bitStart": 6,
+       "bitLength": 1
+      },
+      {
+       "name": "canTargetStone",
+       "bitStart": 7,
+       "bitLength": 1
+      },
+      {
+       "name": "pauseDuringExecution",
+       "bitStart": 8,
+       "bitLength": 1
+      },
+      {
+       "name": "applyOnlyOneStatusEffect",
+       "bitStart": 9,
+       "bitLength": 1
+      },
+      {
+       "name": "removesSleepAndConfuse",
+       "bitStart": 10,
+       "bitLength": 1
+      },
+      {
+       "name": "removesInvisible",
+       "bitStart": 11,
+       "bitLength": 1
+      },
+      {
+       "name": "canRestoreHp",
+       "bitStart": 12,
+       "bitLength": 1
+      },
+      {
+       "name": "noLicenseRequired",
+       "bitStart": 13,
+       "bitLength": 1
+      },
+      {
+       "name": "isOffensive",
+       "bitStart": 14,
+       "bitLength": 1
+      },
+      {
+       "name": "canRestoreMp",
+       "bitStart": 15,
+       "bitLength": 1
+      }
+     ],
+     "notes": "Category and effect flags (raw u16 in the Workshop)."
+    },
+    {
+     "name": "inventoryMenuDescription",
+     "offset": 46,
+     "type": "u16",
+     "enum": "MenuInventoryActionList",
+     "notes": "Help text in the inventory/skill menus (inventory-action help block, 10000+)."
+    },
+    {
+     "name": "specialCharacterAnimation",
+     "offset": 48,
+     "type": "u32",
+     "notes": "Link to a special character animation (Workshop: \"character animation link\")."
+    },
+    {
+     "name": "name",
+     "offset": 52,
+     "type": "u16",
+     "enum": "DescActionList",
+     "notes": "Name text id (action block, 0+)."
+    },
+    {
+     "name": "flags3",
+     "offset": 54,
+     "type": "bf16",
+     "bits": [
+      {
+       "name": "statusEffectActionType",
+       "bitStart": 0,
+       "bitLength": 2,
+       "enum": "BpeStatusEffectActionTypeList"
+      },
+      {
+       "name": "areaOfEffectTargetRelation",
+       "bitStart": 2,
+       "bitLength": 2,
+       "enum": "BpeAoeTargetRelationList"
+      },
+      {
+       "name": "canTargetFlying",
+       "bitStart": 4,
+       "bitLength": 1
+      },
+      {
+       "name": "canTargetUndead",
+       "bitStart": 5,
+       "bitLength": 1
+      }
+     ],
+     "notes": "AI/targeting condition flags (Workshop: \"AI target condition flags\"); bits 6-15 unused."
+    },
+    {
+     "name": "gambitPage",
+     "offset": 56,
+     "type": "s8",
+     "notes": "Gambit action-menu page, 0-10, or -1 (0xFF) if not listed."
+    },
+    {
+     "name": "gambitPageOrder",
+     "offset": 57,
+     "type": "s8",
+     "notes": "Position on that page, 0-16, or -1 (0xFF)."
+    },
+    {
+     "name": "battleMemoryFlag",
+     "offset": 58,
+     "type": "u8",
+     "enum": "BpeBattleMemoryFlagList",
+     "notes": "Which \"battle memory\" category the AI records for this action (Workshop: \"enable AI flag\"; Lua docs: enableBattleMemoryFlag); 255 = none."
+    },
+    {
+     "name": "unused3B",
+     "offset": 59,
+     "type": "u8",
+     "notes": "Unused; the Workshop writes 0."
+    }
+   ]
+  }
+ ],
+ "enums": {
+  "ElementFlags": {
+   "1": "Fire",
+   "2": "Lightning",
+   "4": "Ice",
+   "8": "Earth",
+   "16": "Water",
+   "32": "Wind",
+   "64": "Holy",
+   "128": "Dark"
+  },
+  "StatusEffectFlags": {
+   "1": "KO",
+   "2": "Stone",
+   "4": "Petrify",
+   "8": "Stop",
+   "16": "Sleep",
+   "32": "Confuse",
+   "64": "Doom",
+   "128": "Blind",
+   "256": "Poison",
+   "512": "Silence",
+   "1024": "Sap",
+   "2048": "Oil",
+   "4096": "Reverse",
+   "8192": "Disable",
+   "16384": "Immobilize",
+   "32768": "Slow",
+   "65536": "Disease",
+   "131072": "Lure",
+   "262144": "Protect",
+   "524288": "Shell",
+   "1048576": "Haste",
+   "2097152": "Bravery",
+   "4194304": "Faith",
+   "8388608": "Reflect",
+   "16777216": "Invisible",
+   "33554432": "Regen",
+   "67108864": "Float",
+   "134217728": "Berserk",
+   "268435456": "Bubble",
+   "536870912": "HP Critical",
+   "1073741824": "Libra",
+   "2147483648": "X-Zone"
+  },
+  "BpeActionInitialTargetList": {
+   "1": "Party (With Status Effect)",
+   "2": "Self",
+   "4": "Foe"
+  },
+  "BpeBattleMenuTypeList": {
+   "0": "None",
+   "1": "Magick",
+   "2": "Technick",
+   "3": "Item"
+  },
+  "BpeAoeOriginList": {
+   "0": "Target",
+   "1": "Caster"
+  },
+  "BpeAoeShapeList": {
+   "0": "Circle",
+   "1": "Cone",
+   "2": "Linear"
+  },
+  "BpeStatusEffectActionTypeList": {
+   "0": "None",
+   "1": "Add",
+   "2": "Remove"
+  },
+  "BpeAoeTargetRelationList": {
+   "0": "Same",
+   "1": "Opposite",
+   "2": "All"
+  },
+  "BpMagickCategoryList": {
+   "0": "White Magicks",
+   "1": "Black Magicks",
+   "2": "Time Magicks",
+   "3": "Green Magicks",
+   "4": "Arcane Magicks"
+  },
+  "BpeCharacterAnimationList": {
+   "0": "Attack",
+   "1": "Magick",
+   "2": "Item (Beneficial)",
+   "3": "Technick",
+   "4": "Item (Detrimental)",
+   "5": "Steal",
+   "6": "Quickening",
+   "7": "Esper Technick",
+   "8": "Summon",
+   "9": "Concurrence"
+  },
+  "BpeChargeAuraAnimationList": {
+   "0": "Attack",
+   "1": "White Magick",
+   "2": "Black Magick",
+   "3": "Time Magick",
+   "4": "Green Magick",
+   "5": "Arcane Magick",
+   "6": "Mist",
+   "7": "Technick",
+   "8": "Item"
+  },
+  "BpCategoryList": {
+   "0": "Attack",
+   "1": "Magicks",
+   "2": "Technicks",
+   "3": "Items",
+   "4": "Reserve (0x04)",
+   "5": "Summon",
+   "6": "Quickening",
+   "7": "Foecraft",
+   "8": "Traps",
+   "9": "Esper Technicks",
+   "10": "Concurrences",
+   "11": "Dismiss",
+   "12": "Reserve (0x0C)",
+   "13": "Gambits",
+   "14": "Cancel",
+   "15": "Esper Cancel",
+   "16": "Escape",
+   "17": "Escape Cancel",
+   "18": "Magicks & Technicks",
+   "19": "Mist",
+   "20": "Reserve (0x14)",
+   "255": "None"
+  },
+  "BpeBattleMemoryFlagList": {
+   "0": "Element Fire",
+   "1": "Element Lightning",
+   "2": "Element Ice",
+   "3": "Element Earth",
+   "4": "Element Water",
+   "5": "Element Wind",
+   "6": "Element Holy",
+   "7": "Element Dark",
+   "8": "Magick-Immunity Susceptible Action",
+   "9": "Physical-Immunity Susceptible Action",
+   "10": "Eksir Berries",
+   "11": "Steal",
+   "12": "Full Heal",
+   "13": "Stats Reduction",
+   "14": "Dispels",
+   "15": "Non-Elemental",
+   "16": "Partial Heal",
+   "17": "Reserve (0x11)",
+   "18": "Reserve (0x12)",
+   "19": "Reserve (0x13)",
+   "20": "Reserve (0x14)",
+   "21": "Reserve (0x15)",
+   "22": "Reserve (0x16)",
+   "23": "Reserve (0x17)",
+   "24": "Reserve (0x18)",
+   "25": "Reserve (0x19)",
+   "26": "Reserve (0x1A)",
+   "27": "Reserve (0x1B)",
+   "28": "Reserve (0x1C)",
+   "29": "Reserve (0x1D)",
+   "30": "Reserve (0x1E)",
+   "31": "Battle Stance",
+   "255": "None"
+  }
+ },
+ "roundTrip": [
+  "Edit fields in place; the record size is fixed and nothing in this section points at entries, so value edits never move data.",
+  "Copy every byte that no field interprets (unknown*/unused*/padding, unnamed bits) from the original; the Workshop writer zero-fills them (it seeks over them), so do not use its output as the byte-identical reference.",
+  "Keep the st2e header bytes verbatim except entryCount (and entryListOffset when the count goes to/from 0).",
+  "Keep the trailing zero padding that rounds the section to a multiple of 16 bytes.",
+  "If the section length changes (added/removed entries), rewrite the battlepack offset table: every later section offset and the end offset shift by the padded size delta.",
+  "flags1/flags2/flags3 are opaque words for unknown bits: set or clear only the named bits.",
+  "Write gambitPage/gambitPageOrder as signed bytes: -1 is stored as 0xFF.",
+  "Do not reorder or delete rows; other tables reference actions by row index."
+ ],
+ "gaps": [
+  "Byte 0x0B: possibly an esper/technick rank; unconfirmed in every source.",
+  "flags1 bits 4, 10, 15, 18, 20, 22, 23 and flags2 bit 5 are unnamed; flags1 bits 8-9 are \"battle menu type\" only per the Toolkit.",
+  "Exact meaning of mistCastAnimation (0x28) and specialCharacterAnimation (0x30) value spaces.",
+  "Which fields each formula actually reads is formula-specific and undocumented here (msg 649, 655).",
+  "Units of range/dash (tenths per the Toolkit) are not verified against vanilla data."
+ ]
+}

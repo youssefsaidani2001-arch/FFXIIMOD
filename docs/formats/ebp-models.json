@@ -1,0 +1,56 @@
+{
+ "id": "ebp-models",
+ "title": "EBP section 12 - Models",
+ "files": [
+  "**/*.ebp",
+  "**/*.ebp.dir/section_012.bin"
+ ],
+ "container": {
+  "kind": "ebp",
+  "notes": "EBP section 12 (models; no magic: u32 entryCount, then entryCount s32 model ids from 0x04, zero padding to 16). EBP = *.ebp, 0x80-byte header: magic 'EBP2' at 0x00, twenty u32 section offsets at 0x10-0x5F counted from the EBP start (0 = absent; this section = u32 at EBP+0x40), 0x04-0x0F and 0x60-0x7F not interpreted. Sections start on 16-byte boundaries with zero fill; a section spans to the next larger non-zero offset (the highest to end of file), so the span includes padding. Section 6 is a TIM2 texture and section 19 an embedded ARD (FF12AR03); a rebuild must carry both. Little-endian throughout."
+ },
+ "records": [
+  {
+   "name": "modelsHeader",
+   "where": "Offset 0 of EBP section 12 (EBP start + u32 at EBP+0x40).",
+   "size": 4,
+   "count": 1,
+   "fields": [
+    {
+     "name": "entryCount",
+     "offset": 0,
+     "type": "u32",
+     "notes": "Number of 4-byte model ids that follow immediately (no magic, no gap)."
+    }
+   ]
+  },
+  {
+   "name": "model",
+   "where": "EBP section 12, offset 4 + 4*i (i = 0 .. entryCount-1).",
+   "size": 4,
+   "count": "modelsHeader.entryCount",
+   "fields": [
+    {
+     "name": "model",
+     "offset": 0,
+     "type": "s32",
+     "enum": "ModelList",
+     "notes": "Model id. Assumed to use the usual (ASCII prefix letter << 16) | file number encoding of the Toolkit ModelList; not confirmed for EBP lists."
+    }
+   ]
+  }
+ ],
+ "enums": {},
+ "roundTrip": [
+  "Edit ids in place; the list has no internal pointers.",
+  "Keep the bytes after the last id (padding) as read while the count does not change.",
+  "When ids are added or removed: update entryCount, rewrite the ids contiguously from 0x04 and zero-pad the section to a multiple of 16 (size = 4 + 4n rounded up).",
+  "Keep the existing order of ids (nothing documents whether the script or other sections index this list).",
+  "If the section length changes, every EBP section stored after it moves: recompute their u32 slots at EBP+0x10+4n, keep 16-byte starts with zero fill, keep absent sections at 0, keep section 6 (TIM2) and section 19 (ARD) intact."
+ ],
+ "gaps": [
+  "Whether the ids use the ModelList encoding; a trap script calls modelread(0x3000001) (Discord msg 117), an id that does not fit that encoding.",
+  "Whether every model the script reads (modelread) must be listed here, and whether list order matters.",
+  "Whether vanilla pads the section to 16 bytes (the Workshop always does)."
+ ]
+}

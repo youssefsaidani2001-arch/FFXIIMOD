@@ -1,0 +1,284 @@
+{
+ "id": "battlepack-s08-default-party-member-gambits",
+ "title": "Battlepack section 8 — Default Party Member Gambits (gambit sets)",
+ "files": [
+  "ps2data/image/ff12/test_battle/*/binaryfile/battle_pack.bin",
+  "battle_pack.bin.dir/section_008.bin"
+ ],
+ "container": {
+  "kind": "battlepack",
+  "notes": "Section 8 of battle_pack.bin (71-section battlepack: u32 count, count+1 u32 file offsets incl. an unpadded end offset, sections 16-byte aligned with zero fill; see container-battlepack). The section is an st2e table: 32-byte header (magic, u32 entryCount @4, u16 entrySize @8 = 64, u32 entryListOffset @12 = 32, u32 textSectionOffset @20 = 0) followed by entryCount packed 64-byte entries and zero padding to a multiple of 16 bytes (see container-st2e)."
+ },
+ "records": [
+  {
+   "name": "header",
+   "where": "Offset 0 of battlepack section 8.",
+   "size": 32,
+   "count": "1",
+   "fields": [
+    {
+     "name": "magic",
+     "offset": 0,
+     "type": "bytes",
+     "length": 4,
+     "notes": "ASCII 'st2e' (73 74 32 65); reject the section if different."
+    },
+    {
+     "name": "entryCount",
+     "offset": 4,
+     "type": "u32",
+     "notes": "Number of gambit sets."
+    },
+    {
+     "name": "entrySize",
+     "offset": 8,
+     "type": "u16",
+     "notes": "Bytes per entry; 64 (0x40) for this section."
+    },
+    {
+     "name": "unknown0A",
+     "offset": 10,
+     "type": "bytes",
+     "length": 2,
+     "notes": "Not interpreted; keep."
+    },
+    {
+     "name": "entryListOffset",
+     "offset": 12,
+     "type": "u32",
+     "notes": "Offset of entry 0 from the section start: 32 when entryCount > 0, else 0."
+    },
+    {
+     "name": "offset10",
+     "offset": 16,
+     "type": "u32",
+     "notes": "Unknown offset slot (0 in Workshop output)."
+    },
+    {
+     "name": "textSectionOffset",
+     "offset": 20,
+     "type": "u32",
+     "notes": "Inline text offset; 0 on disk for this section (filled at run time). No strings are stored here."
+    },
+    {
+     "name": "offset18",
+     "offset": 24,
+     "type": "u32",
+     "notes": "Unknown offset slot (0 in Workshop output for this section)."
+    },
+    {
+     "name": "offset1C",
+     "offset": 28,
+     "type": "u32",
+     "notes": "Unknown offset slot (0 in Workshop output)."
+    }
+   ]
+  },
+  {
+   "name": "gambitSet",
+   "where": "st2e entries of section 8: header.entryListOffset + i*64; row i = gambit set i (content-id form 0x5000 | i)",
+   "size": 64,
+   "count": "header.entryCount",
+   "fields": [
+    {
+     "name": "target1",
+     "offset": 0,
+     "type": "u16",
+     "enum": "BpGambitList",
+     "notes": "Gambit target (condition) of slot 1."
+    },
+    {
+     "name": "target2",
+     "offset": 2,
+     "type": "u16",
+     "enum": "BpGambitList",
+     "notes": "Gambit target (condition) of slot 2."
+    },
+    {
+     "name": "target3",
+     "offset": 4,
+     "type": "u16",
+     "enum": "BpGambitList",
+     "notes": "Gambit target (condition) of slot 3."
+    },
+    {
+     "name": "target4",
+     "offset": 6,
+     "type": "u16",
+     "enum": "BpGambitList",
+     "notes": "Gambit target (condition) of slot 4."
+    },
+    {
+     "name": "target5",
+     "offset": 8,
+     "type": "u16",
+     "enum": "BpGambitList",
+     "notes": "Gambit target (condition) of slot 5."
+    },
+    {
+     "name": "target6",
+     "offset": 10,
+     "type": "u16",
+     "enum": "BpGambitList",
+     "notes": "Gambit target (condition) of slot 6."
+    },
+    {
+     "name": "target7",
+     "offset": 12,
+     "type": "u16",
+     "enum": "BpGambitList",
+     "notes": "Gambit target (condition) of slot 7."
+    },
+    {
+     "name": "target8",
+     "offset": 14,
+     "type": "u16",
+     "enum": "BpGambitList",
+     "notes": "Gambit target (condition) of slot 8."
+    },
+    {
+     "name": "target9",
+     "offset": 16,
+     "type": "u16",
+     "enum": "BpGambitList",
+     "notes": "Gambit target (condition) of slot 9."
+    },
+    {
+     "name": "target10",
+     "offset": 18,
+     "type": "u16",
+     "enum": "BpGambitList",
+     "notes": "Gambit target (condition) of slot 10."
+    },
+    {
+     "name": "target11",
+     "offset": 20,
+     "type": "u16",
+     "enum": "BpGambitList",
+     "notes": "Gambit target (condition) of slot 11."
+    },
+    {
+     "name": "target12",
+     "offset": 22,
+     "type": "u16",
+     "enum": "BpGambitList",
+     "notes": "Gambit target (condition) of slot 12."
+    },
+    {
+     "name": "unknown18",
+     "offset": 24,
+     "type": "bytes",
+     "length": 8,
+     "notes": "Not read; the Workshop leaves zeros. Possibly target slots 13-16."
+    },
+    {
+     "name": "action1",
+     "offset": 32,
+     "type": "u16",
+     "enum": "BpActionList",
+     "notes": "Action of slot 1 (paired with target1)."
+    },
+    {
+     "name": "action2",
+     "offset": 34,
+     "type": "u16",
+     "enum": "BpActionList",
+     "notes": "Action of slot 2 (paired with target2)."
+    },
+    {
+     "name": "action3",
+     "offset": 36,
+     "type": "u16",
+     "enum": "BpActionList",
+     "notes": "Action of slot 3 (paired with target3)."
+    },
+    {
+     "name": "action4",
+     "offset": 38,
+     "type": "u16",
+     "enum": "BpActionList",
+     "notes": "Action of slot 4 (paired with target4)."
+    },
+    {
+     "name": "action5",
+     "offset": 40,
+     "type": "u16",
+     "enum": "BpActionList",
+     "notes": "Action of slot 5 (paired with target5)."
+    },
+    {
+     "name": "action6",
+     "offset": 42,
+     "type": "u16",
+     "enum": "BpActionList",
+     "notes": "Action of slot 6 (paired with target6)."
+    },
+    {
+     "name": "action7",
+     "offset": 44,
+     "type": "u16",
+     "enum": "BpActionList",
+     "notes": "Action of slot 7 (paired with target7)."
+    },
+    {
+     "name": "action8",
+     "offset": 46,
+     "type": "u16",
+     "enum": "BpActionList",
+     "notes": "Action of slot 8 (paired with target8)."
+    },
+    {
+     "name": "action9",
+     "offset": 48,
+     "type": "u16",
+     "enum": "BpActionList",
+     "notes": "Action of slot 9 (paired with target9)."
+    },
+    {
+     "name": "action10",
+     "offset": 50,
+     "type": "u16",
+     "enum": "BpActionList",
+     "notes": "Action of slot 10 (paired with target10)."
+    },
+    {
+     "name": "action11",
+     "offset": 52,
+     "type": "u16",
+     "enum": "BpActionList",
+     "notes": "Action of slot 11 (paired with target11)."
+    },
+    {
+     "name": "action12",
+     "offset": 54,
+     "type": "u16",
+     "enum": "BpActionList",
+     "notes": "Action of slot 12 (paired with target12)."
+    },
+    {
+     "name": "unknown38",
+     "offset": 56,
+     "type": "bytes",
+     "length": 8,
+     "notes": "Not read; the Workshop writes zeros. Possibly action slots 13-16."
+    }
+   ]
+  }
+ ],
+ "enums": {},
+ "roundTrip": [
+  "Edit fields in place; the record size is fixed and nothing in this section points at entries, so value edits never move data.",
+  "Copy every byte that no field interprets (unknown*/padding, unnamed bits) from the original; the Workshop writer zero-fills them (it seeks over them), so do not use its output as the byte-identical reference.",
+  "Keep the st2e header bytes verbatim except entryCount (and entryListOffset when the count goes to/from 0).",
+  "Keep the trailing zero padding that rounds the section to a multiple of 16 bytes.",
+  "If the section length changes (added/removed entries), rewrite the battlepack offset table: every later section offset and the end offset shift by the padded size delta.",
+  "Write the target and action of a slot at the same slot index (target j at 0x00+2j, action j at 0x20+2j).",
+  "Do not reorder rows: sections 16 and 59 refer to them as 0x5000 + row."
+ ],
+ "gaps": [
+  "Layout conflict: Workshop = split target/action blocks (used here); Lua Loader docs = interleaved pairs. Verify on vanilla data before writing edits.",
+  "Bytes 0x18-0x1F and 0x38-0x3F are never read (possibly slots 13-16).",
+  "Empty-slot sentinel (assumed 0xFFFF) and whether targets are section 7 rows or battle-logic target-condition ids.",
+  "Vanilla row count not documented."
+ ]
+}

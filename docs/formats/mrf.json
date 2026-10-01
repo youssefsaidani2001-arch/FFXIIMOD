@@ -1,0 +1,260 @@
+{
+ "id": "mrf",
+ "title": "Map Ref (.mrf) — locations, regions, weather/terrain/footstep tables",
+ "files": [
+  "**/*.mrf"
+ ],
+ "container": {
+  "kind": "custom",
+  "notes": "World file type 9 id 4. Little-endian. Header: u32 at +0 (section count by analogy), then 10 u32 file-relative section offsets (section i at 4+4*i; sections 0 and 1 confirmed). Section 0 = 8-byte location records, section 1 = 16-byte region records; sections 3/4/5 = weathers/terrains/footsteps (layouts unknown). Loaded at [0x02099D88] with offsets kept relative."
+ },
+ "records": [
+  {
+   "name": "header",
+   "where": "File offset 0; in memory the loaded file starts at [0x02099D88] and offsets stay file-relative (the code adds the file base).",
+   "size": 44,
+   "count": "1",
+   "fields": [
+    {
+     "name": "sectionCount",
+     "offset": 0,
+     "type": "u32",
+     "notes": "Not read by any source. By analogy with the battlepack header (count at +0, offsets from +4) it is expected to be the section count (10); verify on a real file. [src: TK L241 (analogy), L438]"
+    },
+    {
+     "name": "section0Offset",
+     "offset": 4,
+     "type": "u32",
+     "notes": "Offset of section 0 (Locations) from the file start. Confirmed by the weather lookup code. [src: Drive getWeather.lua:2-24]"
+    },
+    {
+     "name": "section1Offset",
+     "offset": 8,
+     "type": "u32",
+     "notes": "Offset of section 1 (Regions) from the file start. Confirmed by the weather lookup code. [src: Drive getWeather.lua:2-24]"
+    },
+    {
+     "name": "section2Offset",
+     "offset": 12,
+     "type": "u32",
+     "notes": "Offset of section 2 (unnamed) from the file start. Position inferred from sections 0/1 and the 10-section count. [src: TK L1178 (pattern inferred)]"
+    },
+    {
+     "name": "section3Offset",
+     "offset": 16,
+     "type": "u32",
+     "notes": "Offset of section 3 (Weathers) from the file start. Position inferred from sections 0/1 and the 10-section count. [src: TK L1178 (pattern inferred)]"
+    },
+    {
+     "name": "section4Offset",
+     "offset": 20,
+     "type": "u32",
+     "notes": "Offset of section 4 (Terrains) from the file start. Position inferred from sections 0/1 and the 10-section count. [src: TK L1178 (pattern inferred)]"
+    },
+    {
+     "name": "section5Offset",
+     "offset": 24,
+     "type": "u32",
+     "notes": "Offset of section 5 (Footsteps) from the file start. Position inferred from sections 0/1 and the 10-section count. [src: TK L1178 (pattern inferred)]"
+    },
+    {
+     "name": "section6Offset",
+     "offset": 28,
+     "type": "u32",
+     "notes": "Offset of section 6 (unnamed) from the file start. Position inferred from sections 0/1 and the 10-section count. [src: TK L1178 (pattern inferred)]"
+    },
+    {
+     "name": "section7Offset",
+     "offset": 32,
+     "type": "u32",
+     "notes": "Offset of section 7 (unnamed) from the file start. Position inferred from sections 0/1 and the 10-section count. [src: TK L1178 (pattern inferred)]"
+    },
+    {
+     "name": "section8Offset",
+     "offset": 36,
+     "type": "u32",
+     "notes": "Offset of section 8 (unnamed) from the file start. Position inferred from sections 0/1 and the 10-section count. [src: TK L1178 (pattern inferred)]"
+    },
+    {
+     "name": "section9Offset",
+     "offset": 40,
+     "type": "u32",
+     "notes": "Offset of section 9 (unnamed) from the file start. Position inferred from sections 0/1 and the 10-section count. [src: TK L1178 (pattern inferred)]"
+    }
+   ]
+  },
+  {
+   "name": "location",
+   "where": "section0Offset + locationId*8 (locationId = the current location id at World +0x1044 / [0x021654C4])",
+   "size": 8,
+   "count": "(section1Offset - section0Offset) / 8 (inferred); LocationList has 1,315 ids",
+   "fields": [
+    {
+     "name": "unknown00",
+     "offset": 0,
+     "type": "bytes",
+     "length": 2,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "regionId",
+     "offset": 2,
+     "type": "s16",
+     "notes": "Region (section 1 row) the location belongs to; selects the weather table. [src: Drive getWeather.lua:2-24]"
+    },
+    {
+     "name": "unknown04",
+     "offset": 4,
+     "type": "bytes",
+     "length": 4,
+     "notes": "Not identified by any source; keep the original bytes."
+    }
+   ]
+  },
+  {
+   "name": "region",
+   "where": "section1Offset + regionId*0x10",
+   "size": 16,
+   "count": "(section2Offset - section1Offset) / 16 (inferred)",
+   "fields": [
+    {
+     "name": "unknown00",
+     "offset": 0,
+     "type": "bytes",
+     "length": 4,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "weatherSlot0",
+     "offset": 4,
+     "type": "u8",
+     "enum": "MreWeatherList",
+     "notes": "Weather id used when the weather mode (World +0x1060 / [0x021654E0]) is 0. [src: Drive getWeather.lua:2-24]"
+    },
+    {
+     "name": "unknown05",
+     "offset": 5,
+     "type": "bytes",
+     "length": 3,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "weatherSlot1",
+     "offset": 8,
+     "type": "u8",
+     "enum": "MreWeatherList",
+     "notes": "Weather id for weather mode 1 (slot = +0x04 + mode*4). [src: Drive getWeather.lua:2-24]"
+    },
+    {
+     "name": "unknown09",
+     "offset": 9,
+     "type": "bytes",
+     "length": 3,
+     "notes": "Not identified by any source; keep the original bytes."
+    },
+    {
+     "name": "weatherSlot2",
+     "offset": 12,
+     "type": "u8",
+     "enum": "MreWeatherList",
+     "notes": "Weather id for weather mode 2 (if that mode exists). [src: Drive getWeather.lua:2-24]"
+    },
+    {
+     "name": "unknown0D",
+     "offset": 13,
+     "type": "bytes",
+     "length": 3,
+     "notes": "Not identified by any source; keep the original bytes."
+    }
+   ]
+  }
+ ],
+ "enums": {
+  "MreSectionList": {
+   "0": "Locations",
+   "1": "Regions",
+   "3": "Weathers",
+   "4": "Terrains",
+   "5": "Footsteps"
+  },
+  "MreWeatherList": {
+   "0": "None",
+   "1": "Sunny",
+   "2": "Cloudy",
+   "3": "Rainy",
+   "4": "Hailstorm",
+   "5": "Sandstorm",
+   "6": "Snowcloud",
+   "7": "Snowstorm",
+   "8": "Foggy",
+   "9": "Thunderstorm",
+   "10": "Reserve (0x0A)",
+   "11": "Reserve (0x0B)",
+   "12": "Reserve (0x0C)",
+   "13": "Reserve (0x0D)",
+   "14": "Reserve (0x0E)",
+   "15": "Reserve (0x0F)"
+  },
+  "MreWeatherTypeList": {
+   "0": "Rainy",
+   "1": "Sand",
+   "2": "Snowy",
+   "3": "Foggy",
+   "4": "Cloudy"
+  },
+  "MreTerrainList": {
+   "0": "Dirt / Soil",
+   "1": "Natural Stone / Rock",
+   "2": "Grass",
+   "3": "Unknown (0x03)",
+   "4": "Sand",
+   "5": "Snow",
+   "6": "Metal",
+   "7": "Wood",
+   "8": "Architecture (Stonework, Marble, Glass)",
+   "9": "Clay",
+   "10": "Carpet",
+   "11": "Stagnant Water",
+   "12": "Flowing Water",
+   "13": "Unknown (0x0D)",
+   "14": "Unknown (0x0E)",
+   "15": "Unknown (0x0F)",
+   "16": "Magickal Forcefield",
+   "17": "Ice",
+   "18": "Reserve (0x0C)",
+   "19": "Reserve (0x0D)",
+   "20": "Reserve (0x0E)",
+   "21": "Reserve (0x0F)",
+   "22": "Reserve (0x10)",
+   "23": "Reserve (0x11)",
+   "24": "Reserve (0x12)",
+   "25": "Reserve (0x13)",
+   "26": "Reserve (0x14)",
+   "27": "Reserve (0x15)",
+   "28": "Reserve (0x16)",
+   "29": "Reserve (0x17)",
+   "30": "Reserve (0x18)",
+   "31": "Reserve (0x19)"
+  },
+  "MreTerrainTypeList": {
+   "0": "Water",
+   "1": "Sand",
+   "2": "Ice",
+   "3": "Earth",
+   "4": "Wind"
+  }
+ },
+ "roundTrip": [
+  "Edit location.regionId and region weather slots in place; nothing moves.",
+  "Keep the header word at +0x00 and every unknown byte unchanged.",
+  "When resizing a section, rewrite all later section offsets and preserve the original alignment/padding pattern (unknown rule).",
+  "After writing the file, hot-reload it (File Reloader -> Map Ref, type 9 id 4) or change area."
+ ],
+ "gaps": [
+  "File name and VBF path of the .mrf file.",
+  "Header word +0x00 (section count by analogy) and the position of section offsets 2-9 (inferred).",
+  "Location bytes 0x00-0x01 and 0x04-0x07; region bytes other than the weather slots; how many weather modes exist.",
+  "Layouts of sections 2-9 (Weathers, Terrains, Footsteps and the unnamed ones).",
+  "Section alignment and end-of-file padding rules; section entry counts (derived from offset differences, inferred)."
+ ]
+}

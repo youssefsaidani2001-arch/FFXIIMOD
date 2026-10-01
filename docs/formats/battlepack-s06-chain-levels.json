@@ -1,0 +1,323 @@
+{
+ "id": "battlepack-s06-chain-levels",
+ "title": "Battlepack section 6 — Chain Levels",
+ "files": [
+  "ps2data/image/ff12/test_battle/*/binaryfile/battle_pack.bin",
+  "battle_pack.bin.dir/section_006.bin"
+ ],
+ "container": {
+  "kind": "battlepack",
+  "notes": "Section 6 of battle_pack.bin (71-section battlepack: u32 count, count+1 u32 offsets incl. an unpadded end offset, sections 16-byte aligned with zero fill). The section itself is an st2e table: 32-byte header (magic, u32 entryCount @4, u16 entrySize @8, u32 entryListOffset @12 = 32, u32 textSectionOffset @20 = 0) followed by packed entries and zero padding to 16 bytes."
+ },
+ "records": [
+  {
+   "name": "header",
+   "where": "Offset 0 of battlepack section 6.",
+   "size": 32,
+   "count": "1",
+   "fields": [
+    {
+     "name": "magic",
+     "offset": 0,
+     "type": "bytes",
+     "length": 4,
+     "notes": "ASCII 'st2e' (73 74 32 65); reject the section if different."
+    },
+    {
+     "name": "entryCount",
+     "offset": 4,
+     "type": "u32",
+     "notes": "Always 4 (one row per chain level)."
+    },
+    {
+     "name": "entrySize",
+     "offset": 8,
+     "type": "u16",
+     "notes": "Bytes per entry; 37 (0x25) for this section."
+    },
+    {
+     "name": "unknown0A",
+     "offset": 10,
+     "type": "bytes",
+     "length": 2,
+     "notes": "Not interpreted; keep."
+    },
+    {
+     "name": "entryListOffset",
+     "offset": 12,
+     "type": "u32",
+     "notes": "Offset of entry 0 from the section start: 32 when entryCount > 0, else 0."
+    },
+    {
+     "name": "offset10",
+     "offset": 16,
+     "type": "u32",
+     "notes": "Unknown offset slot (0 in Workshop output)."
+    },
+    {
+     "name": "textSectionOffset",
+     "offset": 20,
+     "type": "u32",
+     "notes": "Inline text offset; 0 on disk for this section (filled at run time). No strings are stored here."
+    },
+    {
+     "name": "offset18",
+     "offset": 24,
+     "type": "u32",
+     "notes": "Unknown offset slot (0 in Workshop output for this section)."
+    },
+    {
+     "name": "offset1C",
+     "offset": 28,
+     "type": "u32",
+     "notes": "Unknown offset slot (0 in Workshop output)."
+    }
+   ]
+  },
+  {
+   "name": "chainLevel",
+   "where": "st2e entries of section 6: header.entryListOffset + i*37",
+   "size": 37,
+   "count": "4 (fixed; header.entryCount)",
+   "fields": [
+    {
+     "name": "commonDropRate",
+     "offset": 0,
+     "type": "s8",
+     "notes": "Drop rate of the Common loot tier at this chain level (percent-like)."
+    },
+    {
+     "name": "uncommonDropRate",
+     "offset": 1,
+     "type": "s8",
+     "notes": "Drop rate of the Uncommon tier."
+    },
+    {
+     "name": "rareDropRate",
+     "offset": 2,
+     "type": "s8",
+     "notes": "Drop rate of the Rare tier."
+    },
+    {
+     "name": "veryRareDropRate",
+     "offset": 3,
+     "type": "s8",
+     "notes": "Drop rate of the Very Rare tier."
+    },
+    {
+     "name": "guaranteedDropRate",
+     "offset": 4,
+     "type": "s8",
+     "notes": "Drop rate of the guaranteed tier."
+    },
+    {
+     "name": "identicalFoeConditionCount",
+     "offset": 5,
+     "type": "u8",
+     "notes": "Chain count (kills of the same foe type) needed for this chain level."
+    },
+    {
+     "name": "commonAmountRate1",
+     "offset": 6,
+     "type": "s8",
+     "notes": "Rate for the common tier dropping 1 item(s)."
+    },
+    {
+     "name": "commonAmountRate2",
+     "offset": 7,
+     "type": "s8",
+     "notes": "Rate for the common tier dropping 2 item(s)."
+    },
+    {
+     "name": "commonAmountRate3",
+     "offset": 8,
+     "type": "s8",
+     "notes": "Rate for the common tier dropping 3 item(s)."
+    },
+    {
+     "name": "commonAmountRate4",
+     "offset": 9,
+     "type": "s8",
+     "notes": "Rate for the common tier dropping 4 item(s)."
+    },
+    {
+     "name": "uncommonAmountRate1",
+     "offset": 10,
+     "type": "s8",
+     "notes": "Rate for the uncommon tier dropping 1 item(s)."
+    },
+    {
+     "name": "uncommonAmountRate2",
+     "offset": 11,
+     "type": "s8",
+     "notes": "Rate for the uncommon tier dropping 2 item(s)."
+    },
+    {
+     "name": "uncommonAmountRate3",
+     "offset": 12,
+     "type": "s8",
+     "notes": "Rate for the uncommon tier dropping 3 item(s)."
+    },
+    {
+     "name": "uncommonAmountRate4",
+     "offset": 13,
+     "type": "s8",
+     "notes": "Rate for the uncommon tier dropping 4 item(s)."
+    },
+    {
+     "name": "rareAmountRate1",
+     "offset": 14,
+     "type": "s8",
+     "notes": "Rate for the rare tier dropping 1 item(s)."
+    },
+    {
+     "name": "rareAmountRate2",
+     "offset": 15,
+     "type": "s8",
+     "notes": "Rate for the rare tier dropping 2 item(s)."
+    },
+    {
+     "name": "rareAmountRate3",
+     "offset": 16,
+     "type": "s8",
+     "notes": "Rate for the rare tier dropping 3 item(s)."
+    },
+    {
+     "name": "rareAmountRate4",
+     "offset": 17,
+     "type": "s8",
+     "notes": "Rate for the rare tier dropping 4 item(s)."
+    },
+    {
+     "name": "veryRareAmountRate1",
+     "offset": 18,
+     "type": "s8",
+     "notes": "Rate for the veryRare tier dropping 1 item(s)."
+    },
+    {
+     "name": "veryRareAmountRate2",
+     "offset": 19,
+     "type": "s8",
+     "notes": "Rate for the veryRare tier dropping 2 item(s)."
+    },
+    {
+     "name": "veryRareAmountRate3",
+     "offset": 20,
+     "type": "s8",
+     "notes": "Rate for the veryRare tier dropping 3 item(s)."
+    },
+    {
+     "name": "veryRareAmountRate4",
+     "offset": 21,
+     "type": "s8",
+     "notes": "Rate for the veryRare tier dropping 4 item(s)."
+    },
+    {
+     "name": "guaranteedAmountRate1",
+     "offset": 22,
+     "type": "s8",
+     "notes": "Rate for the guaranteed tier dropping 1 item(s)."
+    },
+    {
+     "name": "guaranteedAmountRate2",
+     "offset": 23,
+     "type": "s8",
+     "notes": "Rate for the guaranteed tier dropping 2 item(s)."
+    },
+    {
+     "name": "guaranteedAmountRate3",
+     "offset": 24,
+     "type": "s8",
+     "notes": "Rate for the guaranteed tier dropping 3 item(s)."
+    },
+    {
+     "name": "guaranteedAmountRate4",
+     "offset": 25,
+     "type": "s8",
+     "notes": "Rate for the guaranteed tier dropping 4 item(s)."
+    },
+    {
+     "name": "benefitRateNone",
+     "offset": 26,
+     "type": "u8",
+     "notes": "Weight of the post-battle chain bonus \"no bonus\"."
+    },
+    {
+     "name": "benefitRateHpRecovery",
+     "offset": 27,
+     "type": "u8",
+     "notes": "Weight of the post-battle chain bonus \"HP recovery\"."
+    },
+    {
+     "name": "benefitRateMpRecovery",
+     "offset": 28,
+     "type": "u8",
+     "notes": "Weight of the post-battle chain bonus \"MP recovery\"."
+    },
+    {
+     "name": "benefitRateLeaderProtect",
+     "offset": 29,
+     "type": "u8",
+     "notes": "Weight of the post-battle chain bonus \"Protect on the leader\"."
+    },
+    {
+     "name": "benefitRateLeaderShell",
+     "offset": 30,
+     "type": "u8",
+     "notes": "Weight of the post-battle chain bonus \"Shell on the leader\". Order of bytes 0x1E/0x1F disputed: the Workshop has Leader Shell then All Protect, the Lua Loader docs have All Protect then Leader Shell."
+    },
+    {
+     "name": "benefitRateAllProtect",
+     "offset": 31,
+     "type": "u8",
+     "notes": "Weight of the post-battle chain bonus \"Protect on the party\". Order of bytes 0x1E/0x1F disputed: the Workshop has Leader Shell then All Protect, the Lua Loader docs have All Protect then Leader Shell."
+    },
+    {
+     "name": "benefitRateAllShell",
+     "offset": 32,
+     "type": "u8",
+     "notes": "Weight of the post-battle chain bonus \"Shell on the party\"."
+    },
+    {
+     "name": "reverseChainDifferentFoeConditionCount",
+     "offset": 33,
+     "type": "u8",
+     "notes": "Count of different-foe kills used by the reverse chain at this level."
+    },
+    {
+     "name": "reverseChainAmountRate1",
+     "offset": 34,
+     "type": "s8",
+     "notes": "Reverse-chain rate for dropping 1 item(s)."
+    },
+    {
+     "name": "reverseChainAmountRate2",
+     "offset": 35,
+     "type": "s8",
+     "notes": "Reverse-chain rate for dropping 2 item(s)."
+    },
+    {
+     "name": "reverseChainAmountRate3",
+     "offset": 36,
+     "type": "s8",
+     "notes": "Reverse-chain rate for dropping 3 item(s)."
+    }
+   ]
+  }
+ ],
+ "enums": {},
+ "roundTrip": [
+  "Edit fields in place; the record size is fixed and nothing in this section points at entries, so value edits never move data.",
+  "Copy every byte that no field interprets (unknown*/unused*/padding, unnamed bits) from the original; the Workshop writer zero-fills them (it seeks over them), so do not use its output as the byte-identical reference.",
+  "Keep the st2e header bytes verbatim except entryCount (and entryListOffset when the count goes to/from 0).",
+  "Keep the trailing zero padding that rounds the section to a multiple of 16 bytes.",
+  "If the section length changes (added/removed entries), rewrite the battlepack offset table: every later section offset and the end offset shift by the padded size delta.",
+  "Entry count must stay 4."
+ ],
+ "gaps": [
+  "Exact semantics of the amount rates (weights vs. cumulative percentages) and of the \"guaranteed\" tier are not documented by any source.",
+  "Byte order of benefitRateLeaderShell / benefitRateAllProtect (0x1E/0x1F) differs between the Workshop and the Lua Loader docs; verify in game.",
+  "Signedness of the rate bytes (Workshop: s8; Lua Loader: u8).",
+  "Header offset slots 0x10/0x18/0x1C and bytes 0x0A-0x0B: assumed 0, never interpreted."
+ ]
+}

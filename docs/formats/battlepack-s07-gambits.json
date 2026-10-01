@@ -1,0 +1,319 @@
+{
+ "id": "battlepack-s07-gambits",
+ "title": "Battlepack section 7 — Gambits (targets)",
+ "files": [
+  "ps2data/image/ff12/test_battle/*/binaryfile/battle_pack.bin",
+  "battle_pack.bin.dir/section_007.bin"
+ ],
+ "container": {
+  "kind": "battlepack",
+  "notes": "Section 7 of battle_pack.bin (71-section battlepack: u32 count, count+1 u32 offsets incl. an unpadded end offset, sections 16-byte aligned with zero fill). The section itself is an st2e table: 32-byte header (magic, u32 entryCount @4, u16 entrySize @8, u32 entryListOffset @12 = 32, u32 textSectionOffset @20 = 0) followed by packed entries and zero padding to 16 bytes."
+ },
+ "records": [
+  {
+   "name": "header",
+   "where": "Offset 0 of battlepack section 7.",
+   "size": 32,
+   "count": "1",
+   "fields": [
+    {
+     "name": "magic",
+     "offset": 0,
+     "type": "bytes",
+     "length": 4,
+     "notes": "ASCII 'st2e' (73 74 32 65); reject the section if different."
+    },
+    {
+     "name": "entryCount",
+     "offset": 4,
+     "type": "u32",
+     "notes": "Number of gambit targets (256 in the vanilla game, TK L809)."
+    },
+    {
+     "name": "entrySize",
+     "offset": 8,
+     "type": "u16",
+     "notes": "Bytes per entry; 32 (0x20) for this section."
+    },
+    {
+     "name": "unknown0A",
+     "offset": 10,
+     "type": "bytes",
+     "length": 2,
+     "notes": "Not interpreted; keep."
+    },
+    {
+     "name": "entryListOffset",
+     "offset": 12,
+     "type": "u32",
+     "notes": "Offset of entry 0 from the section start: 32 when entryCount > 0, else 0."
+    },
+    {
+     "name": "offset10",
+     "offset": 16,
+     "type": "u32",
+     "notes": "Unknown offset slot (0 in Workshop output)."
+    },
+    {
+     "name": "textSectionOffset",
+     "offset": 20,
+     "type": "u32",
+     "notes": "Inline text offset; 0 on disk for this section (filled at run time). No strings are stored here."
+    },
+    {
+     "name": "offset18",
+     "offset": 24,
+     "type": "u32",
+     "notes": "Unknown offset slot (0 in Workshop output for this section)."
+    },
+    {
+     "name": "offset1C",
+     "offset": 28,
+     "type": "u32",
+     "notes": "Unknown offset slot (0 in Workshop output)."
+    }
+   ]
+  },
+  {
+   "name": "gambit",
+   "where": "st2e entries of section 7: header.entryListOffset + i*32",
+   "size": 32,
+   "count": "header.entryCount (vanilla 256)",
+   "fields": [
+    {
+     "name": "unknown00",
+     "offset": 0,
+     "type": "bytes",
+     "length": 3,
+     "notes": "Not interpreted (Workshop skips and writes zeros)."
+    },
+    {
+     "name": "icon",
+     "offset": 3,
+     "type": "u8",
+     "enum": "BpeIconList",
+     "notes": "Menu icon; marked \"ineffectual\" by the Workshop (no visible effect)."
+    },
+    {
+     "name": "description",
+     "offset": 4,
+     "type": "u16",
+     "enum": "MenuGambitTargetList",
+     "notes": "Help text id (gambit-target help block, 16000+)."
+    },
+    {
+     "name": "gilCost",
+     "offset": 6,
+     "type": "u16",
+     "notes": "Shop price of the gambit."
+    },
+    {
+     "name": "case1TargetCondition",
+     "offset": 8,
+     "type": "u16",
+     "enum": "BattleLogicTargetConditionList",
+     "notes": "Target condition of case 1 (battle-logic condition id)."
+    },
+    {
+     "name": "case2TargetCondition",
+     "offset": 10,
+     "type": "u16",
+     "enum": "BattleLogicTargetConditionList",
+     "notes": "Target condition of case 2."
+    },
+    {
+     "name": "case3TargetCondition",
+     "offset": 12,
+     "type": "u16",
+     "enum": "BattleLogicTargetConditionList",
+     "notes": "Target condition of case 3."
+    },
+    {
+     "name": "flags",
+     "offset": 14,
+     "type": "bf16",
+     "bits": [
+      {
+       "name": "unknownBit0",
+       "bitStart": 0,
+       "bitLength": 1
+      },
+      {
+       "name": "unknownBit1",
+       "bitStart": 1,
+       "bitLength": 1
+      },
+      {
+       "name": "noRoaming",
+       "bitStart": 2,
+       "bitLength": 1
+      },
+      {
+       "name": "caseLinkType",
+       "bitStart": 3,
+       "bitLength": 3,
+       "enum": "BattleLogicCaseLinkTypeList"
+      },
+      {
+       "name": "unknownBit6",
+       "bitStart": 6,
+       "bitLength": 1
+      },
+      {
+       "name": "noInterruptToLowerPriority",
+       "bitStart": 7,
+       "bitLength": 1
+      },
+      {
+       "name": "alwaysRunning",
+       "bitStart": 8,
+       "bitLength": 1
+      },
+      {
+       "name": "noRunning",
+       "bitStart": 9,
+       "bitLength": 1
+      },
+      {
+       "name": "noTargetWith3PlusAttackers",
+       "bitStart": 10,
+       "bitLength": 1
+      },
+      {
+       "name": "noConsecutiveUse",
+       "bitStart": 11,
+       "bitLength": 1
+      },
+      {
+       "name": "noRetargeting",
+       "bitStart": 12,
+       "bitLength": 1
+      },
+      {
+       "name": "noTimeout",
+       "bitStart": 13,
+       "bitLength": 1
+      },
+      {
+       "name": "noInterruptByHigherPriority",
+       "bitStart": 14,
+       "bitLength": 1
+      },
+      {
+       "name": "noInterruptByAny",
+       "bitStart": 15,
+       "bitLength": 1
+      }
+     ],
+     "notes": "Gambit behaviour flags. The Workshop keeps the raw u16; bit names come from the Lua Loader docs."
+    },
+    {
+     "name": "case1TargetType",
+     "offset": 16,
+     "type": "u8",
+     "enum": "GambitTargetType",
+     "notes": "Who case 1 scans (foe, ally, self …)."
+    },
+    {
+     "name": "case2TargetType",
+     "offset": 17,
+     "type": "u8",
+     "enum": "GambitTargetType",
+     "notes": "Target type of case 2."
+    },
+    {
+     "name": "case3TargetType",
+     "offset": 18,
+     "type": "u8",
+     "enum": "GambitTargetType",
+     "notes": "Target type of case 3."
+    },
+    {
+     "name": "unknown13",
+     "offset": 19,
+     "type": "u8",
+     "notes": "Not interpreted."
+    },
+    {
+     "name": "name",
+     "offset": 20,
+     "type": "u16",
+     "enum": "DescGambitList",
+     "notes": "Name text id (gambit block, 12288+)."
+    },
+    {
+     "name": "gambitPage",
+     "offset": 22,
+     "type": "u8",
+     "notes": "Gambit-menu page the entry is listed on."
+    },
+    {
+     "name": "gambitPageOrder",
+     "offset": 23,
+     "type": "u8",
+     "notes": "Position on that page."
+    },
+    {
+     "name": "case1Parameter",
+     "offset": 24,
+     "type": "u16",
+     "notes": "Parameter of case 1 (meaning depends on the condition: HP %, status, element …)."
+    },
+    {
+     "name": "case2Parameter",
+     "offset": 26,
+     "type": "u16",
+     "notes": "Parameter of case 2."
+    },
+    {
+     "name": "case3Parameter",
+     "offset": 28,
+     "type": "u16",
+     "notes": "Parameter of case 3."
+    },
+    {
+     "name": "unused1E",
+     "offset": 30,
+     "type": "bytes",
+     "length": 2,
+     "notes": "Padding; the Workshop writes two zero bytes explicitly."
+    }
+   ]
+  }
+ ],
+ "enums": {
+  "GambitTargetType": {
+   "0": "None",
+   "1": "Foe",
+   "2": "Ally",
+   "3": "Leader",
+   "4": "Self",
+   "5": "Same Group",
+   "6": "Ally (excl. Self)",
+   "7": "Same Group (excl. Self)",
+   "8": "Different Group",
+   "9": "Current",
+   "10": "Auto"
+  },
+  "BattleLogicCaseLinkTypeList": {
+   "0": "No Case Links",
+   "3": "Link Cases 2 & 3",
+   "6": "Link Cases 1 & 2",
+   "7": "Link All 3 Cases"
+  }
+ },
+ "roundTrip": [
+  "Edit fields in place; the record size is fixed and nothing in this section points at entries, so value edits never move data.",
+  "Copy every byte that no field interprets (unknown*/unused*/padding, unnamed bits) from the original; the Workshop writer zero-fills them (it seeks over them), so do not use its output as the byte-identical reference.",
+  "Keep the st2e header bytes verbatim except entryCount (and entryListOffset when the count goes to/from 0).",
+  "Keep the trailing zero padding that rounds the section to a multiple of 16 bytes.",
+  "If the section length changes (added/removed entries), rewrite the battlepack offset table: every later section offset and the end offset shift by the padded size delta.",
+  "Do not reorder rows: section 8 and gambit content ids (0x6000|row) refer to them by index."
+ ],
+ "gaps": [
+  "Flag bits 0, 1 and 6 are unnamed in every source.",
+  "Byte 0x13 and bytes 0x00-0x02 are never interpreted; byte 0x03 (icon) is labelled ineffectual by the Workshop.",
+  "Per-condition meaning of case*Parameter is not tabulated by any source we have.",
+  "Whether the engine tolerates more than 256 rows is unknown."
+ ]
+}

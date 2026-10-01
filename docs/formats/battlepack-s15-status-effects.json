@@ -1,0 +1,630 @@
+{
+ "id": "battlepack-s15-status-effects",
+ "title": "Battlepack section 15 — Status Effects",
+ "files": [
+  "ps2data/image/ff12/test_battle/*/binaryfile/battle_pack.bin",
+  "battle_pack.bin.dir/section_015.bin"
+ ],
+ "container": {
+  "kind": "battlepack",
+  "notes": "Section 15 of battle_pack.bin (71-section battlepack: u32 count, count+1 u32 offsets incl. an unpadded end offset, sections 16-byte aligned with zero fill). The section itself is an st2e table: 32-byte header (magic, u32 entryCount @4, u16 entrySize @8, u32 entryListOffset @12 = 32, u32 textSectionOffset @20 = 0) followed by packed entries and zero padding to 16 bytes."
+ },
+ "records": [
+  {
+   "name": "header",
+   "where": "Offset 0 of battlepack section 15.",
+   "size": 32,
+   "count": "1",
+   "fields": [
+    {
+     "name": "magic",
+     "offset": 0,
+     "type": "bytes",
+     "length": 4,
+     "notes": "ASCII 'st2e' (73 74 32 65); reject the section if different."
+    },
+    {
+     "name": "entryCount",
+     "offset": 4,
+     "type": "u32",
+     "notes": "Always 32 (one row per status bit)."
+    },
+    {
+     "name": "entrySize",
+     "offset": 8,
+     "type": "u16",
+     "notes": "Bytes per entry; 40 (0x28) for this section."
+    },
+    {
+     "name": "unknown0A",
+     "offset": 10,
+     "type": "bytes",
+     "length": 2,
+     "notes": "Not interpreted; keep."
+    },
+    {
+     "name": "entryListOffset",
+     "offset": 12,
+     "type": "u32",
+     "notes": "Offset of entry 0 from the section start: 32 when entryCount > 0, else 0."
+    },
+    {
+     "name": "offset10",
+     "offset": 16,
+     "type": "u32",
+     "notes": "Unknown offset slot (0 in Workshop output)."
+    },
+    {
+     "name": "textSectionOffset",
+     "offset": 20,
+     "type": "u32",
+     "notes": "Inline text offset; 0 on disk for this section (filled at run time). No strings are stored here."
+    },
+    {
+     "name": "offset18",
+     "offset": 24,
+     "type": "u32",
+     "notes": "Unknown offset slot (0 in Workshop output for this section)."
+    },
+    {
+     "name": "offset1C",
+     "offset": 28,
+     "type": "u32",
+     "notes": "Unknown offset slot (0 in Workshop output)."
+    }
+   ]
+  },
+  {
+   "name": "statusEffect",
+   "where": "st2e entries of section 15: header.entryListOffset + i*40; row i describes status bit i (mask 1<<i)",
+   "size": 40,
+   "count": "32 (fixed; header.entryCount)",
+   "fields": [
+    {
+     "name": "name",
+     "offset": 0,
+     "type": "u16",
+     "enum": "DescStatusEffectList",
+     "notes": "Name text id (status block, 10240+)."
+    },
+    {
+     "name": "displayOrderUnknown0",
+     "offset": 2,
+     "type": "u8",
+     "notes": "A display-order index whose screen is unidentified."
+    },
+    {
+     "name": "unknown03",
+     "offset": 3,
+     "type": "bytes",
+     "length": 3,
+     "notes": "Not interpreted."
+    },
+    {
+     "name": "flags",
+     "offset": 6,
+     "type": "bf16",
+     "bits": [
+      {
+       "name": "isRefreshable",
+       "bitStart": 5,
+       "bitLength": 1
+      },
+      {
+       "name": "isNotApplicableToFoes",
+       "bitStart": 8,
+       "bitLength": 1
+      },
+      {
+       "name": "isNullifiedByRemedy",
+       "bitStart": 10,
+       "bitLength": 1
+      },
+      {
+       "name": "isNullifiedByRemedyLore1",
+       "bitStart": 11,
+       "bitLength": 1
+      },
+      {
+       "name": "isNullifiedByRemedyLore2",
+       "bitStart": 12,
+       "bitLength": 1
+      },
+      {
+       "name": "isNegative",
+       "bitStart": 13,
+       "bitLength": 1
+      },
+      {
+       "name": "isNullifiedByRemedyLore3",
+       "bitStart": 14,
+       "bitLength": 1
+      }
+     ],
+     "notes": "Behaviour flags; only the listed bits are known. The Workshop rebuilds this word from the named bits (other bits become 0)."
+    },
+    {
+     "name": "duration",
+     "offset": 8,
+     "type": "u8",
+     "notes": "Base duration."
+    },
+    {
+     "name": "ticks",
+     "offset": 9,
+     "type": "u8",
+     "notes": "Tick count / interval used by periodic effects."
+    },
+    {
+     "name": "description",
+     "offset": 10,
+     "type": "u16",
+     "enum": "MenuStatusEffectList",
+     "notes": "Help text id (status help block, 12000+)."
+    },
+    {
+     "name": "nullifiedStatusEffects",
+     "offset": 12,
+     "type": "bf32",
+     "bits": [
+      {
+       "name": "ko",
+       "bitStart": 0,
+       "bitLength": 1
+      },
+      {
+       "name": "stone",
+       "bitStart": 1,
+       "bitLength": 1
+      },
+      {
+       "name": "petrify",
+       "bitStart": 2,
+       "bitLength": 1
+      },
+      {
+       "name": "stop",
+       "bitStart": 3,
+       "bitLength": 1
+      },
+      {
+       "name": "sleep",
+       "bitStart": 4,
+       "bitLength": 1
+      },
+      {
+       "name": "confuse",
+       "bitStart": 5,
+       "bitLength": 1
+      },
+      {
+       "name": "doom",
+       "bitStart": 6,
+       "bitLength": 1
+      },
+      {
+       "name": "blind",
+       "bitStart": 7,
+       "bitLength": 1
+      },
+      {
+       "name": "poison",
+       "bitStart": 8,
+       "bitLength": 1
+      },
+      {
+       "name": "silence",
+       "bitStart": 9,
+       "bitLength": 1
+      },
+      {
+       "name": "sap",
+       "bitStart": 10,
+       "bitLength": 1
+      },
+      {
+       "name": "oil",
+       "bitStart": 11,
+       "bitLength": 1
+      },
+      {
+       "name": "reverse",
+       "bitStart": 12,
+       "bitLength": 1
+      },
+      {
+       "name": "disable",
+       "bitStart": 13,
+       "bitLength": 1
+      },
+      {
+       "name": "immobilize",
+       "bitStart": 14,
+       "bitLength": 1
+      },
+      {
+       "name": "slow",
+       "bitStart": 15,
+       "bitLength": 1
+      },
+      {
+       "name": "disease",
+       "bitStart": 16,
+       "bitLength": 1
+      },
+      {
+       "name": "lure",
+       "bitStart": 17,
+       "bitLength": 1
+      },
+      {
+       "name": "protect",
+       "bitStart": 18,
+       "bitLength": 1
+      },
+      {
+       "name": "shell",
+       "bitStart": 19,
+       "bitLength": 1
+      },
+      {
+       "name": "haste",
+       "bitStart": 20,
+       "bitLength": 1
+      },
+      {
+       "name": "bravery",
+       "bitStart": 21,
+       "bitLength": 1
+      },
+      {
+       "name": "faith",
+       "bitStart": 22,
+       "bitLength": 1
+      },
+      {
+       "name": "reflect",
+       "bitStart": 23,
+       "bitLength": 1
+      },
+      {
+       "name": "invisible",
+       "bitStart": 24,
+       "bitLength": 1
+      },
+      {
+       "name": "regen",
+       "bitStart": 25,
+       "bitLength": 1
+      },
+      {
+       "name": "float",
+       "bitStart": 26,
+       "bitLength": 1
+      },
+      {
+       "name": "berserk",
+       "bitStart": 27,
+       "bitLength": 1
+      },
+      {
+       "name": "bubble",
+       "bitStart": 28,
+       "bitLength": 1
+      },
+      {
+       "name": "hpCritical",
+       "bitStart": 29,
+       "bitLength": 1
+      },
+      {
+       "name": "libra",
+       "bitStart": 30,
+       "bitLength": 1
+      },
+      {
+       "name": "xZone",
+       "bitStart": 31,
+       "bitLength": 1
+      }
+     ],
+     "enum": "StatusEffectFlags",
+     "notes": "Statuses removed when this one is applied."
+    },
+    {
+     "name": "displayOrderMenu",
+     "offset": 16,
+     "type": "u8",
+     "notes": "Sort position in the menu status list."
+    },
+    {
+     "name": "unknown11",
+     "offset": 17,
+     "type": "bytes",
+     "length": 2,
+     "notes": "Not interpreted."
+    },
+    {
+     "name": "displayOrderUnknown1",
+     "offset": 19,
+     "type": "u8",
+     "notes": "Second display-order index, screen unidentified."
+    },
+    {
+     "name": "unknown14",
+     "offset": 20,
+     "type": "bytes",
+     "length": 12,
+     "notes": "Not interpreted."
+    },
+    {
+     "name": "requiredAbsentStatusEffects",
+     "offset": 32,
+     "type": "bf32",
+     "bits": [
+      {
+       "name": "ko",
+       "bitStart": 0,
+       "bitLength": 1
+      },
+      {
+       "name": "stone",
+       "bitStart": 1,
+       "bitLength": 1
+      },
+      {
+       "name": "petrify",
+       "bitStart": 2,
+       "bitLength": 1
+      },
+      {
+       "name": "stop",
+       "bitStart": 3,
+       "bitLength": 1
+      },
+      {
+       "name": "sleep",
+       "bitStart": 4,
+       "bitLength": 1
+      },
+      {
+       "name": "confuse",
+       "bitStart": 5,
+       "bitLength": 1
+      },
+      {
+       "name": "doom",
+       "bitStart": 6,
+       "bitLength": 1
+      },
+      {
+       "name": "blind",
+       "bitStart": 7,
+       "bitLength": 1
+      },
+      {
+       "name": "poison",
+       "bitStart": 8,
+       "bitLength": 1
+      },
+      {
+       "name": "silence",
+       "bitStart": 9,
+       "bitLength": 1
+      },
+      {
+       "name": "sap",
+       "bitStart": 10,
+       "bitLength": 1
+      },
+      {
+       "name": "oil",
+       "bitStart": 11,
+       "bitLength": 1
+      },
+      {
+       "name": "reverse",
+       "bitStart": 12,
+       "bitLength": 1
+      },
+      {
+       "name": "disable",
+       "bitStart": 13,
+       "bitLength": 1
+      },
+      {
+       "name": "immobilize",
+       "bitStart": 14,
+       "bitLength": 1
+      },
+      {
+       "name": "slow",
+       "bitStart": 15,
+       "bitLength": 1
+      },
+      {
+       "name": "disease",
+       "bitStart": 16,
+       "bitLength": 1
+      },
+      {
+       "name": "lure",
+       "bitStart": 17,
+       "bitLength": 1
+      },
+      {
+       "name": "protect",
+       "bitStart": 18,
+       "bitLength": 1
+      },
+      {
+       "name": "shell",
+       "bitStart": 19,
+       "bitLength": 1
+      },
+      {
+       "name": "haste",
+       "bitStart": 20,
+       "bitLength": 1
+      },
+      {
+       "name": "bravery",
+       "bitStart": 21,
+       "bitLength": 1
+      },
+      {
+       "name": "faith",
+       "bitStart": 22,
+       "bitLength": 1
+      },
+      {
+       "name": "reflect",
+       "bitStart": 23,
+       "bitLength": 1
+      },
+      {
+       "name": "invisible",
+       "bitStart": 24,
+       "bitLength": 1
+      },
+      {
+       "name": "regen",
+       "bitStart": 25,
+       "bitLength": 1
+      },
+      {
+       "name": "float",
+       "bitStart": 26,
+       "bitLength": 1
+      },
+      {
+       "name": "berserk",
+       "bitStart": 27,
+       "bitLength": 1
+      },
+      {
+       "name": "bubble",
+       "bitStart": 28,
+       "bitLength": 1
+      },
+      {
+       "name": "hpCritical",
+       "bitStart": 29,
+       "bitLength": 1
+      },
+      {
+       "name": "libra",
+       "bitStart": 30,
+       "bitLength": 1
+      },
+      {
+       "name": "xZone",
+       "bitStart": 31,
+       "bitLength": 1
+      }
+     ],
+     "enum": "StatusEffectFlags",
+     "notes": "Statuses that block this one: it cannot be applied while any of them is present."
+    },
+    {
+     "name": "uiFlags",
+     "offset": 36,
+     "type": "bf8",
+     "bits": [
+      {
+       "name": "unknownBit0",
+       "bitStart": 0,
+       "bitLength": 1
+      },
+      {
+       "name": "unknownBit1",
+       "bitStart": 1,
+       "bitLength": 1
+      },
+      {
+       "name": "unknownBit2",
+       "bitStart": 2,
+       "bitLength": 1
+      },
+      {
+       "name": "unknownBit3",
+       "bitStart": 3,
+       "bitLength": 1
+      }
+     ],
+     "notes": "UI-related flag byte of unknown meaning (the Workshop keeps it as a raw byte)."
+    },
+    {
+     "name": "unknown25",
+     "offset": 37,
+     "type": "u8",
+     "notes": "Not interpreted."
+    },
+    {
+     "name": "displayOrderBattleStatusBar",
+     "offset": 38,
+     "type": "u8",
+     "notes": "Sort position in the battle status bar."
+    },
+    {
+     "name": "displayOrderTargetInfo",
+     "offset": 39,
+     "type": "u8",
+     "notes": "Sort position in the target info window."
+    }
+   ]
+  }
+ ],
+ "enums": {
+  "StatusEffectFlags": {
+   "1": "KO",
+   "2": "Stone",
+   "4": "Petrify",
+   "8": "Stop",
+   "16": "Sleep",
+   "32": "Confuse",
+   "64": "Doom",
+   "128": "Blind",
+   "256": "Poison",
+   "512": "Silence",
+   "1024": "Sap",
+   "2048": "Oil",
+   "4096": "Reverse",
+   "8192": "Disable",
+   "16384": "Immobilize",
+   "32768": "Slow",
+   "65536": "Disease",
+   "131072": "Lure",
+   "262144": "Protect",
+   "524288": "Shell",
+   "1048576": "Haste",
+   "2097152": "Bravery",
+   "4194304": "Faith",
+   "8388608": "Reflect",
+   "16777216": "Invisible",
+   "33554432": "Regen",
+   "67108864": "Float",
+   "134217728": "Berserk",
+   "268435456": "Bubble",
+   "536870912": "HP Critical",
+   "1073741824": "Libra",
+   "2147483648": "X-Zone"
+  }
+ },
+ "roundTrip": [
+  "Edit fields in place; the record size is fixed and nothing in this section points at entries, so value edits never move data.",
+  "Copy every byte that no field interprets (unknown*/unused*/padding, unnamed bits) from the original; the Workshop writer zero-fills them (it seeks over them), so do not use its output as the byte-identical reference.",
+  "Keep the st2e header bytes verbatim except entryCount (and entryListOffset when the count goes to/from 0).",
+  "Keep the trailing zero padding that rounds the section to a multiple of 16 bytes.",
+  "If the section length changes (added/removed entries), rewrite the battlepack offset table: every later section offset and the end offset shift by the padded size delta.",
+  "Entry count must stay 32 and row order must follow status bit order.",
+  "flags (0x06): change only the named bits and preserve all other bits."
+ ],
+ "gaps": [
+  "Flag word bits 0-4, 6, 7, 9 and 15 are unnamed; the Workshop drops them on write.",
+  "uiFlags (0x24) bits are all unnamed.",
+  "Bytes 0x03-0x05, 0x11-0x12, 0x14-0x1F and 0x25 are never interpreted.",
+  "Screens for displayOrderUnknown0/1 are not identified.",
+  "Units of duration and ticks are not documented."
+ ]
+}

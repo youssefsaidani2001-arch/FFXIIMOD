@@ -1,0 +1,112 @@
+{
+ "id": "battlepack-s17-battle-menu-categories",
+ "title": "Battlepack section 17 — Battle Menu Categories",
+ "files": [
+  "ps2data/image/ff12/test_battle/*/binaryfile/battle_pack.bin",
+  "battle_pack.bin.dir/section_017.bin"
+ ],
+ "container": {
+  "kind": "battlepack",
+  "notes": "Section 17 of battle_pack.bin (71-section battlepack: u32 count, count+1 u32 file offsets incl. an unpadded end offset, sections 16-byte aligned with zero fill; see container-battlepack). The section is an st2e table: 32-byte header (magic, u32 entryCount @4, u16 entrySize @8 = 4, u32 entryListOffset @12 = 32, u32 textSectionOffset @20 = 0) followed by entryCount packed 4-byte entries and zero padding to a multiple of 16 bytes (see container-st2e)."
+ },
+ "records": [
+  {
+   "name": "header",
+   "where": "Offset 0 of battlepack section 17.",
+   "size": 32,
+   "count": "1",
+   "fields": [
+    {
+     "name": "magic",
+     "offset": 0,
+     "type": "bytes",
+     "length": 4,
+     "notes": "ASCII 'st2e' (73 74 32 65); reject the section if different."
+    },
+    {
+     "name": "entryCount",
+     "offset": 4,
+     "type": "u32",
+     "notes": "Number of battle-menu categories."
+    },
+    {
+     "name": "entrySize",
+     "offset": 8,
+     "type": "u16",
+     "notes": "Bytes per entry; 4 (0x4) for this section."
+    },
+    {
+     "name": "unknown0A",
+     "offset": 10,
+     "type": "bytes",
+     "length": 2,
+     "notes": "Not interpreted; keep."
+    },
+    {
+     "name": "entryListOffset",
+     "offset": 12,
+     "type": "u32",
+     "notes": "Offset of entry 0 from the section start: 32 when entryCount > 0, else 0."
+    },
+    {
+     "name": "offset10",
+     "offset": 16,
+     "type": "u32",
+     "notes": "Unknown offset slot (0 in Workshop output)."
+    },
+    {
+     "name": "textSectionOffset",
+     "offset": 20,
+     "type": "u32",
+     "notes": "Inline text offset; 0 on disk for this section (filled at run time). No strings are stored here."
+    },
+    {
+     "name": "offset18",
+     "offset": 24,
+     "type": "u32",
+     "notes": "Unknown offset slot (0 in Workshop output for this section)."
+    },
+    {
+     "name": "offset1C",
+     "offset": 28,
+     "type": "u32",
+     "notes": "Unknown offset slot (0 in Workshop output)."
+    }
+   ]
+  },
+  {
+   "name": "battleMenuCategory",
+   "where": "st2e entries of section 17: header.entryListOffset + i*4; row i = battle-menu category id i (row labels: list BpCategoryList)",
+   "size": 4,
+   "count": "header.entryCount (21 expected: ids 0-20)",
+   "fields": [
+    {
+     "name": "description",
+     "offset": 0,
+     "type": "u16",
+     "enum": "MenuActionList",
+     "notes": "Help text id; vanilla rows use 3000 + row (3000 \"Attack with weapon in hand.\", 3002 \"Special actions that cost no MP.\")."
+    },
+    {
+     "name": "name",
+     "offset": 2,
+     "type": "u16",
+     "enum": "DescBattleMenuList",
+     "notes": "Name text id; vanilla rows use 8192 + row (Attack, Magicks, Technicks, Items …)."
+    }
+   ]
+  }
+ ],
+ "enums": {},
+ "roundTrip": [
+  "Edit fields in place; the record size is fixed and nothing in this section points at entries, so value edits never move data.",
+  "Copy every byte that no field interprets (unknown*/padding, unnamed bits) from the original; the Workshop writer zero-fills them (it seeks over them), so do not use its output as the byte-identical reference.",
+  "Keep the st2e header bytes verbatim except entryCount (and entryListOffset when the count goes to/from 0).",
+  "Keep the trailing zero padding that rounds the section to a multiple of 16 bytes.",
+  "If the section length changes (added/removed entries), rewrite the battlepack offset table: every later section offset and the end offset shift by the padded size delta."
+ ],
+ "gaps": [
+  "Vanilla row count (21 expected).",
+  "Description id mapping (3000 + row) inferred from list contents, not checked on a dump."
+ ]
+}

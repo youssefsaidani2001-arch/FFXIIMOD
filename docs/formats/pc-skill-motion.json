@@ -1,0 +1,56 @@
+{
+ "id": "pc-skill-motion",
+ "title": "PC Skill Motion table (model + stance -> animation file)",
+ "files": [],
+ "container": {
+  "kind": "custom",
+  "notes": "World file type 9 id 5 (name unknown). 10-byte records (s32 model, u16 weapon stance, u16 special character animation, u16 animation file id); header/count position not documented. Runtime copy at [0x02B58188]."
+ },
+ "records": [
+  {
+   "name": "pcSkillMotion",
+   "where": "Records of the PC Skill Motion world file (game file type 9, id 5); in memory at [0x02B58188]. The file header / count position is not documented.",
+   "size": 10,
+   "count": "unknown (not documented)",
+   "fields": [
+    {
+     "name": "model",
+     "offset": 0,
+     "type": "s32",
+     "enum": "ModelList",
+     "notes": "Model id ((ASCII prefix << 16) | file number, e.g. c = main characters). [src: TK L1190, L940-L958]"
+    },
+    {
+     "name": "weaponStance",
+     "offset": 4,
+     "type": "u16",
+     "enum": "BpWeaponStanceList",
+     "notes": "Weapon stance (battlepack section 0 / BpWeaponStanceList). [src: TK L1190]"
+    },
+    {
+     "name": "specialCharacterAnimation",
+     "offset": 6,
+     "type": "u16",
+     "notes": "Special character animation id (battlepack section 14 +0x30 uses the same space). [src: TK L1190, L893]"
+    },
+    {
+     "name": "animationFileIdentifier",
+     "offset": 8,
+     "type": "u16",
+     "notes": "Animation file to use for this model + stance combination. [src: TK L1190]"
+    }
+   ]
+  }
+ ],
+ "enums": {},
+ "roundTrip": [
+  "Edit records in place; keep the (unknown) file header untouched.",
+  "Records are 10 bytes, so they are only 2-byte aligned: do not assume 4-byte alignment for `model`.",
+  "Hot-reload the file (type 9 id 5) or restart to apply."
+ ],
+ "gaps": [
+  "File name, header layout, record count and the record list start offset.",
+  "Whether lookups require sorted records.",
+  "Value ranges of specialCharacterAnimation / animationFileIdentifier."
+ ]
+}

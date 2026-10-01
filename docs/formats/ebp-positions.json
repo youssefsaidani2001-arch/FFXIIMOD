@@ -1,0 +1,135 @@
+{
+ "id": "ebp-positions",
+ "title": "EBP section 16 - Positions (spawn / hot-spot points, FF12POS3)",
+ "files": [
+  "**/*.ebp",
+  "**/*.ebp.dir/section_016.bin"
+ ],
+ "container": {
+  "kind": "ebp",
+  "notes": "EBP section 16 (positions; magic 'FF12POS3', u32 unknown, u32 entryCount, then 48-byte rows from 0x10; no trailing padding needed because 16 + 48n is always a multiple of 16). EBP = *.ebp, 0x80-byte header: magic 'EBP2' at 0x00, twenty u32 section offsets at 0x10-0x5F counted from the EBP start (0 = absent; this section = u32 at EBP+0x50), 0x04-0x0F and 0x60-0x7F not interpreted. Sections start on 16-byte boundaries with zero fill; a section spans to the next larger non-zero offset (the highest to end of file), so the span includes padding. Section 6 is a TIM2 texture and section 19 an embedded ARD (FF12AR03); a rebuild must carry both. Little-endian throughout."
+ },
+ "records": [
+  {
+   "name": "positionsHeader",
+   "where": "Offset 0 of EBP section 16 (EBP start + u32 at EBP+0x50).",
+   "size": 16,
+   "count": 1,
+   "fields": [
+    {
+     "name": "magic",
+     "offset": 0,
+     "type": "bytes",
+     "length": 8,
+     "notes": "ASCII 'FF12POS3' = 46 46 31 32 50 4F 53 33."
+    },
+    {
+     "name": "unknown08",
+     "offset": 8,
+     "type": "u32",
+     "notes": "Not interpreted; the Workshop calls it an unused offset and writes 0. Preserve the original value."
+    },
+    {
+     "name": "entryCount",
+     "offset": 12,
+     "type": "u32",
+     "notes": "Number of 48-byte position rows starting at 0x10."
+    }
+   ]
+  },
+  {
+   "name": "position",
+   "where": "EBP section 16, offset 16 + 48*i (i = 0 .. entryCount-1). Rows are addressed by index from the script (Spawn Position Map / btlAtelSetPoint2).",
+   "size": 48,
+   "count": "positionsHeader.entryCount",
+   "fields": [
+    {
+     "name": "type",
+     "offset": 0,
+     "type": "s8",
+     "enum": "PositionType",
+     "notes": "Position/radius type. The Workshop only accepts values <= 2; the Toolkit list for it names 0, 1 and 2 without meaning."
+    },
+    {
+     "name": "pad01",
+     "offset": 1,
+     "type": "bytes",
+     "length": 3,
+     "notes": "Not interpreted (written as zeros by the Workshop). Preserve."
+    },
+    {
+     "name": "radiusX",
+     "offset": 4,
+     "type": "f32",
+     "notes": "First float of the 'radius position' pair (labelled X with a question mark by the Workshop). Only X and Z are present, so it is probably a horizontal extent; unverified."
+    },
+    {
+     "name": "radiusZ",
+     "offset": 8,
+     "type": "f32",
+     "notes": "Second float of the 'radius position' pair (labelled Z with a question mark by the Workshop)."
+    },
+    {
+     "name": "pad0C",
+     "offset": 12,
+     "type": "bytes",
+     "length": 4,
+     "notes": "Not interpreted (written as zeros by the Workshop). Preserve."
+    },
+    {
+     "name": "spawnX",
+     "offset": 16,
+     "type": "f32",
+     "notes": "Spawn point X (world units)."
+    },
+    {
+     "name": "spawnY",
+     "offset": 20,
+     "type": "f32",
+     "notes": "Spawn point Y (world units; vertical axis, inferred from the X/Z-only radius pair)."
+    },
+    {
+     "name": "spawnZ",
+     "offset": 24,
+     "type": "f32",
+     "notes": "Spawn point Z (world units)."
+    },
+    {
+     "name": "direction",
+     "offset": 28,
+     "type": "f32",
+     "notes": "Facing angle in radians (Toolkit and Workshop agree on +0x1C)."
+    },
+    {
+     "name": "pad20",
+     "offset": 32,
+     "type": "bytes",
+     "length": 16,
+     "notes": "Not interpreted (written as zeros by the Workshop). Preserve."
+    }
+   ]
+  }
+ ],
+ "enums": {
+  "PositionType": {
+   "0": "Type 0 (meaning unknown)",
+   "1": "Type 1 (meaning unknown)",
+   "2": "Type 2 (meaning unknown)"
+  }
+ },
+ "roundTrip": [
+  "Keep the 8-byte magic 'FF12POS3' and the u32 at 0x08 exactly as read.",
+  "Edit row fields in place; rows contain no pointers.",
+  "Keep pad01, pad0C and pad20 bytes of every row as read (the Workshop zeroes them; vanilla content is not confirmed to be zero).",
+  "Never reorder or delete rows: the script picks spawn points by row index. Appending rows is layout-safe (update entryCount; the section grows by 48 bytes, which keeps it a multiple of 16).",
+  "Keep type within 0..2 (the only values the Workshop accepts).",
+  "If the section length changes, every EBP section stored after it moves: recompute their u32 slots at EBP+0x10+4n, keep 16-byte starts with zero fill, keep absent sections at 0, keep section 6 (TIM2) and section 19 (ARD) intact."
+ ],
+ "gaps": [
+  "Meaning of type values 0, 1, 2 and whether negative values occur (the field is signed).",
+  "Exact meaning of the 'radius position' pair (extent, offset, or a second point) and of the u32 at header 0x08.",
+  "Whether pad01 / pad0C / pad20 are always zero in vanilla files.",
+  "Whether the teleport position index (live memory, Toolkit) indexes this table or the script-side map destination positions.",
+  "VBF folders of the .ebp files are not named in our sources."
+ ]
+}
